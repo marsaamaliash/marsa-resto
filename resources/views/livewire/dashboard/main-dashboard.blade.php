@@ -50,7 +50,7 @@
             </a>
 
             <!-- Card Resto -->
-            {{-- <a href="{{ route('dashboard.resto') }}" --}}
+            <a href="{{ route('dashboard.resto') }}"
             <a href="{{ route('dashboard.hq') }}"
                 class="relative rounded-2xl overflow-hidden shadow-lg transform hover:scale-105 transition duration-300">
                 <img src="{{ asset('images/tb-resto.png') }}" alt="Resto"

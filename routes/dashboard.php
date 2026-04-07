@@ -7,6 +7,7 @@ use App\Livewire\Dashboard\HrDashboard;
 use App\Livewire\Dashboard\LmsMain;
 use App\Livewire\Dashboard\MainDashboard;
 use App\Livewire\Dashboard\ResortDashboard;
+use App\Livewire\Dashboard\RestoDashboard;
 use App\Livewire\Dashboard\RtDashboard;
 use App\Livewire\Dashboard\SdmDashboard;
 use App\Livewire\Dashboard\SiakadDashboard;
@@ -28,6 +29,7 @@ Route::middleware(['auth'])
         Route::get('/finance', FinanceDashboard::class)->name('finance');
         Route::get('/resort', ResortDashboard::class)->name('resort');
         Route::get('/campus', CampusDashboard::class)->name('campus');
+        Route::get('/resto', RestoDashboard::class)->name('resto');
         Route::get('/lms', LmsMain::class)->name('lms-main');
         Route::get('/siakad', SiakadDashboard::class)->name('siakad-dashboard');
 

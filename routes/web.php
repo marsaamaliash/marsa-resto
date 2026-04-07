@@ -54,6 +54,7 @@ Route::middleware(['auth', 'force.password.change', 'auth.membership'])->group(f
     require __DIR__.'/holdings/hq/sdm.php';
     require __DIR__.'/holdings/hq/finance.php';
     require __DIR__.'/holdings/campus/campus.php';
+    require __DIR__.'/holdings/resto/resto.php';
 });
 
 /*
