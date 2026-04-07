@@ -1,16 +1,15 @@
 <?php
 
-namespace App\Livewire\Holdings\Resto\Master\Kategori;
-;
+namespace App\Livewire\Holdings\Resto\Master\Vendor;
 
-use App\Models\Holdings\Resto\Master\Rst_MasterKategori;
+use App\Models\Holdings\Resto\Master\Rst_MasterVendor;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\Attributes\On;
 use Illuminate\Support\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 
-class KategoriTable extends Component
+class VendorTable extends Component
 {
     use WithPagination;
 
@@ -39,7 +38,9 @@ class KategoriTable extends Component
     protected array $allowedSortFields = [
         'id',
         'name',
-        'symbols',
+        'code',
+        'no_telp',
+        'address',
         'created_at',
     ];
 
@@ -74,9 +75,9 @@ class KategoriTable extends Component
     {
         $u = auth()->user();
 
-        $this->canCreate = (bool) ($u?->hasPermission('MASTER_KATEGORI_CREATE') ?? false);
-        $this->canUpdate = (bool) ($u?->hasPermission('MASTER_KATEGORI_UPDATE') ?? false);
-        $this->canDelete = (bool) ($u?->hasPermission('MASTER_KATEGORI_DELETE') ?? false);
+        $this->canCreate = (bool) ($u?->hasPermission('MASTER_VENDOR_CREATE') ?? false);
+        $this->canUpdate = (bool) ($u?->hasPermission('MASTER_VENDOR_UPDATE') ?? false);
+        $this->canDelete = (bool) ($u?->hasPermission('MASTER_VENDOR_DELETE') ?? false);
 
         $this->canWrite = $this->canCreate || $this->canUpdate;
     }
@@ -88,7 +89,7 @@ class KategoriTable extends Component
               ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
             ['label' => 'Resto', 'route' => 'dashboard.resto', 'color' => 'text-gray-800'],
             ['label' => 'Master Data', 'route' => 'dashboard.resto.master','color' => 'text-gray-900 font-semibold'],
-            ['label' => 'Kategori','color' => 'text-gray-900 font-semibold'],
+            ['label' => 'Vendor','color' => 'text-gray-900 font-semibold'],
         ];
 
         $this->syncCaps();
@@ -104,7 +105,7 @@ class KategoriTable extends Component
        ===================================================== */
     protected function dataQuery(): Collection
 {
-    return Rst_MasterKategori::all();
+    return Rst_MasterVendor::all();
 }
 
     /* =====================================================
@@ -281,27 +282,27 @@ class KategoriTable extends Component
         $this->reset(['overlayMode', 'overlayId']);
     }
 
-    #[On('kategori-overlay-close')]
+    #[On('vendor-overlay-close')]
     public function handleOverlayClose(): void
     {
         $this->closeOverlay();
     }
 
-    #[On('kategori-created')]
+    #[On('vendor-created')]
     public function handleCreated(?string $id = null): void
     {
         $this->closeOverlay();
         $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data berhasil ditambahkan.'];
     }
 
-    #[On('kategori-updated')]
+    #[On('vendor-updated')]
     public function handleUpdated(?string $id = null): void
     {
         $this->closeOverlay();
         $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data berhasil diperbarui.'];
     }
 
-    #[On('kategori-open-edit')]
+    #[On('vendor-open-edit')]
     public function handleOpenEditFromShow(string $id): void
     {
         $this->openEdit($id);
@@ -334,7 +335,7 @@ class KategoriTable extends Component
 
         $this->selectAll = count($visible) > 0 && empty(array_diff($visible, $this->selectedItems));
 
-        return view('livewire.holdings.resto.master.kategori.kategori-table', [
+        return view('livewire.holdings.resto.master.vendor.vendor-table', [
             'data'        => $data,
             'breadcrumbs' => $this->breadcrumbs,
             'filter1Options' => $this->filter1Options(),

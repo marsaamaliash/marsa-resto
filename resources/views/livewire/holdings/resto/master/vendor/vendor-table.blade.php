@@ -1,12 +1,12 @@
-<x-ui.sccr-card transparent wire:key="satuan" class="h-full min-h-0 flex flex-col">
+<x-ui.sccr-card transparent wire:key="vendor" class="h-full min-h-0 flex flex-col">
 
     {{-- ================= HEADER ================= --}}
     <div class="relative px-8 py-6 bg-blue-600/80 rounded-b-3xl shadow-lg overflow-hidden">
         <div class="flex justify-between items-start">
             <div>
-                <h1 class="text-3xl font-bold text-white">Satuan</h1>
+                <h1 class="text-3xl font-bold text-white">Vendor</h1>
                 <p class="text-blue-100 text-sm">
-                    Satuan Bahan
+                    Vendor adalah pihak yang menyediakan barang atau jasa kepada perusahaan. Dalam konteks restoran, vendor dapat mencakup pemasok bahan baku makanan, minuman, peralatan dapur, dan layanan lainnya yang mendukung operasional restoran. Manajemen vendor yang
                 </p>
             </div>
         </div>
@@ -28,7 +28,7 @@
                 {{-- SEARCH INPUT --}}
                 <div class="relative top-1">
                     <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">
-                        Nama Satuan
+                        Nama Vendor
                     </span>
                     <x-ui.sccr-input name="search" wire:model="search" placeholder="Ketik lalu enter..."
                         class="w-64" />
@@ -118,9 +118,19 @@
                                 Name {!! $sortField === 'name' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                             </th>
 
-                            <th wire:click="sortBy('symbols')"
+                            <th wire:click="sortBy('code')"
                                 class="px-4 py-3 text-left text-xs font-bold cursor-pointer">
-                                symbols {!! $sortField === 'symbols' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                                Code {!! $sortField === 'code' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                            </th>
+
+                                                        <th wire:click="sortBy('no_telp')"
+                                class="px-4 py-3 text-left text-xs font-bold cursor-pointer">
+                                Telepon {!! $sortField === 'no_telp' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                            </th>
+
+                                                        <th wire:click="sortBy('address')"
+                                class="px-4 py-3 text-left text-xs font-bold cursor-pointer">
+                                Alamat {!! $sortField === 'address' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                             </th>
 
                             {{-- ACTIONS HEADER --}}
@@ -159,7 +169,15 @@
                                 </td>
 
                                 <td class="px-4 py-2 text-sm">
-                                    {{ $item['symbols'] }}
+                                    {{ $item['code'] }}
+                                </td>
+
+                                <td class="px-4 py-2 text-sm">
+                                    {{ $item['no_telp'] }}
+                                </td>
+
+                                <td class="px-4 py-2 text-sm">
+                                    {{ $item['address'] }}
                                 </td>
 
                                 {{-- ROW ACTIONS --}}
@@ -221,7 +239,7 @@
                     <span class="text-xl leading-none">✕</span>
                 </x-ui.sccr-button>
 
-                @livewire('holdings.resto.master.satuan.satuan-create')
+                @livewire('holdings.resto.master.vendor.vendor-create')
             </div>
         </div>
     @endif

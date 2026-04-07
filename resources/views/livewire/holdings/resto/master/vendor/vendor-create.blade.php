@@ -1,9 +1,9 @@
 <div class="p-6">
-    <h2 class="text-xl font-bold mb-4">Tambah Kategori</h2>
+    <h2 class="text-xl font-bold mb-4">Tambah Vendor</h2>
 
     <form wire:submit.prevent="store" class="space-y-4">
         <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Nama Kategori</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Nama Vendor</label>
             <input type="text" wire:model.defer="name"
                 class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 placeholder="Contoh: Kilogram">
@@ -13,24 +13,35 @@
         </div>
 
         <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Slug</label>
-            <input type="text" wire:model.defer="slug"
+            <label class="block text-sm font-medium text-gray-700 mb-1">Kode</label>
+            <input type="text" wire:model.defer="symbols"
                 class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                placeholder="Contoh: kg">
-            @error('slug')
+                placeholder="Contoh: VND001">
+            @error('symbols')
                 <span class="text-red-600 text-sm">{{ $message }}</span>
             @enderror
         </div>
 
-         <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
-            <textarea wire:model.defer="description"
+                <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Telepon</label>
+            <input type="text" wire:model.defer="no_telp"
                 class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                placeholder="Contoh: kg" rows="3"></textarea>
-            @error('description')
+                placeholder="Contoh: 081987626182">
+            @error('no_telp')
                 <span class="text-red-600 text-sm">{{ $message }}</span>
             @enderror
         </div>
+
+                <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Alamat</label>
+            <textarea wire:model.defer="address"
+                class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                placeholder="Contoh: VND001"></textarea>
+            @error('address')
+                <span class="text-red-600 text-sm">{{ $message }}</span>
+            @enderror
+        </div>
+
 
         <div class="flex items-center gap-2">
             <input type="checkbox" wire:model.defer="is_active" id="is_active"

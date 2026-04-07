@@ -1,15 +1,17 @@
 <?php
 
-namespace App\Livewire\Holdings\Resto\Master\Satuan;
+namespace App\Livewire\Holdings\Resto\Master\Kategori;
 
-use App\Models\Holdings\Resto\Master\Rst_MasterSatuan;
+use App\Models\Holdings\Resto\Master\Rst_MasterKategori;
 use Livewire\Component;
 
-class SatuanCreate extends Component
+class KategoriCreate extends Component
 {
     public string $name = '';
 
-    public string $symbols = '';
+    public string $slug = '';
+    
+    public string $description = '';
 
     public bool $is_active = true;
 
@@ -19,21 +21,24 @@ class SatuanCreate extends Component
     {
         $this->validate([
             'name' => ['required', 'string', 'max:255'],
-            'symbols' => ['required', 'string', 'max:50'],
+            'slug' => ['required', 'string', 'max:50'],
+            'description' => ['nullable', 'string', 'max:50'],
         ]);
 
-        Rst_MasterSatuan::create([
+        Rst_MasterKategori::create([
             'name' => $this->name,
-            'symbols' => $this->symbols,
+            'slug' => $this->slug,
+            'description' => $this->description,
             'is_active' => $this->is_active,
         ]);
 
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Satuan berhasil ditambahkan'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Kategori berhasil ditambahkan'];
 
-        $this->dispatch('satuan-created');
-        $this->dispatch('satuan-overlay-close');
+        $this->dispatch('kategori-created');
+        $this->dispatch('kategori-overlay-close');
 
-        $this->reset(['name', 'symbols']);
+        $this->reset(['name', 'slug', 'description']);
+
         $this->is_active = true;
     }
 
@@ -44,6 +49,6 @@ class SatuanCreate extends Component
 
     public function render()
     {
-        return view('livewire.holdings.resto.master.satuan.satuan-create');
+        return view('livewire.holdings.resto.master.kategori.kategori-create');
     }
 }

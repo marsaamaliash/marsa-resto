@@ -1,12 +1,12 @@
-<x-ui.sccr-card transparent wire:key="satyuan" class="h-full min-h-0 flex flex-col">
+<x-ui.sccr-card transparent wire:key="kategori" class="h-full min-h-0 flex flex-col">
 
     {{-- ================= HEADER ================= --}}
     <div class="relative px-8 py-6 bg-blue-600/80 rounded-b-3xl shadow-lg overflow-hidden">
         <div class="flex justify-between items-start">
             <div>
-                <h1 class="text-3xl font-bold text-white">Satuan</h1>
+                <h1 class="text-3xl font-bold text-white">Kategori</h1>
                 <p class="text-blue-100 text-sm">
-                    Satuan Bahan
+                    Kategori Bahan
                 </p>
             </div>
         </div>
@@ -28,7 +28,7 @@
                 {{-- SEARCH INPUT --}}
                 <div class="relative top-1">
                     <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">
-                        Nama Satuan
+                        Nama Kategori
                     </span>
                     <x-ui.sccr-input name="search" wire:model="search" placeholder="Ketik lalu enter..."
                         class="w-64" />
@@ -118,9 +118,9 @@
                                 Name {!! $sortField === 'name' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                             </th>
 
-                            <th wire:click="sortBy('symbols')"
+                            <th wire:click="sortBy('slug')"
                                 class="px-4 py-3 text-left text-xs font-bold cursor-pointer">
-                                symbols {!! $sortField === 'symbols' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                                slug {!! $sortField === 'slug' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                             </th>
 
                             {{-- ACTIONS HEADER --}}
@@ -159,7 +159,7 @@
                                 </td>
 
                                 <td class="px-4 py-2 text-sm">
-                                    {{ $item['symbols'] }}
+                                    {{ $item['slug'] }}
                                 </td>
 
                                 {{-- ROW ACTIONS --}}
@@ -221,7 +221,7 @@
                     <span class="text-xl leading-none">✕</span>
                 </x-ui.sccr-button>
 
-                @livewire('holdings.resto.master.satuan.satuan-create')
+                @livewire('holdings.resto.master.kategori.kategori-create')
             </div>
         </div>
     @endif

@@ -29,7 +29,7 @@
                 </span>
             </a>
 
-            <a href="{{ route('dashboard.resto.master') }}"
+            <a href="{{ route('dashboard.resto.kategori') }}"
                 class="flex items-center justify-center rounded-2xl shadow-lg h-40 bg-green-500 hover:bg-green-600 transform hover:scale-105 transition duration-300">
 
                 <span class="text-white text-lg font-semibold">
@@ -44,7 +44,7 @@
                 </span>
             </a>
 
-            <a href="{{ route('dashboard.resto.master') }}"
+            <a href="{{ route('dashboard.resto.vendor') }}"
                 class="flex items-center justify-center rounded-2xl shadow-lg h-40 bg-green-500 hover:bg-green-600 transform hover:scale-105 transition duration-300">
 
                 <span class="text-white text-lg font-semibold">
