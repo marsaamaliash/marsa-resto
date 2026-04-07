@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::connection('sccr_resto')->create('items', function (Blueprint $table) {
-$table->id();
+            $table->id();
             $table->string('name');
             $table->string('sku')->unique()->comment('Stock Keeping Unit / Barcode');
             $table->text('description')->nullable();
@@ -24,11 +24,11 @@ $table->id();
             // Requirement: Stok Kritis (Tugas tgl 12-13 Apr)
             // Menggunakan decimal agar bisa mendukung satuan Kg (misal: 0.5 Kg)
             $table->decimal('min_stock', 15, 2)->default(0);
-            
+
             // Pengaturan Item
             $table->boolean('is_active')->default(true);
             $table->boolean('is_stockable')->default(true)->comment('Apakah barang ini dihitung stoknya?');
-            
+
             // Flag untuk Batch & Expiry (Persiapan tugas tgl 23 Apr)
             $table->boolean('has_batch')->default(false);
             $table->boolean('has_expiry')->default(false);
