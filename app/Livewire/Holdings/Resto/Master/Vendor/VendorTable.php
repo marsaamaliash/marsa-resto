@@ -3,11 +3,11 @@
 namespace App\Livewire\Holdings\Resto\Master\Vendor;
 
 use App\Models\Holdings\Resto\Master\Rst_MasterVendor;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Livewire\Attributes\On;
-use Illuminate\Support\Collection;
-use Illuminate\Pagination\LengthAwarePaginator;
 
 class VendorTable extends Component
 {
@@ -17,22 +17,30 @@ class VendorTable extends Component
        | UI GLOBAL STATE
        ===================================================== */
     public array $breadcrumbs = [];
+
     public array $toast = ['show' => false, 'type' => 'success', 'message' => ''];
 
     public bool $canWrite = false;
+
     public bool $canCreate = false;
+
     public bool $canUpdate = false;
+
     public bool $canDelete = false;
 
     /* =====================================================
        | FILTER & SORT
        ===================================================== */
     public string $search = '';
+
     public string $filter1 = '';
+
     public string $filter2 = '';
 
     public int $perPage = 10;
+
     public string $sortField = 'id';
+
     public string $sortDirection = 'desc';
 
     protected array $allowedSortFields = [
@@ -41,6 +49,7 @@ class VendorTable extends Component
         'code',
         'no_telp',
         'address',
+        'is_active',
         'created_at',
     ];
 
@@ -48,12 +57,14 @@ class VendorTable extends Component
        | SELECTION
        ===================================================== */
     public array $selectedItems = [];
+
     public bool $selectAll = false;
 
     /* =====================================================
        | OVERLAY
        ===================================================== */
     public ?string $overlayMode = null;
+
     public ?string $overlayId = null;
 
     /* =====================================================
@@ -86,10 +97,10 @@ class VendorTable extends Component
     {
         $this->breadcrumbs = [
             ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
-              ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
+            ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
             ['label' => 'Resto', 'route' => 'dashboard.resto', 'color' => 'text-gray-800'],
-            ['label' => 'Master Data', 'route' => 'dashboard.resto.master','color' => 'text-gray-900 font-semibold'],
-            ['label' => 'Vendor','color' => 'text-gray-900 font-semibold'],
+            ['label' => 'Master Data', 'route' => 'dashboard.resto.master', 'color' => 'text-gray-900 font-semibold'],
+            ['label' => 'Vendor', 'color' => 'text-gray-900 font-semibold'],
         ];
 
         $this->syncCaps();
@@ -104,9 +115,28 @@ class VendorTable extends Component
        | DATA SOURCE (replace with real query or dummy)
        ===================================================== */
     protected function dataQuery(): Collection
-{
-    return Rst_MasterVendor::all();
-}
+    {
+        $query = Rst_MasterVendor::query();
+
+        if ($this->search !== '') {
+            $search = $this->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('code', 'like', "%{$search}%")
+                    ->orWhere('no_telp', 'like', "%{$search}%");
+            });
+        }
+
+        if ($this->filter1 !== '') {
+            $query->where('is_active', $this->filter1);
+        }
+
+        if (in_array($this->sortField, $this->allowedSortFields, true)) {
+            $query->orderBy($this->sortField, $this->sortDirection);
+        }
+
+        return $query->get();
+    }
 
     /* =====================================================
        | PAGINATION HELPER (for Collection)
@@ -128,6 +158,7 @@ class VendorTable extends Component
     protected function visibleIds(): array
     {
         $p = $this->paginateCollection($this->dataQuery(), $this->perPage);
+
         return $p->getCollection()
             ->pluck('id')
             ->map(fn ($v) => (string) $v)
@@ -139,10 +170,13 @@ class VendorTable extends Component
        ===================================================== */
     public function sortBy(string $field): void
     {
-        if (!in_array($field, $this->allowedSortFields, true)) return;
+        if (! in_array($field, $this->allowedSortFields, true)) {
+            return;
+        }
 
         if ($this->sortField === $field) {
             $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+
             return;
         }
 
@@ -182,6 +216,7 @@ class VendorTable extends Component
 
         if ($value) {
             $this->selectedItems = array_values(array_unique(array_merge($this->selectedItems, $visible)));
+
             return;
         }
 
@@ -200,6 +235,7 @@ class VendorTable extends Component
     public function exportFiltered()
     {
         $data = $this->dataQuery();
+
         return $this->generateExcel($data, 'Filtered');
     }
 
@@ -207,6 +243,7 @@ class VendorTable extends Component
     {
         if (empty($this->selectedItems)) {
             $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Pilih data terlebih dahulu'];
+
             return null;
         }
 
@@ -218,26 +255,29 @@ class VendorTable extends Component
 
     private function generateExcel($data, string $type)
     {
-        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet;
         $ws = $spreadsheet->getActiveSheet();
 
         // TODO: Adjust headers
-        $ws->fromArray([['ID', 'Name', 'Status', 'Created At']], null, 'A1');
+        $ws->fromArray([['ID', 'Nama', 'Kode', 'Telepon', 'Alamat', 'Aktif', 'Dibuat']], null, 'A1');
 
         $row = 2;
         foreach ($data as $item) {
             $ws->fromArray([
                 $item['id'] ?? '',
                 $item['name'] ?? '',
-                $item['status'] ?? '',
+                $item['code'] ?? '',
+                $item['no_telp'] ?? '',
+                $item['address'] ?? '',
+                $item['is_active'] ? 'Ya' : 'Tidak',
                 $item['created_at'] ?? '',
-            ], null, 'A' . $row++);
+            ], null, 'A'.$row++);
         }
 
-        $filename = "{{MODULE_LABEL}}_{$type}_" . now()->format('Ymd_His') . ".xlsx";
+        $filename = "Vendor_{$type}_".now()->format('Ymd_His').'.xlsx';
 
         $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
-        $tmp = tempnam(sys_get_temp_dir(), '{{PREFIX}}_');
+        $tmp = tempnam(sys_get_temp_dir(), 'vendor_');
         $writer->save($tmp);
 
         return response()->download($tmp, $filename)->deleteFileAfterSend(true);
@@ -248,8 +288,9 @@ class VendorTable extends Component
        ===================================================== */
     public function openCreate(): void
     {
-        if (!$this->canCreate) {
+        if (! $this->canCreate) {
             $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin create.'];
+
             return;
         }
 
@@ -268,8 +309,9 @@ class VendorTable extends Component
 
     public function openEdit(string $id): void
     {
-        if (!$this->canUpdate) {
+        if (! $this->canUpdate) {
             $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin update.'];
+
             return;
         }
 
@@ -313,7 +355,11 @@ class VendorTable extends Component
        ===================================================== */
     protected function filter1Options(): array
     {
-        return [];
+        return [
+            '' => '-- Semua Status --',
+            '1' => 'Aktif',
+            '0' => 'Nonaktif',
+        ];
     }
 
     protected function filter2Options(): array
@@ -336,7 +382,7 @@ class VendorTable extends Component
         $this->selectAll = count($visible) > 0 && empty(array_diff($visible, $this->selectedItems));
 
         return view('livewire.holdings.resto.master.vendor.vendor-table', [
-            'data'        => $data,
+            'data' => $data,
             'breadcrumbs' => $this->breadcrumbs,
             'filter1Options' => $this->filter1Options(),
             'filter2Options' => $this->filter2Options(),

@@ -10,7 +10,7 @@ class KategoriCreate extends Component
     public string $name = '';
 
     public string $slug = '';
-    
+
     public string $description = '';
 
     public bool $is_active = true;

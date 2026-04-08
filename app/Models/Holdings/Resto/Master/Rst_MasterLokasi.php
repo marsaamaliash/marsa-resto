@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Rst_MasterLokasi extends Model
 {
+    protected $connection = 'sccr_resto';
+
     protected $table = 'locations';
 
     protected $primaryKey = 'id';

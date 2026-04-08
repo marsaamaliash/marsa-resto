@@ -3,60 +3,56 @@
 namespace App\Livewire\Holdings\Resto\Master\Satuan;
 
 use App\Models\Holdings\Resto\Master\Rst_MasterSatuan;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Livewire\Attributes\On;
-use Illuminate\Support\Collection;
-use Illuminate\Pagination\LengthAwarePaginator;
 
 class SatuanTable extends Component
 {
     use WithPagination;
 
-    /* =====================================================
-       | UI GLOBAL STATE
-       ===================================================== */
     public array $breadcrumbs = [];
+
     public array $toast = ['show' => false, 'type' => 'success', 'message' => ''];
 
     public bool $canWrite = false;
+
     public bool $canCreate = false;
+
     public bool $canUpdate = false;
+
     public bool $canDelete = false;
 
-    /* =====================================================
-       | FILTER & SORT
-       ===================================================== */
     public string $search = '';
+
     public string $filter1 = '';
+
     public string $filter2 = '';
 
     public int $perPage = 10;
+
     public string $sortField = 'id';
+
     public string $sortDirection = 'desc';
 
     protected array $allowedSortFields = [
         'id',
         'name',
         'symbols',
+        'is_active',
         'created_at',
     ];
 
-    /* =====================================================
-       | SELECTION
-       ===================================================== */
     public array $selectedItems = [];
+
     public bool $selectAll = false;
 
-    /* =====================================================
-       | OVERLAY
-       ===================================================== */
     public ?string $overlayMode = null;
+
     public ?string $overlayId = null;
 
-    /* =====================================================
-       | QUERY STRING
-       ===================================================== */
     protected $queryString = [
         'search' => ['except' => ''],
         'filter1' => ['except' => ''],
@@ -66,9 +62,6 @@ class SatuanTable extends Component
         'sortDirection' => ['except' => 'desc'],
     ];
 
-    /* =====================================================
-       | CAPABILITIES
-       ===================================================== */
     private function syncCaps(): void
     {
         $u = auth()->user();
@@ -84,10 +77,10 @@ class SatuanTable extends Component
     {
         $this->breadcrumbs = [
             ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
-              ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
+            ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
             ['label' => 'Resto', 'route' => 'dashboard.resto', 'color' => 'text-gray-800'],
-            ['label' => 'Master Data', 'route' => 'dashboard.resto.master','color' => 'text-gray-900 font-semibold'],
-            ['label' => 'Satuan','color' => 'text-gray-900 font-semibold'],
+            ['label' => 'Master Data', 'route' => 'dashboard.resto.master', 'color' => 'text-gray-900 font-semibold'],
+            ['label' => 'Satuan', 'color' => 'text-gray-900 font-semibold'],
         ];
 
         $this->syncCaps();
@@ -98,17 +91,29 @@ class SatuanTable extends Component
         $this->syncCaps();
     }
 
-    /* =====================================================
-       | DATA SOURCE (replace with real query or dummy)
-       ===================================================== */
     protected function dataQuery(): Collection
-{
-    return Rst_MasterSatuan::all();
-}
+    {
+        $query = Rst_MasterSatuan::query();
 
-    /* =====================================================
-       | PAGINATION HELPER (for Collection)
-       ===================================================== */
+        if ($this->search !== '') {
+            $search = $this->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('symbols', 'like', "%{$search}%");
+            });
+        }
+
+        if ($this->filter1 !== '') {
+            $query->where('is_active', $this->filter1);
+        }
+
+        if (in_array($this->sortField, $this->allowedSortFields, true)) {
+            $query->orderBy($this->sortField, $this->sortDirection);
+        }
+
+        return $query->get();
+    }
+
     protected function paginateCollection(Collection $collection, int $perPage): LengthAwarePaginator
     {
         $currentPage = LengthAwarePaginator::resolveCurrentPage();
@@ -126,21 +131,22 @@ class SatuanTable extends Component
     protected function visibleIds(): array
     {
         $p = $this->paginateCollection($this->dataQuery(), $this->perPage);
+
         return $p->getCollection()
             ->pluck('id')
             ->map(fn ($v) => (string) $v)
             ->toArray();
     }
 
-    /* =====================================================
-       | SORT
-       ===================================================== */
     public function sortBy(string $field): void
     {
-        if (!in_array($field, $this->allowedSortFields, true)) return;
+        if (! in_array($field, $this->allowedSortFields, true)) {
+            return;
+        }
 
         if ($this->sortField === $field) {
             $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+
             return;
         }
 
@@ -148,9 +154,6 @@ class SatuanTable extends Component
         $this->sortDirection = 'asc';
     }
 
-    /* =====================================================
-       | FILTER
-       ===================================================== */
     public function applyFilter(): void
     {
         $this->resetPage();
@@ -171,15 +174,13 @@ class SatuanTable extends Component
         }
     }
 
-    /* =====================================================
-       | SELECTION
-       ===================================================== */
     public function updatedSelectAll(bool $value): void
     {
         $visible = $this->visibleIds();
 
         if ($value) {
             $this->selectedItems = array_values(array_unique(array_merge($this->selectedItems, $visible)));
+
             return;
         }
 
@@ -192,12 +193,10 @@ class SatuanTable extends Component
         $this->selectAll = count($visible) > 0 && empty(array_diff($visible, $this->selectedItems));
     }
 
-    /* =====================================================
-       | EXPORT
-       ===================================================== */
     public function exportFiltered()
     {
         $data = $this->dataQuery();
+
         return $this->generateExcel($data, 'Filtered');
     }
 
@@ -205,6 +204,7 @@ class SatuanTable extends Component
     {
         if (empty($this->selectedItems)) {
             $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Pilih data terlebih dahulu'];
+
             return null;
         }
 
@@ -216,38 +216,36 @@ class SatuanTable extends Component
 
     private function generateExcel($data, string $type)
     {
-        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet;
         $ws = $spreadsheet->getActiveSheet();
 
-        // TODO: Adjust headers
-        $ws->fromArray([['ID', 'Name', 'Status', 'Created At']], null, 'A1');
+        $ws->fromArray([['ID', 'Nama', 'Simbol', 'Aktif', 'Dibuat']], null, 'A1');
 
         $row = 2;
         foreach ($data as $item) {
             $ws->fromArray([
                 $item['id'] ?? '',
                 $item['name'] ?? '',
-                $item['status'] ?? '',
+                $item['symbols'] ?? '',
+                $item['is_active'] ? 'Ya' : 'Tidak',
                 $item['created_at'] ?? '',
-            ], null, 'A' . $row++);
+            ], null, 'A'.$row++);
         }
 
-        $filename = "{{MODULE_LABEL}}_{$type}_" . now()->format('Ymd_His') . ".xlsx";
+        $filename = "Satuan_{$type}_".now()->format('Ymd_His').'.xlsx';
 
         $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
-        $tmp = tempnam(sys_get_temp_dir(), '{{PREFIX}}_');
+        $tmp = tempnam(sys_get_temp_dir(), 'satuan_');
         $writer->save($tmp);
 
         return response()->download($tmp, $filename)->deleteFileAfterSend(true);
     }
 
-    /* =====================================================
-       | OVERLAY CONTROL
-       ===================================================== */
     public function openCreate(): void
     {
-        if (!$this->canCreate) {
+        if (! $this->canCreate) {
             $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin create.'];
+
             return;
         }
 
@@ -266,8 +264,9 @@ class SatuanTable extends Component
 
     public function openEdit(string $id): void
     {
-        if (!$this->canUpdate) {
+        if (! $this->canUpdate) {
             $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin update.'];
+
             return;
         }
 
@@ -306,12 +305,13 @@ class SatuanTable extends Component
         $this->openEdit($id);
     }
 
-    /* =====================================================
-       | FILTER OPTIONS
-       ===================================================== */
     protected function filter1Options(): array
     {
-        return [];
+        return [
+            '' => '-- Semua Status --',
+            '1' => 'Aktif',
+            '0' => 'Nonaktif',
+        ];
     }
 
     protected function filter2Options(): array
@@ -319,9 +319,6 @@ class SatuanTable extends Component
         return [];
     }
 
-    /* =====================================================
-       | RENDER
-       ===================================================== */
     public function render()
     {
         $data = $this->paginateCollection($this->dataQuery(), $this->perPage);
@@ -334,7 +331,7 @@ class SatuanTable extends Component
         $this->selectAll = count($visible) > 0 && empty(array_diff($visible, $this->selectedItems));
 
         return view('livewire.holdings.resto.master.satuan.satuan-table', [
-            'data'        => $data,
+            'data' => $data,
             'breadcrumbs' => $this->breadcrumbs,
             'filter1Options' => $this->filter1Options(),
             'filter2Options' => $this->filter2Options(),

@@ -1,15 +1,15 @@
 <?php
 
-namespace App\Livewire\Holdings\Resto\Master\Kategori;
+namespace App\Livewire\Holdings\Resto\Master\Lokasi;
 
-use App\Models\Holdings\Resto\Master\Rst_MasterKategori;
+use App\Models\Holdings\Resto\Master\Rst_MasterLokasi;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-class KategoriTable extends Component
+class LokasiTable extends Component
 {
     use WithPagination;
 
@@ -40,7 +40,9 @@ class KategoriTable extends Component
     protected array $allowedSortFields = [
         'id',
         'name',
-        'slug',
+        'code',
+        'type',
+        'pic_name',
         'is_active',
         'created_at',
     ];
@@ -66,9 +68,9 @@ class KategoriTable extends Component
     {
         $u = auth()->user();
 
-        $this->canCreate = (bool) ($u?->hasPermission('MASTER_KATEGORI_CREATE') ?? false);
-        $this->canUpdate = (bool) ($u?->hasPermission('MASTER_KATEGORI_UPDATE') ?? false);
-        $this->canDelete = (bool) ($u?->hasPermission('MASTER_KATEGORI_DELETE') ?? false);
+        $this->canCreate = (bool) ($u?->hasPermission('MASTER_LOKASI_CREATE') ?? false);
+        $this->canUpdate = (bool) ($u?->hasPermission('MASTER_LOKASI_UPDATE') ?? false);
+        $this->canDelete = (bool) ($u?->hasPermission('MASTER_LOKASI_DELETE') ?? false);
 
         $this->canWrite = $this->canCreate || $this->canUpdate;
     }
@@ -80,7 +82,7 @@ class KategoriTable extends Component
             ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
             ['label' => 'Resto', 'route' => 'dashboard.resto', 'color' => 'text-gray-800'],
             ['label' => 'Master Data', 'route' => 'dashboard.resto.master', 'color' => 'text-gray-900 font-semibold'],
-            ['label' => 'Kategori', 'color' => 'text-gray-900 font-semibold'],
+            ['label' => 'Lokasi', 'color' => 'text-gray-900 font-semibold'],
         ];
 
         $this->syncCaps();
@@ -93,18 +95,23 @@ class KategoriTable extends Component
 
     protected function dataQuery(): Collection
     {
-        $query = Rst_MasterKategori::query();
+        $query = Rst_MasterLokasi::query();
 
         if ($this->search !== '') {
             $search = $this->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('slug', 'like', "%{$search}%");
+                    ->orWhere('code', 'like', "%{$search}%")
+                    ->orWhere('pic_name', 'like', "%{$search}%");
             });
         }
 
         if ($this->filter1 !== '') {
-            $query->where('is_active', $this->filter1);
+            $query->where('type', $this->filter1);
+        }
+
+        if ($this->filter2 !== '') {
+            $query->where('is_active', $this->filter2);
         }
 
         if (in_array($this->sortField, $this->allowedSortFields, true)) {
@@ -219,24 +226,26 @@ class KategoriTable extends Component
         $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet;
         $ws = $spreadsheet->getActiveSheet();
 
-        $ws->fromArray([['ID', 'Nama', 'Slug', 'Deskripsi', 'Aktif', 'Dibuat']], null, 'A1');
+        $ws->fromArray([['ID', 'Nama', 'Kode', 'Tipe', 'PIC', 'Alamat', 'Aktif', 'Dibuat']], null, 'A1');
 
         $row = 2;
         foreach ($data as $item) {
             $ws->fromArray([
                 $item['id'] ?? '',
                 $item['name'] ?? '',
-                $item['slug'] ?? '',
-                $item['description'] ?? '',
+                $item['code'] ?? '',
+                $item['type'] ?? '',
+                $item['pic_name'] ?? '',
+                $item['address'] ?? '',
                 $item['is_active'] ? 'Ya' : 'Tidak',
                 $item['created_at'] ?? '',
             ], null, 'A'.$row++);
         }
 
-        $filename = "Kategori_{$type}_".now()->format('Ymd_His').'.xlsx';
+        $filename = "Lokasi_{$type}_".now()->format('Ymd_His').'.xlsx';
 
         $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
-        $tmp = tempnam(sys_get_temp_dir(), 'kategori_');
+        $tmp = tempnam(sys_get_temp_dir(), 'lokasi_');
         $writer->save($tmp);
 
         return response()->download($tmp, $filename)->deleteFileAfterSend(true);
@@ -280,27 +289,27 @@ class KategoriTable extends Component
         $this->reset(['overlayMode', 'overlayId']);
     }
 
-    #[On('kategori-overlay-close')]
+    #[On('lokasi-overlay-close')]
     public function handleOverlayClose(): void
     {
         $this->closeOverlay();
     }
 
-    #[On('kategori-created')]
+    #[On('lokasi-created')]
     public function handleCreated(?string $id = null): void
     {
         $this->closeOverlay();
         $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data berhasil ditambahkan.'];
     }
 
-    #[On('kategori-updated')]
+    #[On('lokasi-updated')]
     public function handleUpdated(?string $id = null): void
     {
         $this->closeOverlay();
         $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data berhasil diperbarui.'];
     }
 
-    #[On('kategori-open-edit')]
+    #[On('lokasi-open-edit')]
     public function handleOpenEditFromShow(string $id): void
     {
         $this->openEdit($id);
@@ -309,15 +318,21 @@ class KategoriTable extends Component
     protected function filter1Options(): array
     {
         return [
-            '' => '-- Semua Status --',
-            '1' => 'Aktif',
-            '0' => 'Nonaktif',
+            '' => '-- Semua Tipe --',
+            'warehouse' => 'Warehouse',
+            'kitchen' => 'Kitchen',
+            'outlet' => 'Outlet',
+            'transit' => 'Transit',
         ];
     }
 
     protected function filter2Options(): array
     {
-        return [];
+        return [
+            '' => '-- Semua Status --',
+            '1' => 'Aktif',
+            '0' => 'Nonaktif',
+        ];
     }
 
     public function render()
@@ -331,7 +346,7 @@ class KategoriTable extends Component
 
         $this->selectAll = count($visible) > 0 && empty(array_diff($visible, $this->selectedItems));
 
-        return view('livewire.holdings.resto.master.kategori.kategori-table', [
+        return view('livewire.holdings.resto.master.lokasi.lokasi-table', [
             'data' => $data,
             'breadcrumbs' => $this->breadcrumbs,
             'filter1Options' => $this->filter1Options(),

@@ -2,7 +2,7 @@
     <div class="relative px-8 py-6 bg-yellow-500/60 rounded-b-3xl shadow-lg overflow-hidden">
         <div class="flex justify-between items-start">
             <div>
-                <h1 class="text-3xl md:text-4xl font-bold mb-2">Resto</h1>
+                <h1 class="text-3xl md:text-4xl font-bold mb-2">Master Resto</h1>
                 <p class="text-lg text-gray-800">Silakan pilih modul Resto yang ingin diakses</p>
             </div>
         </div>
@@ -21,53 +21,46 @@
 
             <!-- Card Master -->
             {{-- <a href="{{ route('dashboard.clinic') }}" --}}
-            <a href="{{ route('dashboard.resto.master') }}"
+            <a href="{{ route('dashboard.resto.item') }}"
                 class="flex items-center justify-center rounded-2xl shadow-lg h-40 bg-green-500 hover:bg-green-600 transform hover:scale-105 transition duration-300">
 
                 <span class="text-white text-lg font-semibold">
-                    Data Master
+                    Bahan Baku
                 </span>
             </a>
 
-               <!-- Card Master -->
-            {{-- <a href="{{ route('dashboard.clinic') }}" --}}
-            <a href="{{ route('dashboard.resto.procurement') }}"
+            <a href="{{ route('dashboard.resto.kategori') }}"
                 class="flex items-center justify-center rounded-2xl shadow-lg h-40 bg-green-500 hover:bg-green-600 transform hover:scale-105 transition duration-300">
 
                 <span class="text-white text-lg font-semibold">
-                    Procurement
+                    Kategori
                 </span>
             </a>
 
-               <!-- Card Master -->
-            {{-- <a href="{{ route('dashboard.clinic') }}" --}}
-            <a href="{{ route('dashboard.resto.master') }}"
+            <a href="{{ route('dashboard.resto.satuan') }}"
+                class="flex items-center justify-center rounded-2xl shadow-lg h-40 bg-green-500 hover:bg-green-600 transform hover:scale-105 transition duration-300">
+                <span class="text-white text-lg font-semibold">
+                    Satuan
+                </span>
+            </a>
+
+            <a href="{{ route('dashboard.resto.vendor') }}"
                 class="flex items-center justify-center rounded-2xl shadow-lg h-40 bg-green-500 hover:bg-green-600 transform hover:scale-105 transition duration-300">
 
                 <span class="text-white text-lg font-semibold">
-                    Movement
+                    Vendor
                 </span>
             </a>
 
-               <!-- Card Master -->
-            {{-- <a href="{{ route('dashboard.clinic') }}" --}}
-            <a href="{{ route('dashboard.resto.master') }}"
+            <a href="{{ route('dashboard.resto.lokasi') }}"
                 class="flex items-center justify-center rounded-2xl shadow-lg h-40 bg-green-500 hover:bg-green-600 transform hover:scale-105 transition duration-300">
 
                 <span class="text-white text-lg font-semibold">
-                    Recipe & Production
+                    Lokasi 
                 </span>
             </a>
 
-               <!-- Card Master -->
-            {{-- <a href="{{ route('dashboard.clinic') }}" --}}
-            <a href="{{ route('dashboard.resto.master') }}"
-                class="flex items-center justify-center rounded-2xl shadow-lg h-40 bg-green-500 hover:bg-green-600 transform hover:scale-105 transition duration-300">
 
-                <span class="text-white text-lg font-semibold">
-                Costing & Finance Hooks
-                </span>
-            </a>
         </div>
     </div>
 </div>
