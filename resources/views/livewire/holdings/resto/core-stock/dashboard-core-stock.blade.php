@@ -2,7 +2,7 @@
     <div class="relative px-8 py-6 bg-yellow-500/60 rounded-b-3xl shadow-lg overflow-hidden">
         <div class="flex justify-between items-start">
             <div>
-                <h1 class="text-3xl md:text-4xl font-bold mb-2">Procurement</h1>
+                <h1 class="text-3xl md:text-4xl font-bold mb-2">Master Resto</h1>
                 <p class="text-lg text-gray-800">Silakan pilih modul Resto yang ingin diakses</p>
             </div>
         </div>
@@ -20,26 +20,35 @@
         <div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-6">
 
             <!-- Card Master -->
-            <a href="{{ route('dashboard.resto.item') }}"
+            {{-- <a href="{{ route('dashboard.clinic') }}" --}}
+            <a href="{{ route('dashboard.resto.stock-location') }}"
                 class="flex items-center justify-center rounded-2xl shadow-lg h-40 bg-green-500 hover:bg-green-600 transform hover:scale-105 transition duration-300">
 
                 <span class="text-white text-lg font-semibold">
-                    Purchase Order (PO)
+                    Stok Lokasi
                 </span>
             </a>
 
-            <a href="{{ route('dashboard.resto.kategori') }}"
+            <a href="{{ route('dashboard.resto.stock-item') }}"
                 class="flex items-center justify-center rounded-2xl shadow-lg h-40 bg-green-500 hover:bg-green-600 transform hover:scale-105 transition duration-300">
 
                 <span class="text-white text-lg font-semibold">
-                    Goods Receipt
+                    Stok Barang
                 </span>
             </a>
 
-            <a href="{{ route('dashboard.resto.satuan') }}"
+            <a href="{{ route('dashboard.resto.stock-minimal') }}"
                 class="flex items-center justify-center rounded-2xl shadow-lg h-40 bg-green-500 hover:bg-green-600 transform hover:scale-105 transition duration-300">
                 <span class="text-white text-lg font-semibold">
-                    Retur Vendor
+                    Stok Kritis
+                </span>
+            </a>
+
+            <a href="{{ route('dashboard.resto.stock-mutation') }}"
+                class="flex items-center justify-center rounded-2xl shadow-lg h-40 bg-green-500 hover:bg-green-600 transform hover:scale-105 transition duration-300">
+
+                <span class="text-white text-lg font-semibold">
+                    Mutasi Stok
                 </span>
             </a>
         </div>

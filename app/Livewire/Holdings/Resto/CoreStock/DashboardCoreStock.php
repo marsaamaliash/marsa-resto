@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Livewire\Holdings\Resto\Procurement;
+namespace App\Livewire\Holdings\Resto\CoreStock;
 
 use Livewire\Component;
 
-class DashboardProcurement extends Component
+class DashboardCoreStock extends Component
 {
        public array $breadcrumbs = [];
 
@@ -13,13 +13,13 @@ class DashboardProcurement extends Component
         $this->breadcrumbs = [
             ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
             ['label' => 'Resto', 'route' => 'dashboard.resto', 'color' => 'text-gray-800'],
-            ['label' => 'Procurement', 'color' => 'text-gray-900 font-semibold'],
+            ['label' => 'Stock', 'color' => 'text-gray-900 font-semibold'],
         ];
     }
        
     public function render()
     {
-        return view('livewire.holdings.resto.procurement.dashboard-procurement')
+        return view('livewire.holdings.resto.core-stock.dashboard-core-stock')
             ->layout('components.sccr-layout');
     }
 }
