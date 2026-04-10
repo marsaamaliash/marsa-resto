@@ -125,10 +125,10 @@
                                 Item {!! $sortField === 'item_name' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                             </th>
 
-                            <th wire:click="sortBy('location_name')"
+                            {{-- <th wire:click="sortBy('location_name')"
                                 class="px-3 py-3 text-left text-xs font-bold cursor-pointer">
                                 Lokasi {!! $sortField === 'location_name' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
-                            </th>
+                            </th> --}}
 
                             <th wire:click="sortBy('type')"
                                 class="px-3 py-3 text-center text-xs font-bold cursor-pointer">
@@ -216,9 +216,9 @@
                                     <div class="text-xs text-gray-500">{{ $item->item?->sku ?? '-' }}</div>
                                 </td>
 
-                                <td class="px-3 py-2 text-sm">
+                                {{-- <td class="px-3 py-2 text-sm">
                                     {{ $item->location?->name ?? '-' }}
-                                </td>
+                                </td> --}}
 
                                 <td class="px-3 py-2 text-center">
                                     <span

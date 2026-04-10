@@ -37,8 +37,7 @@
                 {{-- FILTER 1: Kategori --}}
                 <div class="relative top-1">
                     <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">Kategori</span>
-                    <x-ui.sccr-select name="filter1" wire:model.live="filter1" :options="$filter1Options"
-                        class="w-40" />
+                    <x-ui.sccr-select name="filter1" wire:model.live="filter1" :options="$filter1Options" class="w-40" />
                 </div>
 
                 {{-- ACTION BUTTONS --}}
@@ -128,10 +127,16 @@
                                 Qty Reserved {!! $sortField === 'total_reserved' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                             </th>
 
+                            <th wire:click="sortBy('total_in_transit')"
+                                class="px-4 py-3 text-right text-xs font-bold cursor-pointer">
+                                Qty In Transit {!! $sortField === 'total_in_transit' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                            </th>
+
                             <th wire:click="sortBy('total_waste')"
                                 class="px-4 py-3 text-right text-xs font-bold cursor-pointer">
                                 Qty Waste {!! $sortField === 'total_waste' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                             </th>
+
 
                             <th class="px-4 py-3 text-right text-xs font-bold">
                                 Total Qty
@@ -148,8 +153,8 @@
                             <tr class="hover:bg-gray-200 transition">
                                 {{-- ROW CHECKBOX --}}
                                 <td class="px-4 py-2 text-center">
-                                    <input type="checkbox" value="{{ $item->item_id }}"
-                                        wire:model.live="selectedItems" class="rounded border-gray-300">
+                                    <input type="checkbox" value="{{ $item->item_id }}" wire:model.live="selectedItems"
+                                        class="rounded border-gray-300">
                                 </td>
 
                                 <td class="px-4 py-2 font-mono text-sm font-semibold">
@@ -175,6 +180,11 @@
                                 <td class="px-4 py-2 text-right text-sm font-mono">
                                     {{ number_format($item->total_reserved, 2) }}
                                 </td>
+
+                                <td class="px-4 py-2 text-right text-sm font-mono">
+                                    {{ number_format($item->total_in_transit, 2) }}
+                                </td>
+
 
                                 <td class="px-4 py-2 text-right text-sm font-mono">
                                     {{ number_format($item->total_waste, 2) }}

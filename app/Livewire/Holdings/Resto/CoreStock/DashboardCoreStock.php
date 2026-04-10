@@ -6,9 +6,9 @@ use Livewire\Component;
 
 class DashboardCoreStock extends Component
 {
-       public array $breadcrumbs = [];
+    public array $breadcrumbs = [];
 
-        public function mount(): void
+    public function mount(): void
     {
         $this->breadcrumbs = [
             ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
@@ -16,7 +16,7 @@ class DashboardCoreStock extends Component
             ['label' => 'Stock', 'color' => 'text-gray-900 font-semibold'],
         ];
     }
-       
+
     public function render()
     {
         return view('livewire.holdings.resto.core-stock.dashboard-core-stock')

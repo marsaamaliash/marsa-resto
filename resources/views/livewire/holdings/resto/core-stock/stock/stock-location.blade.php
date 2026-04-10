@@ -102,22 +102,49 @@
                 <table class="min-w-full divide-y divide-gray-900">
                     <thead class="bg-gray-700/80 text-white sticky top-0 z-10">
                         <tr>
-                            {{-- SELECT ALL CHECKBOX --}}
-                            <th class="px-4 py-3 text-center w-10">
+                            {{-- CHECKBOX --}}
+                            <th class="px-3 py-3 text-center w-10">
                                 <input type="checkbox" wire:model.live="selectAll" class="rounded border-gray-300">
                             </th>
 
                             <th wire:click="sortBy('location_name')"
-                                class="px-4 py-3 text-left text-xs font-bold cursor-pointer">
+                                class="px-3 py-3 text-left text-xs font-bold cursor-pointer">
                                 Lokasi {!! $sortField === 'location_name' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                             </th>
 
-                            <th wire:click="sortBy('total_items')"
-                                class="px-4 py-3 text-center text-xs font-bold cursor-pointer">
-                                Jumlah Total Item  {!! $sortField === 'total_items' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                            <th class="px-3 py-3 text-left text-xs font-bold">
+                                Item
                             </th>
 
-                            <th class="px-4 py-3 text-center text-xs font-bold">
+                            <th class="px-3 py-3 text-left text-xs font-bold">
+                                SKU
+                            </th>
+
+                            <th wire:click="sortBy('qty_available')"
+                                class="px-3 py-3 text-right text-xs font-bold cursor-pointer">
+                                Qty Available {!! $sortField === 'qty_available' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                            </th>
+
+                            <th wire:click="sortBy('qty_reserved')"
+                                class="px-3 py-3 text-right text-xs font-bold cursor-pointer">
+                                Qty Reserved {!! $sortField === 'qty_reserved' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                            </th>
+
+                            <th wire:click="sortBy('qty_in_transit')"
+                                class="px-3 py-3 text-right text-xs font-bold cursor-pointer">
+                                Qty In Transit {!! $sortField === 'qty_in_transit' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                            </th>
+
+                            <th wire:click="sortBy('qty_waste')"
+                                class="px-3 py-3 text-right text-xs font-bold cursor-pointer">
+                                Qty Waste {!! $sortField === 'qty_waste' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                            </th>
+
+                            <th class="px-3 py-3 text-center text-xs font-bold">
+                                Kategori
+                            </th>
+
+                            <th class="px-3 py-3 text-center text-xs font-bold">
                                 Aksi
                             </th>
                         </tr>
@@ -125,32 +152,88 @@
 
                     <tbody class="divide-y divide-gray-100 bg-gray-100">
                         @forelse ($data as $item)
-                            <tr class="hover:bg-gray-200 transition">
-                                {{-- ROW CHECKBOX --}}
-                                <td class="px-4 py-2 text-center">
-                                    <input type="checkbox" value="{{ $item->location_id }}"
-                                        wire:model.live="selectedItems" class="rounded border-gray-300">
-                                </td>
+                            @if($item->row_type === 'location_header')
+                                <tr class="hover:bg-gray-200 transition cursor-pointer bg-gray-200"
+                                    wire:click="toggleExpand('{{ $item->location_id }}')">
+                                    <td class="px-3 py-3 text-center" wire:click.stop>
+                                        <input type="checkbox"
+                                            @if($this->isLocationAllSelected($item->location_id)) checked @endif
+                                            @if($this->isLocationPartiallySelected($item->location_id)) indeterminate @endif
+                                            wire:click="toggleLocationSelect('{{ $item->location_id }}')"
+                                            class="rounded border-gray-300">
+                                    </td>
 
-                                <td class="px-4 py-2 text-sm font-semibold">
-                                    {{ $item->location_name ?? '-' }}
-                                </td>
+                                    <td class="px-3 py-3 text-sm font-bold flex items-center gap-2">
+                                        <span class="text-gray-500">
+                                            @if($item->is_expanded)
+                                                <x-ui.sccr-icon name="chevron-down" :size="16" />
+                                            @else
+                                                <x-ui.sccr-icon name="chevron-right" :size="16" />
+                                            @endif
+                                        </span>
+                                        {{ $item->location_name }}
+                                        <span class="text-gray-400 text-xs font-normal">({{ $item->total_items }} items)</span>
+                                    </td>
 
-                                <td class="px-4 py-2 text-center text-sm font-semibold">
-                                    {{ $item->total_items }}
-                                </td>
+                                    <td class="px-3 py-3"></td>
+                                    <td class="px-3 py-3"></td>
+                                    <td class="px-3 py-3"></td>
+                                    <td class="px-3 py-3"></td>
+                                    <td class="px-3 py-3"></td>
+                                    <td class="px-3 py-3"></td>
+                                    <td class="px-3 py-3"></td>
+                                </tr>
+                            @else
+                                <tr class="hover:bg-white transition bg-white">
+                                    <td class="px-3 py-2 text-center">
+                                        <input type="checkbox" value="{{ $item->item_id_str }}"
+                                            wire:model.live="selectedItems" class="rounded border-gray-300">
+                                    </td>
 
-                                <td class="px-4 py-2 text-center">
-                                    <x-ui.sccr-button type="button" variant="icon"
-                                        wire:click="openDetail('{{ $item->location_id }}')"
-                                        class="text-gray-700 hover:scale-125" title="Detail">
-                                        <x-ui.sccr-icon name="eye" :size="20" />
-                                    </x-ui.sccr-button>
-                                </td>
-                            </tr>
+                                    <td class="px-3 py-2 text-sm text-gray-400">
+                                        ↳
+                                    </td>
+
+                                    <td class="px-3 py-2 text-sm font-medium">
+                                        {{ $item->item_name }}
+                                    </td>
+
+                                    <td class="px-3 py-2 text-sm font-mono text-gray-500">
+                                        {{ $item->item_sku }}
+                                    </td>
+
+                                    <td class="px-3 py-2 text-right text-sm font-mono">
+                                        {{ number_format($item->qty_available, 2) }}
+                                    </td>
+
+                                    <td class="px-3 py-2 text-right text-sm font-mono">
+                                        {{ number_format($item->qty_reserved, 2) }}
+                                    </td>
+
+                                    <td class="px-3 py-2 text-right text-sm font-mono">
+                                        {{ number_format($item->qty_in_transit, 2) }}
+                                    </td>
+
+                                    <td class="px-3 py-2 text-right text-sm font-mono">
+                                        {{ number_format($item->qty_waste, 2) }}
+                                    </td>
+
+                                    <td class="px-3 py-2 text-center text-xs text-gray-500">
+                                        {{ $item->category_name }}
+                                    </td>
+
+                                    <td class="px-3 py-2 text-center">
+                                        <x-ui.sccr-button type="button" variant="icon"
+                                            wire:click="openDetail('{{ $item->location_id }}')"
+                                            class="text-gray-500 hover:scale-125" title="Detail">
+                                            <x-ui.sccr-icon name="eye" :size="16" />
+                                        </x-ui.sccr-button>
+                                    </td>
+                                </tr>
+                            @endif
                         @empty
                             <tr>
-                                <td colspan="7" class="py-10 text-center text-gray-400 italic">
+                                <td colspan="10" class="py-10 text-center text-gray-400 italic">
                                     Data tidak ditemukan
                                 </td>
                             </tr>
@@ -214,7 +297,7 @@
                                 </div>
                             </div>
 
-                            <div class="px-4 py-3 grid grid-cols-4 gap-4 @if($isCritical) bg-red-50 @elseif($isWarning) bg-yellow-50 @else bg-white @endif">
+                            <div class="px-4 py-3 grid grid-cols-5 gap-4 @if($isCritical) bg-red-50 @elseif($isWarning) bg-yellow-50 @else bg-white @endif">
                                 <div>
                                     <div class="text-xs text-gray-500 uppercase">Available</div>
                                     <div class="font-mono font-bold @if($isCritical) text-red-600 @elseif($isWarning) text-yellow-600 @else text-gray-800 @endif">
@@ -226,6 +309,12 @@
                                     <div class="text-xs text-gray-500 uppercase">Reserved</div>
                                     <div class="font-mono font-semibold text-gray-800">
                                         {{ number_format($balance->qty_reserved ?? 0, 2) }}
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="text-xs text-gray-500 uppercase">In Transit</div>
+                                    <div class="font-mono font-semibold text-gray-800">
+                                        {{ number_format($balance->qty_in_transit ?? 0, 2) }}
                                     </div>
                                 </div>
                                 <div>
@@ -272,6 +361,7 @@
                                                                     'out' => 'text-red-600',
                                                                     'transfer_in' => 'text-blue-600',
                                                                     'transfer_out' => 'text-orange-600',
+                                                                    'clear_transit' => 'text-indigo-600',
                                                                     'adjustment' => 'text-purple-600',
                                                                     'reserve' => 'text-yellow-600',
                                                                     'unreserve' => 'text-gray-600',

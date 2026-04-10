@@ -11,7 +11,7 @@ use Illuminate\Support\Collection;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-class StockLocation extends Component
+class StockLocationTable extends Component
 {
     use WithPagination;
 
@@ -35,6 +35,7 @@ class StockLocation extends Component
         'location_name',
         'total_available',
         'total_reserved',
+        'total_in_transit',
         'total_waste',
         'total_items',
     ];
@@ -49,6 +50,8 @@ class StockLocation extends Component
 
     public array $detailData = [];
 
+    public array $expandedLocations = [];
+
     protected $queryString = [
         'search' => ['except' => ''],
         'filter1' => ['except' => ''],
@@ -56,6 +59,7 @@ class StockLocation extends Component
         'perPage' => ['except' => 10],
         'sortField' => ['except' => 'location_name'],
         'sortDirection' => ['except' => 'asc'],
+        'expandedLocations' => ['except' => []],
     ];
 
     public function mount(): void
@@ -77,7 +81,11 @@ class StockLocation extends Component
             $query->where(function ($q) use ($search) {
                 $q->whereHas('location', function ($q2) use ($search) {
                     $q2->where('name', 'like', "%{$search}%");
-                });
+                })
+                    ->orWhereHas('item', function ($q2) use ($search) {
+                        $q2->where('name', 'like', "%{$search}%")
+                            ->orWhere('sku', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -95,34 +103,87 @@ class StockLocation extends Component
 
         $grouped = $results->groupBy('location_id')->map(function ($items, $locationId) {
             $location = $items->first()->location;
-            $minStockThreshold = $items->min('item.min_stock') ?? 0;
+            $locationName = $location?->name ?? '-';
+            $locationIdStr = (string) $locationId;
+
+            $itemRows = $items->map(function ($item) use ($locationId, $locationName) {
+                return (object) [
+                    'location_id' => $locationId,
+                    'location_id_str' => (string) $locationId,
+                    'location_name' => $locationName,
+                    'item_id' => $item->item_id,
+                    'item_id_str' => (string) $item->item_id,
+                    'item_name' => $item->item?->name ?? '-',
+                    'item_sku' => $item->item?->sku ?? '-',
+                    'category_name' => $item->item?->category?->name ?? '-',
+                    'qty_available' => $item->qty_available,
+                    'qty_reserved' => $item->qty_reserved,
+                    'qty_in_transit' => $item->qty_in_transit,
+                    'qty_waste' => $item->qty_waste,
+                ];
+            });
 
             return (object) [
                 'location_id' => $locationId,
+                'location_id_str' => $locationIdStr,
+                'location_name' => $locationName,
                 'location' => $location,
-                'location_name' => $location?->name ?? '-',
-                'total_available' => $items->sum('qty_available'),
-                'total_reserved' => $items->sum('qty_reserved'),
-                'total_waste' => $items->sum('qty_waste'),
-                'total_items' => $items->count(),
-                'items' => $items,
+                'items' => $itemRows,
+                'total_items' => $itemRows->count(),
+                'is_expanded' => in_array($locationIdStr, $this->expandedLocations, true),
             ];
         })->values();
 
-        if (in_array($this->sortField, $this->allowedSortFields, true)) {
-            $grouped = $grouped->sortBy(function ($item) {
+        if ($this->sortField === 'location_name') {
+            $grouped = $grouped->sortBy('location_name', SORT_REGULAR, $this->sortDirection === 'desc');
+        } elseif (in_array($this->sortField, ['total_available', 'total_reserved', 'total_in_transit', 'total_waste'], true)) {
+            $grouped = $grouped->sortBy(function ($loc) {
                 return match ($this->sortField) {
-                    'location_name' => $item->location_name ?? '',
-                    'total_available' => (float) $item->total_available,
-                    'total_reserved' => (float) $item->total_reserved,
-                    'total_waste' => (float) $item->total_waste,
-                    'total_items' => (int) $item->total_items,
-                    default => $item->location_id,
+                    'total_available' => $loc->items->sum('qty_available'),
+                    'total_reserved' => $loc->items->sum('qty_reserved'),
+                    'total_in_transit' => $loc->items->sum('qty_in_transit'),
+                    'total_waste' => $loc->items->sum('qty_waste'),
+                    default => 0,
                 };
             }, SORT_REGULAR, $this->sortDirection === 'desc');
         }
 
-        return $grouped->values();
+        $flattened = collect();
+
+        foreach ($grouped as $locationGroup) {
+            $flattened->push((object) [
+                'row_type' => 'location_header',
+                'location_id' => $locationGroup->location_id,
+                'location_id_str' => $locationGroup->location_id_str,
+                'location_name' => $locationGroup->location_name,
+                'total_items' => $locationGroup->total_items,
+                'is_expanded' => $locationGroup->is_expanded,
+            ]);
+
+            if ($locationGroup->is_expanded) {
+                $itemsSorted = $locationGroup->items->sortBy('item_name', SORT_REGULAR, $this->sortDirection === 'desc');
+
+                foreach ($itemsSorted as $item) {
+                    $flattened->push((object) [
+                        'row_type' => 'item',
+                        'location_id' => $item->location_id,
+                        'location_id_str' => $item->location_id_str,
+                        'location_name' => $item->location_name,
+                        'item_id' => $item->item_id,
+                        'item_id_str' => $item->item_id_str,
+                        'item_name' => $item->item_name,
+                        'item_sku' => $item->item_sku,
+                        'category_name' => $item->category_name,
+                        'qty_available' => $item->qty_available,
+                        'qty_reserved' => $item->qty_reserved,
+                        'qty_in_transit' => $item->qty_in_transit,
+                        'qty_waste' => $item->qty_waste,
+                    ]);
+                }
+            }
+        }
+
+        return $flattened;
     }
 
     protected function paginateCollection(Collection $collection, int $perPage): LengthAwarePaginator
@@ -144,8 +205,8 @@ class StockLocation extends Component
         $p = $this->paginateCollection($this->dataQuery(), $this->perPage);
 
         return $p->getCollection()
-            ->pluck('location_id')
-            ->map(fn ($v) => (string) $v)
+            ->filter(fn ($item) => $item->row_type === 'location_header')
+            ->pluck('location_id_str')
             ->toArray();
     }
 
@@ -230,7 +291,7 @@ class StockLocation extends Component
         $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet;
         $ws = $spreadsheet->getActiveSheet();
 
-        $ws->fromArray([['Lokasi', 'Total Available', 'Total Reserved', 'Total Waste', 'Jumlah Item']], null, 'A1');
+        $ws->fromArray([['Lokasi', 'Qty Available', 'Qty Reserved', 'Qty In Transit', 'Qty Waste', 'Jumlah Item']], null, 'A1');
 
         $row = 2;
         foreach ($data as $item) {
@@ -238,6 +299,7 @@ class StockLocation extends Component
                 $item->location_name ?? '-',
                 $item->total_available ?? '0',
                 $item->total_reserved ?? '0',
+                $item->total_in_transit ?? '0',
                 $item->total_waste ?? '0',
                 $item->total_items ?? '0',
             ], null, 'A'.$row++);
@@ -285,6 +347,65 @@ class StockLocation extends Component
         $this->reset(['overlayMode', 'overlayId', 'detailData']);
     }
 
+    public function toggleExpand(string|int $locationId): void
+    {
+        $id = (string) $locationId;
+        if (in_array($id, $this->expandedLocations, true)) {
+            $this->expandedLocations = array_values(array_diff($this->expandedLocations, [$id]));
+        } else {
+            $this->expandedLocations[] = $id;
+        }
+    }
+
+    public function isExpanded(string|int $locationId): bool
+    {
+        return in_array((string) $locationId, $this->expandedLocations, true);
+    }
+
+    public function toggleLocationSelect(string $locationId): void
+    {
+        $locId = (string) $locationId;
+        $itemsInLoc = $this->getItemsInLocation($locId);
+        $itemIds = $itemsInLoc->pluck('item_id_str')->toArray();
+
+        $allSelected = ! empty(array_diff($itemIds, $this->selectedItems));
+
+        if ($allSelected) {
+            $this->selectedItems = array_values(array_diff($this->selectedItems, $itemIds));
+        } else {
+            $this->selectedItems = array_values(array_unique(array_merge($this->selectedItems, $itemIds)));
+        }
+    }
+
+    public function isLocationAllSelected(string $locationId): bool
+    {
+        $locId = (string) $locationId;
+        $itemsInLoc = $this->getItemsInLocation($locId);
+        $itemIds = $itemsInLoc->pluck('item_id_str')->toArray();
+
+        return ! empty($itemIds) && empty(array_diff($itemIds, $this->selectedItems));
+    }
+
+    public function isLocationPartiallySelected(string $locationId): bool
+    {
+        $locId = (string) $locationId;
+        $itemsInLoc = $this->getItemsInLocation($locId);
+        $itemIds = $itemsInLoc->pluck('item_id_str')->toArray();
+
+        $selected = array_intersect($itemIds, $this->selectedItems);
+
+        return ! empty($selected) && count($selected) < count($itemIds);
+    }
+
+    private function getItemsInLocation(string $locationId): Collection
+    {
+        return Rst_StockBalance::where('location_id', $locationId)
+            ->get()
+            ->map(fn ($item) => (object) [
+                'item_id_str' => (string) $item->item_id,
+            ]);
+    }
+
     protected function filter1Options(): array
     {
         return Rst_MasterLokasi::where('is_active', true)
@@ -306,8 +427,8 @@ class StockLocation extends Component
         $data = $this->paginateCollection($this->dataQuery(), $this->perPage);
 
         $visible = $data->getCollection()
-            ->pluck('location_id')
-            ->map(fn ($v) => (string) $v)
+            ->filter(fn ($item) => $item->row_type === 'location_header')
+            ->pluck('location_id_str')
             ->toArray();
 
         $this->selectAll = count($visible) > 0 && empty(array_diff($visible, $this->selectedItems));

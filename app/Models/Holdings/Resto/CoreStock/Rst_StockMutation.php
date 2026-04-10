@@ -29,12 +29,12 @@ class Rst_StockMutation extends Model
         return $this->belongsTo(Rst_MasterLokasi::class);
     }
 
-        public function fromLocation()
+    public function fromLocation()
     {
         return $this->belongsTo(Rst_MasterLokasi::class);
     }
 
-        public function toLocation()
+    public function toLocation()
     {
         return $this->belongsTo(Rst_MasterLokasi::class);
     }

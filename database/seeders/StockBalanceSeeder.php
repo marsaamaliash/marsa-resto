@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Services\Resto\StockService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use App\Services\Resto\StockService;
 
 class StockBalanceSeeder extends Seeder
 {
@@ -20,20 +20,21 @@ class StockBalanceSeeder extends Seeder
         // Pastikan ada data master sebelum lanjut
         if ($items->isEmpty() || $locations->isEmpty()) {
             $this->command->error('Data Items atau Locations kosong! Jalankan seeder Master dulu.');
+
             return;
         }
 
-        $this->command->info('Memulai seeding stok ke ' . $locations->count() . ' lokasi...');
+        $this->command->info('Memulai seeding stok ke '.$locations->count().' lokasi...');
 
         // 2. Loop setiap item untuk dimasukkan ke setiap lokasi
         foreach ($items as $item) {
             foreach ($locations as $locationId) {
-                
+
                 // Kita gunakan StockService::addMutation agar:
                 // - stock_balances terisi (qty_available)
                 // - stock_mutations tercatat (type: 'in')
                 // - Konsisten dengan logic 'No Negative Stock'
-                
+
                 StockService::addMutation(
                     $item->id,          // itemId
                     $locationId,        // locationId
@@ -45,7 +46,7 @@ class StockBalanceSeeder extends Seeder
                     'Seeding stok awal untuk testing movement' // notes
                 );
             }
-            
+
             $this->command->info("Item: {$item->name} berhasil di-seed.");
         }
 

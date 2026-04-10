@@ -78,7 +78,7 @@ return [
             'engine' => null,
         ],
 
-          'sccr_resto' => [
+        'sccr_resto' => [
             'driver' => 'mysql',
             'host' => env('DB_RESTO_HOST', '127.0.0.1'),
             'port' => env('DB_RESTO_PORT', '3306'),
@@ -92,7 +92,6 @@ return [
             'strict' => true,
             'engine' => null,
         ],
-
 
         'mariadb' => [
             'driver' => 'mariadb',

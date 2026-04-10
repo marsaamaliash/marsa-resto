@@ -10,7 +10,7 @@ use Illuminate\Support\Collection;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-class StockMutation extends Component
+class StockMutationTable extends Component
 {
     use WithPagination;
 

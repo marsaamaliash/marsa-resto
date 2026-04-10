@@ -12,22 +12,22 @@ return new class extends Migration
     public function up(): void
     {
         Schema::connection('sccr_resto')->create('locations', function (Blueprint $table) {
-          $table->id();
+            $table->id();
             $table->string('name'); // Contoh: "Gudang Utama", "Kitchen A"
             $table->string('code')->unique(); // Contoh: WH-01, KIT-01
-            
-            /** 
+
+            /**
              * Tipe Lokasi sangat penting untuk Rule Transaksi:
              * - warehouse: Tempat terima barang dari Vendor (PO)
              * - kitchen/outlet: Tempat produksi atau jualan
              * - transit: Tempat penampung sementara saat pindah barang (Transfer)
              */
             $table->enum('type', ['warehouse', 'kitchen', 'outlet', 'transit'])
-                  ->default('warehouse');
+                ->default('warehouse');
 
             $table->string('pic_name')->nullable(); // Penanggung jawab lokasi
             $table->text('address')->nullable();
-            
+
             $table->boolean('is_active')->default(true);
             $table->timestamps();
             $table->softDeletes();

@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Livewire\Holdings\Resto\Master;
+namespace App\Livewire\Holdings\Resto\Movement;
 
 use Livewire\Component;
 
-class DashboardMaster extends Component
+class DashboardMovement extends Component
 {
     public array $breadcrumbs = [];
 
@@ -19,7 +19,7 @@ class DashboardMaster extends Component
 
     public function render()
     {
-        return view('livewire.holdings.resto.master.dashboard-master')
+        return view('livewire.holdings.resto.movement.dashboard-movement')
             ->layout('components.sccr-layout');
     }
 }

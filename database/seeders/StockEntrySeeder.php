@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Services\Resto\StockService;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
 class StockEntrySeeder extends Seeder
@@ -15,14 +15,14 @@ class StockEntrySeeder extends Seeder
 
         // 1. Pastikan Data Master Dummy Ada (Jika belum ada)
         // Kita gunakan ID tetap agar mudah untuk testing movement nanti
-        
+
         // Buat UOM
         $uomId = $conn->table('uoms')->updateOrInsert(['id' => 1], ['name' => 'Kilogram', 'symbols' => 'Kg']);
-        
+
         // Buat Lokasi (Gudang Utama & Dapur)
         $conn->table('locations')->updateOrInsert(['id' => 1], ['name' => 'Main Warehouse', 'type' => 'warehouse']);
         $conn->table('locations')->updateOrInsert(['id' => 2], ['name' => 'Kitchen', 'type' => 'kitchen']);
-        
+
         // Buat Item Bahan Baku
         $items = [
             ['id' => 1, 'name' => 'Daging Ayam', 'uom_id' => 1],
@@ -33,13 +33,13 @@ class StockEntrySeeder extends Seeder
         foreach ($items as $item) {
             $conn->table('items')->updateOrInsert(['id' => $item['id']], [
                 'name' => $item['name'],
-                'uom_id' => $item['uom_id']
+                'uom_id' => $item['uom_id'],
             ]);
         }
 
         // 2. Masukkan Stok Awal menggunakan StockService
         // Kita simulasikan barang masuk (Procurement) ke Main Warehouse (ID 1)
-        
+
         $stockToInput = [
             ['item_id' => 1, 'qty' => 50, 'note' => 'Initial Stock - Ayam'],
             ['item_id' => 2, 'qty' => 100, 'note' => 'Initial Stock - Beras'],

@@ -13,6 +13,6 @@ class Rst_MasterLokasi extends Model
     protected $primaryKey = 'id';
 
     protected $guarded = [
-        
+
     ];
 }

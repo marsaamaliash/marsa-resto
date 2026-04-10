@@ -65,4 +65,6 @@
     🚀
 @elseif ($name === 'printselected')
     🗃️
+    @elseif ($name === 'truck')
+    🚛
 @endif

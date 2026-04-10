@@ -9,7 +9,7 @@ use Illuminate\Support\Collection;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-class StockItem extends Component
+class StockItemTable extends Component
 {
     use WithPagination;
 
@@ -32,6 +32,7 @@ class StockItem extends Component
         'item_sku',
         'total_available',
         'total_reserved',
+        'total_in_transit',
         'total_waste',
     ];
 
@@ -64,6 +65,7 @@ class StockItem extends Component
                 'item_id',
                 Rst_StockBalance::raw('SUM(qty_available) as total_available'),
                 Rst_StockBalance::raw('SUM(qty_reserved) as total_reserved'),
+                Rst_StockBalance::raw('SUM(qty_in_transit) as total_in_transit'),
                 Rst_StockBalance::raw('SUM(qty_waste) as total_waste')
             )
             ->groupBy('item_id');
@@ -94,8 +96,9 @@ class StockItem extends Component
                 'item' => $balance?->item,
                 'total_available' => $item->total_available,
                 'total_reserved' => $item->total_reserved,
+                'total_in_transit' => $item->total_in_transit,
                 'total_waste' => $item->total_waste,
-                'total_qty' => ($item->total_available ?? 0) + ($item->total_reserved ?? 0) + ($item->total_waste ?? 0),
+                'total_qty' => ($item->total_available ?? 0) + ($item->total_reserved ?? 0) + ($item->total_in_transit ?? 0) + ($item->total_waste ?? 0),
             ];
         });
 
@@ -104,6 +107,7 @@ class StockItem extends Component
                 return match ($this->sortField) {
                     'total_available' => (float) $item->total_available,
                     'total_reserved' => (float) $item->total_reserved,
+                    'total_in_transit' => (float) $item->total_in_transit,
                     'total_waste' => (float) $item->total_waste,
                     'item_name' => $item->item?->name ?? '',
                     'item_sku' => $item->item?->sku ?? '',
@@ -220,7 +224,7 @@ class StockItem extends Component
         $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet;
         $ws = $spreadsheet->getActiveSheet();
 
-        $ws->fromArray([['ID', 'Item', 'SKU', 'Kategori', 'Qty Available', 'Qty Reserved', 'Qty Waste', 'Total Qty', 'Satuan']], null, 'A1');
+        $ws->fromArray([['ID', 'Item', 'SKU', 'Kategori', 'Qty Available', 'Qty Reserved', 'Qty In Transit', 'Qty Waste', 'Total Qty', 'Satuan']], null, 'A1');
 
         $row = 2;
         foreach ($data as $item) {
@@ -231,6 +235,7 @@ class StockItem extends Component
                 $item->item?->category?->name ?? '-',
                 $item->total_available ?? '0',
                 $item->total_reserved ?? '0',
+                $item->total_in_transit ?? '0',
                 $item->total_waste ?? '0',
                 $item->total_qty ?? '0',
                 $item->item?->uom?->name ?? '-',
