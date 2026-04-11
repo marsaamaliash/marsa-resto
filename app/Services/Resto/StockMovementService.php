@@ -61,9 +61,27 @@ class StockMovementService
                     throw new \Exception("Stok Available tidak cukup untuk item {$item->name}. Tersedia: {$balance->qty_available}");
                 }
 
+                $beforeReserve = $balance->qty_available + $balance->qty_reserved + $balance->qty_in_transit;
+
                 $balance->qty_available -= $qty;
                 $balance->qty_reserved += $qty;
                 $balance->save();
+
+                $afterReserve = $balance->qty_available + $balance->qty_reserved + $balance->qty_in_transit;
+
+                Rst_StockMutation::create([
+                    'item_id' => $itemId,
+                    'location_id' => $fromLocationId,
+                    'uom_id' => $item->uom_id,
+                    'type' => 'reservation',
+                    'qty' => $qty,
+                    'qty_before' => $beforeReserve,
+                    'qty_after' => $afterReserve,
+                    'from_location_id' => $fromLocationId,
+                    'to_location_id' => $toLocationId,
+                    'user_id' => 'SYSTEM',
+                    'notes' => "Reserved for movement #{$movement->id}",
+                ]);
 
                 $totalItemsRequested++;
             }
@@ -112,6 +130,7 @@ class StockMovementService
                 }
                 $balance->qty_available -= $diff;
                 $balance->qty_reserved += $diff;
+                $balance->save();
             } elseif ($newQty < $oldQty) {
                 $diff = $oldQty - $newQty;
                 if ($balance) {
@@ -507,6 +526,7 @@ class StockMovementService
     /**
      * Reject Movement - Unreserve Stock
      * Gudang: qty_reserved(-qty), qty_available(+qty)
+     * Applicable untuk semua level approval (selama belum dispatch)
      */
     public static function rejectMovement(
         int $movementId,
@@ -516,8 +536,8 @@ class StockMovementService
         return DB::transaction(function () use ($movementId, $rejecterName, $notes) {
             $movement = Rst_Movement::findOrFail($movementId);
 
-            if ($movement->status !== 'requested') {
-                throw new \Exception('Hanya bisa reject pada status Requested.');
+            if (! in_array($movement->status, ['requested', 'approved'])) {
+                throw new \Exception('Hanya bisa reject pada status Requested atau Approved.');
             }
 
             $movementItems = Rst_MovementItem::where('movement_id', $movementId)->get();
@@ -526,28 +546,129 @@ class StockMovementService
                 $itemId = $movementItem->item_id;
                 $qty = $movementItem->qty;
                 $fromLocationId = $movement->from_location_id;
+                $toLocationId = $movement->to_location_id;
 
                 $balance = Rst_StockBalance::where('item_id', $itemId)
                     ->where('location_id', $fromLocationId)
                     ->first();
 
                 if ($balance && $balance->qty_reserved >= $qty) {
+                    $beforeUnreserve = $balance->qty_available + $balance->qty_reserved + $balance->qty_in_transit;
+
                     $balance->qty_reserved -= $qty;
                     $balance->qty_available += $qty;
                     $balance->save();
+
+                    $afterUnreserve = $balance->qty_available + $balance->qty_reserved + $balance->qty_in_transit;
+
+                    $item = Rst_MasterItem::findOrFail($itemId);
+
+                    Rst_StockMutation::create([
+                        'item_id' => $itemId,
+                        'location_id' => $fromLocationId,
+                        'uom_id' => $item->uom_id,
+                        'type' => 'unreserved',
+                        'qty' => $qty,
+                        'qty_before' => $beforeUnreserve,
+                        'qty_after' => $afterUnreserve,
+                        'from_location_id' => $fromLocationId,
+                        'to_location_id' => $toLocationId,
+                        'user_id' => 'SYSTEM',
+                        'notes' => "Unreserved for movement #{$movement->id} - Rejected by {$rejecterName}",
+                    ]);
                 }
             }
 
+            $statusFrom = $movement->status === 'approved' ? 'APPROVED' : 'REQUESTED';
             $movement->status = 'rejected';
             $movement->save();
 
+            $comment = $notes ?: "Rejected by {$rejecterName}";
             Rst_RequestActivity::create([
                 'movement_id' => $movement->id,
                 'pic' => $rejecterName,
                 'action' => 'rejected',
-                'status_from' => 'REQUESTED',
+                'status_from' => $statusFrom,
                 'status_to' => 'REJECTED',
-                'comment' => $notes ?: "Rejected by {$rejecterName}",
+                'comment' => $comment,
+            ]);
+
+            return $movement;
+        });
+    }
+
+    /**
+     * Reject Dispatch - barang rusak/salah saat pengiriman
+     * Gudang: qty_reserved(-qty), TIDAK mengembalikan ke available
+     * Mutation: WASTE (barang dibuang)
+     * Status: CLOSED
+     */
+    public static function rejectDispatch(
+        int $movementId,
+        string $rejecterName,
+        ?string $notes = null
+    ): Rst_Movement {
+        return DB::transaction(function () use ($movementId, $rejecterName, $notes) {
+            $movement = Rst_Movement::findOrFail($movementId);
+
+            if ($movement->status !== 'in_transit') {
+                throw new \Exception('Hanya bisa reject dispatch pada status In Transit.');
+            }
+
+            $movementItems = Rst_MovementItem::where('movement_id', $movementId)->get();
+
+            $toLocationId = $movement->to_location_id;
+            $fromLocationId = $movement->from_location_id;
+            $totalRejected = 0;
+
+            foreach ($movementItems as $movementItem) {
+                $itemId = $movementItem->item_id;
+                $qty = $movementItem->qty;
+
+                $balance = Rst_StockBalance::where('item_id', $itemId)
+                    ->where('location_id', $fromLocationId)
+                    ->first();
+
+                if ($balance && $balance->qty_reserved >= $qty) {
+                    $before = $balance->qty_available + $balance->qty_reserved + $balance->qty_in_transit;
+
+                    $balance->qty_reserved -= $qty;
+                    $balance->qty_in_transit -= $qty;
+                    $balance->save();
+
+                    $after = $balance->qty_available + $balance->qty_reserved + $balance->qty_in_transit;
+
+                    $item = Rst_MasterItem::findOrFail($itemId);
+
+                    Rst_StockMutation::create([
+                        'item_id' => $itemId,
+                        'location_id' => $fromLocationId,
+                        'uom_id' => $item->uom_id,
+                        'type' => 'waste',
+                        'qty' => $qty,
+                        'qty_before' => $before,
+                        'qty_after' => $after,
+                        'from_location_id' => $fromLocationId,
+                        'to_location_id' => $toLocationId,
+                        'user_id' => 'SYSTEM',
+                        'notes' => $notes ?: 'Item damaged/wasted during dispatch',
+                    ]);
+                }
+
+                $totalRejected++;
+            }
+
+            $movement->status = 'closed';
+            $movement->save();
+
+            $comment = $notes ?: 'Failed to dispatch: Item damaged';
+            Rst_RequestActivity::create([
+                'movement_id' => $movement->id,
+                'pic' => $rejecterName,
+                'action' => 'dispatch_rejected',
+                'status_from' => 'IN_TRANSIT',
+                'status_to' => 'CLOSED',
+                'comment' => $comment,
             ]);
 
             return $movement;

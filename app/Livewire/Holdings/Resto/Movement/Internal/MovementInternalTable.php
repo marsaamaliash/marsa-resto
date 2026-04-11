@@ -73,6 +73,18 @@ class MovementInternalTable extends Component
 
     public string $receiveNotes = '';
 
+    public ?string $rejectOverlayMode = null;
+
+    public ?string $rejectOverlayId = null;
+
+    public string $rejectNotes = '';
+
+    public ?string $rejectDispatchOverlayMode = null;
+
+    public ?string $rejectDispatchOverlayId = null;
+
+    public string $rejectDispatchNotes = '';
+
     protected $queryString = [
         'search' => ['except' => ''],
         'filter1' => ['except' => ''],
@@ -617,6 +629,33 @@ class MovementInternalTable extends Component
         }
     }
 
+    public function openRejectOverlay(string $id): void
+    {
+        $movement = Rst_Movement::find($id);
+        if (! $movement) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data tidak ditemukan.'];
+
+            return;
+        }
+
+        if (! in_array($movement->status, ['requested', 'approved'])) {
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Hanya bisa reject pada status Requested atau Approved.'];
+
+            return;
+        }
+
+        $this->rejectOverlayMode = 'reject';
+        $this->rejectOverlayId = $id;
+        $this->rejectNotes = '';
+    }
+
+    public function closeRejectOverlay(): void
+    {
+        $this->rejectOverlayMode = null;
+        $this->rejectOverlayId = null;
+        $this->rejectNotes = '';
+    }
+
     public function excChefCanReject(string $id): void
     {
         $movement = Rst_Movement::find($id);
@@ -626,16 +665,18 @@ class MovementInternalTable extends Component
             return;
         }
 
-        if ($movement->status !== 'requested') {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Hanya bisa reject pada status Requested.'];
+        if (! in_array($movement->status, ['requested', 'approved'])) {
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Hanya bisa reject pada status Requested atau Approved.'];
 
             return;
         }
 
         try {
             $rejecterName = auth()->user()?->name ?? 'Exc Chef';
-            StockMovementService::rejectMovement((int) $id, $rejecterName, 'Rejected by Exc Chef');
+            $reason = $this->rejectNotes ?: 'Rejected by Exc Chef';
+            StockMovementService::rejectMovement((int) $id, $rejecterName, $reason);
             $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Movement rejected, stock dikembalikan.'];
+            $this->closeRejectOverlay();
         } catch (\Exception $e) {
             $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
         }
@@ -710,6 +751,59 @@ class MovementInternalTable extends Component
             StockMovementService::receiveItems($id, $this->receiveNotes ?: 'Received by Dapur');
             $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Barang diterima.'];
             $this->closeReceiveOverlay();
+        } catch (\Exception $e) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
+        }
+    }
+
+    public function openRejectDispatchOverlay(string $id): void
+    {
+        $movement = Rst_Movement::find($id);
+        if (! $movement) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data tidak ditemukan.'];
+
+            return;
+        }
+
+        if ($movement->status !== 'in_transit') {
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Hanya bisa reject dispatch pada status In Transit.'];
+
+            return;
+        }
+
+        $this->rejectDispatchOverlayMode = 'rejectDispatch';
+        $this->rejectDispatchOverlayId = $id;
+        $this->rejectDispatchNotes = '';
+    }
+
+    public function closeRejectDispatchOverlay(): void
+    {
+        $this->rejectDispatchOverlayMode = null;
+        $this->rejectDispatchOverlayId = null;
+        $this->rejectDispatchNotes = '';
+    }
+
+    public function rejectDispatch(string $id): void
+    {
+        $movement = Rst_Movement::find($id);
+        if (! $movement) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data tidak ditemukan.'];
+
+            return;
+        }
+
+        if ($movement->status !== 'in_transit') {
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Hanya bisa reject dispatch pada status In Transit.'];
+
+            return;
+        }
+
+        try {
+            $rejecterName = auth()->user()?->name ?? 'Store Keeper';
+            $reason = $this->rejectDispatchNotes ?: 'Item damaged';
+            StockMovementService::rejectDispatch((int) $id, $rejecterName, $reason);
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Dispatch rejected, stock dibuang.'];
+            $this->closeRejectDispatchOverlay();
         } catch (\Exception $e) {
             $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
         }

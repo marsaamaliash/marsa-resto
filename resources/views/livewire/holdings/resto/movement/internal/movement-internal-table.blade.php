@@ -284,18 +284,20 @@
                                                 </div>
                                             @endif
                                         @endif
+                                    @endif
 
-                                        {{-- Reject button always visible for requested status --}}
+                                    {{-- Reject button: untuk requested ATAU approved --}}
+                                    @if (in_array($item['status'], ['requested', 'approved']))
                                         <div class="flex justify-center gap-2">
                                             <x-ui.sccr-button type="button" variant="icon"
-                                                wire:click="excChefCanReject('{{ $item['id'] }}')"
-                                                class="text-red-600 hover:scale-125" title="Reject">
+                                                wire:click="openRejectOverlay('{{ $item['id'] }}')"
+                                                class="text-red-600 hover:scale-125" title="Tolak">
                                                 <x-ui.sccr-icon name="no" :size="18" />
                                             </x-ui.sccr-button>
                                         </div>
                                     @endif
 
-{{-- Store Keeper: Dispatch (status = approved) --}}
+                                    {{-- Store Keeper: Dispatch (status = approved) --}}
                                     @if ($item['status'] === 'approved')
                                         <!-- DEBUG: canInTransit={{ $canInTransit ? '1' : '0' }}, canApprove={{ $canApprove ? '1' : '0' }} -->
                                         <div class="flex justify-center gap-2">
@@ -520,6 +522,134 @@
                             <x-ui.sccr-button type="button" wire:click="confirmReceiveComplete({{ $receiveOverlayId }})"
                                 class="flex-1 bg-blue-600 text-white hover:bg-blue-700">
                                 Lengkap
+                            </x-ui.sccr-button>
+                        </div>
+
+                        <div class="mt-2">
+                            <x-ui.sccr-button type="button" wire:click="openRejectDispatchOverlay('{{ $receiveOverlayId }}')"
+                                class="w-full bg-red-100 text-red-700 hover:bg-red-200 border border-red-300">
+                                Barang Rusak
+                            </x-ui.sccr-button>
+                        </div>
+                    </div>
+            </div>
+        @else
+            <div class="p-6 text-center text-gray-500">
+                <p class="text-lg font-semibold">Data tidak ditemukan</p>
+            </div>
+    @endif
+    </div>
+    </div>
+    @endif
+
+    {{-- ================= OVERLAY: REJECT DISPATCH (Barang Rusak) ================= --}}
+    @if ($rejectDispatchOverlayMode === 'rejectDispatch' && $rejectDispatchOverlayId)
+        <div class="fixed inset-0 bg-black/40 z-40" wire:click="closeRejectDispatchOverlay"></div>
+
+        <div class="fixed inset-0 z-50 flex items-center justify-center px-6">
+            <div class="w-full max-w-lg bg-white rounded-2xl shadow-2xl relative">
+                <x-ui.sccr-button type="button" variant="icon" wire:click="closeRejectDispatchOverlay"
+                    class="absolute top-4 right-4 text-gray-400 hover:text-red-500 z-10" title="Tutup">
+                    <span class="text-xl leading-none">✕</span>
+                </x-ui.sccr-button>
+
+                @php
+                    $rejectDispatchDetail = $data->firstWhere('id', $rejectDispatchOverlayId);
+                @endphp
+                @if ($rejectDispatchDetail)
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-4 text-red-600">Barang Rusak Saat Pengiriman</h3>
+                        
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                            <div class="grid grid-cols-2 gap-3 text-sm">
+                                <div class="font-semibold text-gray-600">No. Movement:</div>
+                                <div class="font-mono font-bold text-red-700">#{{ $rejectDispatchDetail['id'] }}</div>
+
+                                <div class="font-semibold text-gray-600">Dari:</div>
+                                <div>{{ $rejectDispatchDetail->fromLocation?->name ?? '-' }}</div>
+
+                                <div class="font-semibold text-gray-600">Ke:</div>
+                                <div>{{ $rejectDispatchDetail->toLocation?->name ?? '-' }}</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Alasan / Keterangan</label>
+                            <textarea wire:model="rejectDispatchNotes" rows="3"
+                                class="w-full border border-gray-300 rounded-md px-3 py-2"
+                                placeholder="Contoh: Barang expired, rusak saat pengiriman, dll..."></textarea>
+                        </div>
+
+                        <div class="flex gap-2">
+                            <x-ui.sccr-button type="button" wire:click="closeRejectDispatchOverlay"
+                                class="flex-1 bg-gray-300 text-gray-700 hover:bg-gray-400">
+                                Batal
+                            </x-ui.sccr-button>
+                            <x-ui.sccr-button type="button" wire:click="rejectDispatch('{{ $rejectDispatchOverlayId }}')"
+                                class="flex-1 bg-red-600 text-white hover:bg-red-700">
+                                Rusak / Buang
+                            </x-ui.sccr-button>
+                        </div>
+                    </div>
+            </div>
+        @else
+            <div class="p-6 text-center text-gray-500">
+                <p class="text-lg font-semibold">Data tidak ditemukan</p>
+            </div>
+    @endif
+    </div>
+    </div>
+    @endif
+
+    {{-- ================= OVERLAY: REJECT ================= --}}
+    @if ($rejectOverlayMode === 'reject' && $rejectOverlayId)
+        <div class="fixed inset-0 bg-black/40 z-40" wire:click="closeRejectOverlay"></div>
+
+        <div class="fixed inset-0 z-50 flex items-center justify-center px-6">
+            <div class="w-full max-w-lg bg-white rounded-2xl shadow-2xl relative">
+                <x-ui.sccr-button type="button" variant="icon" wire:click="closeRejectOverlay"
+                    class="absolute top-4 right-4 text-gray-400 hover:text-red-500 z-10" title="Tutup">
+                    <span class="text-xl leading-none">✕</span>
+                </x-ui.sccr-button>
+
+                @php
+                    $rejectDetail = $data->firstWhere('id', $rejectOverlayId);
+                @endphp
+                @if ($rejectDetail)
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-4 text-red-600">Tolak Permintaan</h3>
+                        
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                            <div class="grid grid-cols-2 gap-3 text-sm">
+                                <div class="font-semibold text-gray-600">No. Movement:</div>
+                                <div class="font-mono font-bold text-red-700">#{{ $rejectDetail['id'] }}</div>
+
+                                <div class="font-semibold text-gray-600">Dari:</div>
+                                <div>{{ $rejectDetail->fromLocation?->name ?? '-' }}</div>
+
+                                <div class="font-semibold text-gray-600">Ke:</div>
+                                <div>{{ $rejectDetail->toLocation?->name ?? '-' }}</div>
+
+                                <div class="font-semibold text-gray-600">Status:</div>
+                                <div><span class="px-2 py-0.5 rounded bg-yellow-100 text-yellow-800 text-xs">{{ $rejectDetail['status'] }}</span></div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Alasan Penolakan</label>
+                            <textarea wire:model="rejectNotes" rows="4"
+                                class="w-full border border-gray-300 rounded-md px-3 py-2"
+                                placeholder="Contoh: Stok tidak mencukupi, item tidak tersedia, dll..."></textarea>
+                        </div>
+
+                        <div class="flex gap-2">
+                            <x-ui.sccr-button type="button" wire:click="closeRejectOverlay"
+                                class="flex-1 bg-gray-300 text-gray-700 hover:bg-gray-400">
+                                Batal
+                            </x-ui.sccr-button>
+                            <x-ui.sccr-button type="button" wire:click="excChefCanReject('{{ $rejectOverlayId }}')"
+                                class="flex-1 bg-red-600 text-white hover:bg-red-700">
+                                Tolak
                             </x-ui.sccr-button>
                         </div>
                     </div>
