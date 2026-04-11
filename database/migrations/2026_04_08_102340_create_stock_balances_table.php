@@ -20,6 +20,7 @@ return new class extends Migration
             $table->decimal('qty_reserved', 15, 2)->default(0);
             $table->decimal('qty_in_transit', 15, 2)->default(0);
             $table->decimal('qty_waste', 15, 2)->default(0);
+            
 
             $table->unique(['item_id', 'location_id']);
             $table->timestamps();

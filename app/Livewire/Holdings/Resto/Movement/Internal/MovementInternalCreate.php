@@ -5,8 +5,7 @@ namespace App\Livewire\Holdings\Resto\Movement\Internal;
 use App\Models\Holdings\Resto\CoreStock\Rst_StockBalance;
 use App\Models\Holdings\Resto\Master\Rst_MasterItem;
 use App\Models\Holdings\Resto\Master\Rst_MasterLokasi;
-use App\Models\Holdings\Resto\Movement\Rst_Movement;
-use App\Models\Holdings\Resto\Movement\Rst_MovementItem;
+use App\Services\Resto\StockMovementService;
 use Livewire\Component;
 
 class MovementInternalCreate extends Component
@@ -166,31 +165,26 @@ class MovementInternalCreate extends Component
             return;
         }
 
-        $movement = Rst_Movement::create([
-            'from_location_id' => $this->from_location_id,
-            'to_location_id' => $this->to_location_id,
-            'pic_name' => $this->pic_name,
-            'type' => 'internal_transfer',
-            'status' => 'requested',
-            'remark' => $this->remark ?: null,
-        ]);
+        try {
+            foreach ($validItems as $item) {
+                StockMovementService::createMovement(
+                    itemId: $item['item_id'],
+                    fromLocationId: $this->from_location_id,
+                    toLocationId: $this->to_location_id,
+                    qty: $item['qty'],
+                    notes: $item['remark']
+                );
+            }
 
-        foreach ($validItems as $item) {
-            Rst_MovementItem::create([
-                'movement_id' => $movement->id,
-                'item_id' => $item['item_id'],
-                'qty' => $item['qty'],
-                'uom_id' => $item['uom_id'],
-                'remark' => $item['remark'] ?: null,
-            ]);
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Request Movement berhasil dibuat.'];
+            $this->dispatch('movement-internal-created');
+            $this->dispatch('movement-internal-overlay-close');
+
+            $this->reset(['from_location_id', 'to_location_id', 'pic_name', 'remark', 'items']);
+            $this->addItemRow();
+        } catch (\Exception $e) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
         }
-
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Request Movement berhasil dibuat.'];
-        $this->dispatch('movement-internal-created');
-        $this->dispatch('movement-internal-overlay-close');
-
-        $this->reset(['from_location_id', 'to_location_id', 'pic_name', 'remark', 'items']);
-        $this->addItemRow();
     }
 
     public function cancel(): void

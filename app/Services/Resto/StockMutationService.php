@@ -4,28 +4,31 @@ namespace App\Services\Resto;
 
 use App\Models\Holdings\Resto\CoreStock\Rst_StockBalance;
 use App\Models\Holdings\Resto\CoreStock\Rst_StockMutation;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
-class StockService
+class StockMutationService
 {
     /**
      * Single Source of Truth untuk semua mutasi stok (Movement, Procurement, Production)
+     * Tipe mutasi sesuai enum migration: in, out, transfer, consume, adjustment, waste
      */
     public static function addMutation(
         $itemId,
         $locationId,
         $uomId,
         $qty,
-        $type, // in, out, transfer_in, transfer_out, reserve, unreserve, consume, waste, clear_transit
-        $referenceType = null,
-        $referenceId = null,
+        $type, // in, out, transfer, consume, adjustment, waste
         $notes = null,
         $fromLocationId = null,
-        $toLocationId = null
+        $toLocationId = null,
+        $userId = null
     ) {
+        $userId = $userId ?: Auth::id() ?: 'SYSTEM';
+
         return DB::transaction(function () use (
             $itemId, $locationId, $uomId, $qty, $type,
-            $referenceType, $referenceId, $notes, $fromLocationId, $toLocationId
+            $notes, $fromLocationId, $toLocationId, $userId
         ) {
             // 1. Ambil saldo dengan Lock (Pencegahan Race Condition)
             // Menggunakan lockForUpdate agar row ini tidak bisa diubah transaksi lain sampai selesai
@@ -52,58 +55,40 @@ class StockService
             // 2. Logic Update Saldo berdasarkan Tipe Mutasi
             switch ($type) {
                 case 'in': // Dari Procurement (GR)
-                case 'transfer_in': // Barang masuk ke lokasi tujuan (Dapur)
                     $balance->qty_available += $qty;
                     break;
 
-                case 'reserve': // Mengunci stok (RM Approval / Start Production)
+                case 'transfer': // Perpindahan antar lokasi (Gudang -> Dapur)
                     if ($balance->qty_available < $qty) {
-                        throw new \Exception('Gagal Reserve! Stok Available tidak cukup.');
+                        throw new \Exception('Gagal Transfer! Stok Available tidak cukup.');
                     }
                     $balance->qty_available -= $qty;
-                    $balance->qty_reserved += $qty;
                     break;
 
-                case 'unreserve': // Batal Movement / Batal Masak
-                    if ($balance->qty_reserved < $qty) {
-                        throw new \Exception('Gagal Unreserve! Stok Reserved tidak cukup.');
+                case 'out': // Barang Keluar (Rusak/Expired langsung dari gudang)
+                    if ($balance->qty_available < $qty) {
+                        throw new \Exception('Gagal Out! Stok Available tidak cukup.');
                     }
-                    $balance->qty_reserved -= $qty;
-                    $balance->qty_available += $qty;
-                    break;
-
-                case 'transfer_out': // Admin Gudang klik "Kirim"
-                    if ($balance->qty_reserved < $qty) {
-                        throw new \Exception('Gagal Transfer Out! Stok Reserved tidak cukup.');
-                    }
-                    $balance->qty_reserved -= $qty;
-                    $balance->qty_in_transit += $qty;
-                    break;
-
-                case 'clear_transit': // Membersihkan in_transit di lokasi asal saat barang sudah sampai
-                    if ($balance->qty_in_transit < $qty) {
-                        throw new \Exception('Gagal Clear Transit! Stok In-Transit tidak mencukupi.');
-                    }
-                    $balance->qty_in_transit -= $qty;
+                    $balance->qty_available -= $qty;
                     break;
 
                 case 'consume': // Digunakan dalam Production (bahan baku habis)
-                    if ($balance->qty_reserved < $qty) {
-                        throw new \Exception('Gagal Consume! Stok Reserved tidak mencukupi.');
+                    if ($balance->qty_available < $qty) {
+                        throw new \Exception('Gagal Consume! Stok Available tidak cukup.');
                     }
-                    $balance->qty_reserved -= $qty;
+                    $balance->qty_available -= $qty;
                     break;
 
                 case 'waste': // Pencatatan barang rusak/basi
                     if ($balance->qty_available < $qty) {
-                        throw new \Exception('Gagal Waste! Stok Available tidak mencukupi.');
+                        throw new \Exception('Gagal Waste! Stok Available tidak cukup.');
                     }
                     $balance->qty_available -= $qty;
                     $balance->qty_waste += $qty;
                     break;
 
                 case 'adjustment': // Stock Opname
-                    $balance->qty_available += $qty; // Qty bisa negatif
+                    $balance->qty_available += $qty;
                     break;
 
                 default:
@@ -115,7 +100,10 @@ class StockService
                 throw new \Exception('Transaksi ditolak: Perubahan ini akan menyebabkan saldo stok menjadi negatif.');
             }
 
-            // 4. Catat ke StockMutation (Ledger)
+            // 4. Hitung qty_total untuk audit ledger
+            $qtyAfter = $balance->qty_available + $balance->qty_reserved + $balance->qty_in_transit;
+
+            // 5. Catat ke StockMutation (Ledger)
             Rst_StockMutation::create([
                 'item_id' => $itemId,
                 'location_id' => $locationId,
@@ -123,15 +111,14 @@ class StockService
                 'type' => $type,
                 'qty' => $qty,
                 'qty_before' => $qtyBefore,
-                'qty_after' => $balance->qty_available, // Menunjukkan stok yang bisa dipakai setelah mutasi
-                'reference_type' => $referenceType,
-                'reference_id' => $referenceId,
+                'qty_after' => $qtyAfter,
                 'from_location_id' => $fromLocationId,
                 'to_location_id' => $toLocationId,
+                'user_id' => $userId,
                 'notes' => $notes,
             ]);
 
-            // 5. Simpan Perubahan Saldo
+            // 6. Simpan Perubahan Saldo
             $balance->save();
 
             return $balance;

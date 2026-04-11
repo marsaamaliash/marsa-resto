@@ -11,46 +11,51 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::connection('sccr_resto')->create('stock_mutations', function (Blueprint $table) {
-            $table->id();
+       Schema::connection('sccr_resto')->create('stock_mutations', function (Blueprint $table) {
+    $table->id();
 
-            // Relasi utama
-            $table->foreignId('item_id')->constrained('items')->onDelete('restrict');
-            $table->foreignId('location_id')->constrained('locations')->onDelete('restrict');
-            $table->foreignId('uom_id')->constrained('uoms')->onDelete('restrict');
+    // Relasi Utama
+    $table->foreignId('item_id')->constrained('items')->onDelete('restrict');
+    $table->foreignId('location_id')->constrained('locations')->onDelete('restrict');
+    $table->foreignId('uom_id')->constrained('uoms')->onDelete('restrict');
 
-            // Jenis mutasi
-            $table->enum('type', [
-                'in', 'out', 'transfer_in', 'transfer_out', 'adjustment',
-                'reserve',   // Mengunci stok untuk order
-                'unreserve', // Membatalkan kunci (balikin ke available)
-                'consume',   // Selesai masak dari reserved
-                'waste',
-            ]);
+    /**
+     * JENIS MUTASI (Hanya yang mengubah saldo fisik/available)
+     * - in: Pembelian/Barang Masuk Luar
+     * - out: Barang Keluar (Rusak/Expired langsung dari gudang)
+     * - transfer: Perpindahan antar lokasi (Gudang -> Dapur)
+     * - consume: Pemakaian bahan baku untuk pesanan (Final)
+     * - adjustment: Penyesuaian stok opname
+     */
+    $table->enum('type', ['in', 'out', 'transfer', 'consume', 'adjustment', 'waste']);
 
-            // Qty
-            $table->decimal('qty', 15, 2);
+    // Qty yang bermutasi
+    $table->decimal('qty', 15, 2);
 
-            // Optional tapi penting untuk audit
-            $table->decimal('qty_before', 15, 2)->nullable();
-            $table->decimal('qty_after', 15, 2)->nullable();
+    /** * AUDIT SALDO (Sangat Penting)
+     * Pastikan ini adalah saldo AKHIR TOTAL di lokasi tersebut setelah mutasi.
+     */
+    $table->decimal('qty_before', 15, 2);
+    $table->decimal('qty_after', 15, 2);
 
-            // Referensi dokumen (fleksibel)
-            $table->string('reference_type')->nullable(); // PO, GR, RETUR, dll
-            $table->unsignedBigInteger('reference_id')->nullable();
+    // Referensi Polimorfik (Agar bisa nyambung ke model StockRequest, Order, atau PurchaseOrder)
+    // $table->nullableMorphs('reference'??); 
 
-            // Untuk transfer (biar tidak absurd)
-            $table->foreignId('from_location_id')->nullable()->constrained('locations')->nullOnDelete();
-            $table->foreignId('to_location_id')->nullable()->constrained('locations')->nullOnDelete();
+    /**
+     * DETAIL TRANSFER
+     * Jika type = 'transfer', simpan asal dan tujuannya.
+     */
+    $table->foreignId('from_location_id')->nullable()->constrained('locations');
+    $table->foreignId('to_location_id')->nullable()->constrained('locations');
 
-            // Catatan
-            $table->text('notes')->nullable();
+    $table->string('user_id');
+    $table->text('notes')->nullable();
+    $table->timestamps();
 
-            $table->timestamps();
-
-            // Index biar tidak lemot nanti
-            $table->index(['item_id', 'location_id']);
-        });
+    // Index untuk performa laporan
+    $table->index(['item_id', 'location_id', 'type']);
+    // $table->index(['reference_type', 'reference_id']);
+});
     }
 
     /**
