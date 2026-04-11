@@ -35,7 +35,7 @@ class Rst_RequestActivity extends Model
         return $this->belongsTo(Rst_MasterSatuan::class);
     }
 
-        public function movement()
+    public function movement()
     {
         return $this->belongsTo(Rst_Movement::class);
     }

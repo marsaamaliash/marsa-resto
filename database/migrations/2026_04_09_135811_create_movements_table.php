@@ -26,7 +26,7 @@ return new class extends Migration
             // Movement Type: 'internal_transfer'
             $table->string('type')->default('internal_transfer');
 
-            // Status: 'requested', 'approved', 'in_transit', 'completed'
+            // Status: 'requested', 'approved_by_exc_Chef', 'approved_by_RM', 'approved_by_supervisor', 'in_transit', 'deliver', 'reject'
             $table->string('status')->default('requested');
 
             $table->text('remark')->nullable();

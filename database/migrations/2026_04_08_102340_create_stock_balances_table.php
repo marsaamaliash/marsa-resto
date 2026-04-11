@@ -20,7 +20,6 @@ return new class extends Migration
             $table->decimal('qty_reserved', 15, 2)->default(0);
             $table->decimal('qty_in_transit', 15, 2)->default(0);
             $table->decimal('qty_waste', 15, 2)->default(0);
-            
 
             $table->unique(['item_id', 'location_id']);
             $table->timestamps();
@@ -29,8 +28,7 @@ return new class extends Migration
 
     /**
      * Reverse the migrations.
-     * Sous Chef req > qty_available.gudang(-), qty_reserved.gudang (+) > Exc Chef approval (bisa edit) > RM approval > Supervisor approval > store keeper menyiapkan barang > mengisi penerimaan barang >  diterima sous chef >qty_reserved.gudang (-),  qty_available.dapur (+) 
-
+     * Sous Chef req > qty_available.gudang(-), qty_reserved.gudang (+) > Exc Chef approval (bisa edit) > RM approval > Supervisor approval > store keeper menyiapkan barang > mengisi penerimaan barang >  diterima sous chef >qty_reserved.gudang (-),  qty_available.dapur (+)
      */
     public function down(): void
     {

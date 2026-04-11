@@ -69,4 +69,6 @@
     🚛
         @elseif ($name === 'no')
     ❌
+       @elseif ($name === 'paper')
+    📝
 @endif

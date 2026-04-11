@@ -199,8 +199,11 @@
                                 {{-- Status --}}
                                 <td class="px-3 py-2 text-center">
                                     @if ($item['status'] === 'requested')
-                                        <span
-                                            class="px-2 py-0.5 rounded bg-yellow-100 text-yellow-800 text-xs">Requested</span>
+                                        @php
+                                            $level = $item['approval_level'] ?? 0;
+                                            $levelNames = [0 => '', 1 => '> EC', 2 => '> RM', 3 => '> SPV'];
+                                        @endphp
+                                        <span class="px-2 py-0.5 rounded bg-yellow-100 text-yellow-800 text-xs">Requested{{ $levelNames[$level] ?? '' }}</span>
                                     @elseif($item['status'] === 'approved')
                                         <span
                                             class="px-2 py-0.5 rounded bg-green-100 text-green-800 text-xs">Approved</span>
@@ -230,28 +233,99 @@
                                             <x-ui.sccr-icon name="eye" :size="18" />
                                         </x-ui.sccr-button>
                                     </div>
+                                    
                                     @if ($item['status'] === 'requested')
-                                    <div class="flex justify-center gap-2">
-                                        <x-ui.sccr-button type="button" variant="icon"
-                                            wire:click="excChefCanEdit('{{ $item['id'] }}')"
-                                            class="text-yellow-600 hover:scale-125" title="Edit/Revise Qty">
-                                            <x-ui.sccr-icon name="edit" :size="18" />
-                                        </x-ui.sccr-button>
-                                    </div>
-                                    <div class="flex justify-center gap-2">
-                                        <x-ui.sccr-button type="button" variant="icon"
-                                            wire:click="excChefCanApprove('{{ $item['id'] }}')"
-                                            class="text-green-600 hover:scale-125" title="Approve">
-                                            <x-ui.sccr-icon name="approve" :size="18" />
-                                        </x-ui.sccr-button>
-                                    </div>
-                                    <div class="flex justify-center gap-2">
-                                        <x-ui.sccr-button type="button" variant="icon"
-                                            wire:click="excChefCanReject('{{ $item['id'] }}')"
-                                            class="text-red-600 hover:scale-125" title="Reject">
-                                            <x-ui.sccr-icon name="no" :size="18" />
-                                        </x-ui.sccr-button>
-                                    </div>
+                                        @php
+                                            $approvalLevel = $item['approval_level'] ?? 0;
+                                        @endphp
+
+                                        {{-- Exc Chef: revise & approve (level 0) --}}
+                                        @if ($approvalLevel == 0)
+                                            @if ($canApproveExcChef || $canApprove)
+                                                <div class="flex justify-center gap-2">
+                                                    <x-ui.sccr-button type="button" variant="icon"
+                                                        wire:click="excChefCanEdit('{{ $item['id'] }}')"
+                                                        class="text-yellow-600 hover:scale-125" title="Edit/Revise Qty">
+                                                        <x-ui.sccr-icon name="edit" :size="18" />
+                                                    </x-ui.sccr-button>
+                                                </div>
+                                                <div class="flex justify-center gap-2">
+                                                    <x-ui.sccr-button type="button" variant="icon"
+                                                        wire:click="excChefCanApprove('{{ $item['id'] }}')"
+                                                        class="text-green-600 hover:scale-125" title="Approve (Exc Chef)">
+                                                        <x-ui.sccr-icon name="approve" :size="18" />
+                                                    </x-ui.sccr-button>
+                                                </div>
+                                            @endif
+                                        @endif
+
+                                        {{-- RM: approve (level 1) --}}
+                                        @if ($approvalLevel == 1)
+                                            @if ($canApproveRM || $canApprove)
+                                                <div class="flex justify-center gap-2">
+                                                    <x-ui.sccr-button type="button" variant="icon"
+                                                        wire:click="rmCanApprove('{{ $item['id'] }}')"
+                                                        class="text-green-600 hover:scale-125" title="Approve (RM)">
+                                                        <x-ui.sccr-icon name="approve" :size="18" />
+                                                    </x-ui.sccr-button>
+                                                </div>
+                                            @endif
+                                        @endif
+
+                                        {{-- SPV: approve (level 2) --}}
+                                        @if ($approvalLevel == 2)
+                                            @if ($canApproveSPV || $canApprove)
+                                                <div class="flex justify-center gap-2">
+                                                    <x-ui.sccr-button type="button" variant="icon"
+                                                        wire:click="spvCanApprove('{{ $item['id'] }}')"
+                                                        class="text-green-600 hover:scale-125" title="Approve (SPV)">
+                                                        <x-ui.sccr-icon name="approve" :size="18" />
+                                                    </x-ui.sccr-button>
+                                                </div>
+                                            @endif
+                                        @endif
+
+                                        {{-- Reject button always visible for requested status --}}
+                                        <div class="flex justify-center gap-2">
+                                            <x-ui.sccr-button type="button" variant="icon"
+                                                wire:click="excChefCanReject('{{ $item['id'] }}')"
+                                                class="text-red-600 hover:scale-125" title="Reject">
+                                                <x-ui.sccr-icon name="no" :size="18" />
+                                            </x-ui.sccr-button>
+                                        </div>
+                                    @endif
+
+{{-- Store Keeper: Dispatch (status = approved) --}}
+                                    @if ($item['status'] === 'approved')
+                                        <!-- DEBUG: canInTransit={{ $canInTransit ? '1' : '0' }}, canApprove={{ $canApprove ? '1' : '0' }} -->
+                                        <div class="flex justify-center gap-2">
+                                            <x-ui.sccr-button type="button" variant="icon"
+                                                wire:click="storeKeeperDispatch('{{ $item['id'] }}')"
+                                                class="text-blue-600 hover:scale-125" title="Dispatch">
+                                                <x-ui.sccr-icon name="truck" :size="18" />
+                                            </x-ui.sccr-button>
+                                        </div>
+                                    @endif
+
+                                    {{-- Store Keeper: Receive actions (status = in_transit) --}}
+                                    @if ($item['status'] === 'in_transit')
+                                        <div class="flex justify-center gap-2">
+                                            <x-ui.sccr-button type="button" variant="icon"
+                                                wire:click="openReceiveOverlay('{{ $item['id'] }}')"
+                                                class="text-blue-600 hover:scale-125" title="Terima Barang">
+                                                <x-ui.sccr-icon name="paper" :size="18" />
+                                            </x-ui.sccr-button>
+                                        </div>
+                                    @endif
+
+                                    {{-- Completed status (disable) --}}
+                                    @if ($item['status'] === 'completed')
+                                        <div class="flex justify-center gap-2">
+                                            <x-ui.sccr-button type="button" variant="icon"
+                                                class="text-gray-400 cursor-not-allowed" title="Completed">
+                                                <x-ui.sccr-icon name="check" :size="18" />
+                                            </x-ui.sccr-button>
+                                        </div>
                                     @endif
                                 </td>
                             </tr>
@@ -363,6 +437,90 @@
                                     @endforeach
                                 </tbody>
                             </table>
+                        </div>
+                    </div>
+            </div>
+        @else
+            <div class="p-6 text-center text-gray-500">
+                <p class="text-lg font-semibold">Data tidak ditemukan</p>
+            </div>
+    @endif
+    </div>
+    </div>
+    @endif
+
+    {{-- ================= OVERLAY: RECEIVE ================= --}}
+    @if ($receiveOverlayMode === 'receive' && $receiveOverlayId)
+        <div class="fixed inset-0 bg-black/40 z-40" wire:click="closeReceiveOverlay"></div>
+
+        <div class="fixed inset-0 z-50 flex items-center justify-center px-6">
+            <div class="w-full max-w-2xl bg-white rounded-2xl shadow-2xl relative max-h-[90vh] overflow-hidden flex flex-col">
+                <x-ui.sccr-button type="button" variant="icon" wire:click="closeReceiveOverlay"
+                    class="absolute top-4 right-4 text-gray-400 hover:text-red-500 z-10" title="Tutup">
+                    <span class="text-xl leading-none">✕</span>
+                </x-ui.sccr-button>
+
+                @php
+                    $receiveDetail = $data->firstWhere('id', $receiveOverlayId);
+                @endphp
+                @if ($receiveDetail)
+                    <div class="p-6 overflow-y-auto flex-1">
+                        <h3 class="text-xl font-bold mb-4">Penerimaan Barang</h3>
+                        
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                            <div class="grid grid-cols-2 gap-3 text-sm">
+                                <div class="font-semibold text-gray-600">No. Movement:</div>
+                                <div class="font-mono font-bold text-blue-700">#{{ $receiveDetail['id'] }}</div>
+
+                                <div class="font-semibold text-gray-600">Dari:</div>
+                                <div>{{ $receiveDetail->fromLocation?->name ?? '-' }}</div>
+
+                                <div class="font-semibold text-gray-600">Ke:</div>
+                                <div>{{ $receiveDetail->toLocation?->name ?? '-' }}</div>
+
+                                <div class="font-semibold text-gray-600">Status Saat Ini:</div>
+                                <div><span class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 text-xs">In Transit</span></div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <h4 class="font-semibold text-gray-700 mb-2">Item yang Diterima:</h4>
+                            <table class="min-w-full divide-y divide-gray-200 text-sm">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left">Item</th>
+                                        <th class="px-3 py-2 text-right">Qty</th>
+                                        <th class="px-3 py-2 text-left">Satuan</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    @foreach ($receiveDetail->items as $mi)
+                                        <tr>
+                                            <td class="px-3 py-2">{{ $mi->item?->name ?? '-' }}</td>
+                                            <td class="px-3 py-2 text-right font-mono">{{ number_format($mi->qty, 2) }}</td>
+                                            <td class="px-3 py-2">{{ $mi->uom?->symbols ?? '' }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Keterangan / Catatan Penerimaan</label>
+                            <textarea wire:model="receiveNotes" rows="3"
+                                class="w-full border border-gray-300 rounded-md px-3 py-2"
+                                placeholder="Contoh: Barang diterima lengkap, kondisi baik..."></textarea>
+                        </div>
+
+                        <div class="flex gap-2">
+                            <x-ui.sccr-button type="button" wire:click="closeReceiveOverlay"
+                                class="flex-1 bg-gray-300 text-gray-700 hover:bg-gray-400">
+                                Batal
+                            </x-ui.sccr-button>
+                            <x-ui.sccr-button type="button" wire:click="confirmReceiveComplete({{ $receiveOverlayId }})"
+                                class="flex-1 bg-blue-600 text-white hover:bg-blue-700">
+                                Lengkap
+                            </x-ui.sccr-button>
                         </div>
                     </div>
             </div>

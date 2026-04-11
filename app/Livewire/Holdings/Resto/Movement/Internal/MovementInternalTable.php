@@ -29,6 +29,12 @@ class MovementInternalTable extends Component
 
     public bool $canApprove = false;
 
+    public bool $canApproveExcChef = false;
+
+    public bool $canApproveRM = false;
+
+    public bool $canApproveSPV = false;
+
     public bool $canInTransit = false;
 
     public string $search = '';
@@ -61,6 +67,12 @@ class MovementInternalTable extends Component
 
     public ?string $overlayId = null;
 
+    public ?string $receiveOverlayMode = null;
+
+    public ?string $receiveOverlayId = null;
+
+    public string $receiveNotes = '';
+
     protected $queryString = [
         'search' => ['except' => ''],
         'filter1' => ['except' => ''],
@@ -78,6 +90,9 @@ class MovementInternalTable extends Component
         $this->canUpdate = (bool) ($u?->hasPermission('MOVEMENT_INTERNAL_UPDATE') ?? false);
         $this->canDelete = (bool) ($u?->hasPermission('MOVEMENT_INTERNAL_DELETE') ?? false);
         $this->canApprove = (bool) ($u?->hasPermission('MOVEMENT_INTERNAL_APPROVE') ?? false);
+        $this->canApproveExcChef = (bool) ($u?->hasPermission('MOVEMENT_INTERNAL_APPROVE_EXC_CHEF') ?? false);
+        $this->canApproveRM = (bool) ($u?->hasPermission('MOVEMENT_INTERNAL_APPROVE_RM') ?? false);
+        $this->canApproveSPV = (bool) ($u?->hasPermission('MOVEMENT_INTERNAL_APPROVE_SPV') ?? false);
         $this->canInTransit = (bool) ($u?->hasPermission('MOVEMENT_INTERNAL_IN_TRANSIT') ?? false);
 
         $this->canWrite = $this->canCreate || $this->canUpdate;
@@ -527,9 +542,76 @@ class MovementInternalTable extends Component
             return;
         }
 
+        if (($movement->approval_level ?? 0) !== 0) {
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Exc Chef sudah approve. Hubungi RM.'];
+
+            return;
+        }
+
         try {
-            StockMovementService::approveMovement((int) $id, 'Approved by RM/SPV');
-            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Movement approved.'];
+            $approverName = auth()->user()?->name ?? 'Exc Chef';
+            StockMovementService::approveMovement((int) $id, 1, $approverName, 'Approved by Exc Chef');
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Approved by Exc Chef.'];
+        } catch (\Exception $e) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
+        }
+    }
+
+    public function rmCanApprove(string $id): void
+    {
+        $movement = Rst_Movement::find($id);
+        if (! $movement) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data tidak ditemukan.'];
+
+            return;
+        }
+
+        if ($movement->status !== 'requested') {
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Hanya bisa approve pada status Requested.'];
+
+            return;
+        }
+
+        if (($movement->approval_level ?? 0) !== 1) {
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Belum di-approve oleh Exc Chef.'];
+
+            return;
+        }
+
+        try {
+            $approverName = auth()->user()?->name ?? 'RM';
+            StockMovementService::approveMovement((int) $id, 2, $approverName, 'Approved by RM');
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Approved by RM.'];
+        } catch (\Exception $e) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
+        }
+    }
+
+    public function spvCanApprove(string $id): void
+    {
+        $movement = Rst_Movement::find($id);
+        if (! $movement) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data tidak ditemukan.'];
+
+            return;
+        }
+
+        if ($movement->status !== 'requested') {
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Hanya bisa approve pada status Requested.'];
+
+            return;
+        }
+
+        if (($movement->approval_level ?? 0) !== 2) {
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Belum di-approve oleh RM.'];
+
+            return;
+        }
+
+        try {
+            $approverName = auth()->user()?->name ?? 'Supervisor';
+            StockMovementService::approveMovement((int) $id, 3, $approverName, 'Approved by SPV');
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Approved by SPV. Movement fully approved.'];
         } catch (\Exception $e) {
             $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
         }
@@ -550,10 +632,87 @@ class MovementInternalTable extends Component
             return;
         }
 
-        $movement->status = 'rejected';
-        $movement->save();
+        try {
+            $rejecterName = auth()->user()?->name ?? 'Exc Chef';
+            StockMovementService::rejectMovement((int) $id, $rejecterName, 'Rejected by Exc Chef');
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Movement rejected, stock dikembalikan.'];
+        } catch (\Exception $e) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
+        }
+    }
 
-        $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Movement rejected.'];
+    public function storeKeeperDispatch(string $id): void
+    {
+        $movement = Rst_Movement::find($id);
+        if (! $movement) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data tidak ditemukan.'];
+
+            return;
+        }
+
+        if ($movement->status !== 'approved') {
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Hanya bisa dispatch pada status Approved.'];
+
+            return;
+        }
+
+        try {
+            StockMovementService::dispatchItems((int) $id, 'Dispatched by Store Keeper');
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Items dispatched.'];
+        } catch (\Exception $e) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
+        }
+    }
+
+    public function openReceiveOverlay(string $id): void
+    {
+        $movement = Rst_Movement::with(['items.item', 'items.uom', 'fromLocation', 'toLocation'])->find($id);
+        if (! $movement) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data tidak ditemukan.'];
+
+            return;
+        }
+
+        if ($movement->status !== 'in_transit') {
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Hanya bisa terima pada status In Transit.'];
+
+            return;
+        }
+
+        $this->receiveOverlayMode = 'receive';
+        $this->receiveOverlayId = $id;
+        $this->receiveNotes = '';
+    }
+
+    public function closeReceiveOverlay(): void
+    {
+        $this->receiveOverlayMode = null;
+        $this->receiveOverlayId = null;
+        $this->receiveNotes = '';
+    }
+
+    public function confirmReceiveComplete(int $id): void
+    {
+        $movement = Rst_Movement::find($id);
+        if (! $movement) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data tidak ditemukan.'];
+
+            return;
+        }
+
+        if ($movement->status !== 'in_transit') {
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Hanya bisa terima pada status In Transit.'];
+
+            return;
+        }
+
+        try {
+            StockMovementService::receiveItems($id, $this->receiveNotes ?: 'Received by Dapur');
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Barang diterima.'];
+            $this->closeReceiveOverlay();
+        } catch (\Exception $e) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
+        }
     }
 
     protected function filter1Options(): array

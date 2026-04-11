@@ -14,8 +14,24 @@ class Rst_Movement extends Model
 
     protected $primaryKey = 'id';
 
-    protected $guarded = [
-        
+    protected $guarded = [];
+
+    protected $fillable = [
+        'reference_number',
+        'from_location_id',
+        'to_location_id',
+        'pic_name',
+        'approved_by_name',
+        'type',
+        'status',
+        'remark',
+        'approval_level',
+        'exc_chef_approved_by',
+        'exc_chef_approved_at',
+        'rm_approved_by',
+        'rm_approved_at',
+        'spv_approved_by',
+        'spv_approved_at',
     ];
 
     public function items(): HasMany
