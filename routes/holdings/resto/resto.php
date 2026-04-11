@@ -5,6 +5,7 @@ use App\Livewire\Holdings\Resto\CoreStock\Stock\StockItemTable;
 use App\Livewire\Holdings\Resto\CoreStock\Stock\StockLocationTable;
 use App\Livewire\Holdings\Resto\CoreStock\Stock\StockMinimalTable;
 use App\Livewire\Holdings\Resto\CoreStock\Stock\StockMutationTable;
+use App\Livewire\Holdings\Resto\CoreStock\Stock\StockRequestTable;
 use App\Livewire\Holdings\Resto\Master\DashboardMaster;
 use App\Livewire\Holdings\Resto\Master\Item\ItemTable;
 use App\Livewire\Holdings\Resto\Master\Kategori\KategoriTable;
@@ -33,6 +34,7 @@ Route::prefix('dashboard/resto')
         Route::get('/stock-item', StockItemTable::class)->name('stock-item');
         Route::get('/stock-minimal', StockMinimalTable::class)->name('stock-minimal');
         Route::get('/stock-mutation', StockMutationTable::class)->name('stock-mutation');
+        Route::get('/stock-request', StockRequestTable::class)->name('stock-request');
 
         Route::get('/movement-internal', MovementInternalTable::class)->name('movement-internal');
     });

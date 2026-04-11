@@ -5,6 +5,7 @@ namespace App\Models\Holdings\Resto\CoreStock;
 use App\Models\Holdings\Resto\Master\Rst_MasterItem;
 use App\Models\Holdings\Resto\Master\Rst_MasterLokasi;
 use App\Models\Holdings\Resto\Master\Rst_MasterSatuan;
+use App\Models\Holdings\Resto\Movement\Rst_Movement;
 use Illuminate\Database\Eloquent\Model;
 
 class Rst_RequestActivity extends Model
@@ -32,5 +33,10 @@ class Rst_RequestActivity extends Model
     public function uom()
     {
         return $this->belongsTo(Rst_MasterSatuan::class);
+    }
+
+        public function movement()
+    {
+        return $this->belongsTo(Rst_Movement::class);
     }
 }
