@@ -14,18 +14,16 @@ class StockMovementService
 {
     /**
      * Tahap 1: Sous Chef Request barang dari Gudang ke Dapur
-     * Gudang: qty_available(-qty), qty_reserved(+qty)
+     * multiple items dalam 1 movement
+     * Gudang: qty_available(-qty), qty_reserved(+qty) per item
      */
     public static function createMovement(
-        int $itemId,
         int $fromLocationId,
         int $toLocationId,
-        float $qty,
+        array $items, // [{item_id, qty, notes}, ...]
         ?string $notes = null
     ): Rst_Movement {
-        return DB::transaction(function () use ($itemId, $fromLocationId, $toLocationId, $qty, $notes) {
-            $item = Rst_MasterItem::findOrFail($itemId);
-
+        return DB::transaction(function () use ($fromLocationId, $toLocationId, $items, $notes) {
             $movement = Rst_Movement::create([
                 'from_location_id' => $fromLocationId,
                 'to_location_id' => $toLocationId,
@@ -34,8 +32,149 @@ class StockMovementService
                 'remark' => $notes,
             ]);
 
-            Rst_MovementItem::create([
+            $totalItemsRequested = 0;
+
+            foreach ($items as $itemData) {
+                $itemId = $itemData['item_id'];
+                $qty = $itemData['qty'];
+                $itemNotes = $itemData['notes'] ?? null;
+
+                $item = Rst_MasterItem::findOrFail($itemId);
+
+                Rst_MovementItem::create([
+                    'movement_id' => $movement->id,
+                    'item_id' => $itemId,
+                    'uom_id' => $item->uom_id,
+                    'qty' => $qty,
+                    'remark' => $itemNotes,
+                ]);
+
+                $balance = Rst_StockBalance::where('item_id', $itemId)
+                    ->where('location_id', $fromLocationId)
+                    ->first();
+
+                if (! $balance) {
+                    throw new \Exception("Stok tidak tersedia di lokasi asal untuk item {$item->name}.");
+                }
+
+                if ($balance->qty_available < $qty) {
+                    throw new \Exception("Stok Available tidak cukup untuk item {$item->name}. Tersedia: {$balance->qty_available}");
+                }
+
+                $balance->qty_available -= $qty;
+                $balance->qty_reserved += $qty;
+                $balance->save();
+
+                $totalItemsRequested++;
+            }
+
+            Rst_RequestActivity::create([
                 'movement_id' => $movement->id,
+                'pic' => 'SYSTEM',
+                'action' => 'requested',
+                'status_from' => null,
+                'status_to' => 'PENDING',
+                'comment' => "Requested {$totalItemsRequested} item(s) by Sous Chef",
+                'changes' => json_encode(['item_count' => $totalItemsRequested]),
+            ]);
+
+            return $movement;
+        });
+    }
+
+    /**
+     * Tahap 2: Exc. Chef Revise Qty (ubah qty request per item)
+     * Gudang: qty_available(+selisih), qty_reserved(-selisih)
+     */
+    public static function reviseMovement(
+        int $movementId,
+        int $itemId,
+        float $newQty,
+        ?string $notes = null
+    ): Rst_Movement {
+        return DB::transaction(function () use ($movementId, $itemId, $newQty) {
+            $movement = Rst_Movement::findOrFail($movementId);
+            $movementItem = Rst_MovementItem::where('movement_id', $movementId)
+                ->where('item_id', $itemId)
+                ->firstOrFail();
+
+            $oldQty = $movementItem->qty;
+            $fromLocationId = $movement->from_location_id;
+
+            $balance = Rst_StockBalance::where('item_id', $itemId)
+                ->where('location_id', $fromLocationId)
+                ->first();
+
+            if ($newQty > $oldQty) {
+                $diff = $newQty - $oldQty;
+                if (! $balance || $balance->qty_available < $diff) {
+                    throw new \Exception('Stok Available tidak cukup untuk increase.');
+                }
+                $balance->qty_available -= $diff;
+                $balance->qty_reserved += $diff;
+            } elseif ($newQty < $oldQty) {
+                $diff = $oldQty - $newQty;
+                if ($balance) {
+                    $balance->qty_reserved -= $diff;
+                    $balance->qty_available += $diff;
+                    $balance->save();
+                }
+            }
+
+            $movementItem->qty = $newQty;
+            $movementItem->save();
+
+            $item = Rst_MasterItem::findOrFail($itemId);
+
+            $changeDetails = json_encode([
+                'item_name' => $item->name,
+                'qty' => ['from' => $oldQty, 'to' => $newQty],
+            ]);
+
+            Rst_RequestActivity::create([
+                'movement_id' => $movement->id,
+                'pic' => 'SYSTEM',
+                'action' => 'revised',
+                'status_from' => 'PENDING',
+                'status_to' => 'PENDING',
+                'comment' => "Item {$item->name} revised from {$oldQty} to {$newQty} by Exec Chef",
+                'changes' => $changeDetails,
+            ]);
+
+            return $movement;
+        });
+    }
+
+    /**
+     * Tahap 2b: Tambah item ke movement (Revise)
+     * Gudang: qty_available(-qty), qty_reserved(+qty)
+     */
+    public static function addItemToMovement(
+        int $movementId,
+        int $itemId,
+        float $qty,
+        ?string $notes = null
+    ): Rst_MovementItem {
+        return DB::transaction(function () use ($movementId, $itemId, $qty, $notes) {
+            $movement = Rst_Movement::findOrFail($movementId);
+
+            if ($movement->status !== 'requested') {
+                throw new \Exception('Hanya bisa menambahkan item pada status Requested.');
+            }
+
+            $existingItem = Rst_MovementItem::where('movement_id', $movementId)
+                ->where('item_id', $itemId)
+                ->first();
+
+            if ($existingItem) {
+                throw new \Exception('Item sudah ada dalam movement. Gunakan revise untuk mengubah qty.');
+            }
+
+            $item = Rst_MasterItem::findOrFail($itemId);
+            $fromLocationId = $movement->from_location_id;
+
+            $movementItem = Rst_MovementItem::create([
+                'movement_id' => $movementId,
                 'item_id' => $itemId,
                 'uom_id' => $item->uom_id,
                 'qty' => $qty,
@@ -47,11 +186,11 @@ class StockMovementService
                 ->first();
 
             if (! $balance) {
-                throw new \Exception('Stok tidak tersedia di lokasi asal.');
+                throw new \Exception("Stok tidak tersedia di lokasi asal untuk item {$item->name}.");
             }
 
             if ($balance->qty_available < $qty) {
-                throw new \Exception('Stok Available tidak cukup.');
+                throw new \Exception("Stok Available tidak cukup untuk item {$item->name}. Tersedia: {$balance->qty_available}");
             }
 
             $balance->qty_available -= $qty;
@@ -61,56 +200,57 @@ class StockMovementService
             Rst_RequestActivity::create([
                 'movement_id' => $movement->id,
                 'pic' => 'SYSTEM',
-                'action' => 'requested',
-                'status_from' => null,
+                'action' => 'revised',
+                'status_from' => 'PENDING',
                 'status_to' => 'PENDING',
-                'comment' => "Requested {$qty} {$item->name} by Sous Chef",
-                'changes' => json_encode(['qty' => $qty]),
+                'comment' => "Added item {$item->name} qty {$qty} by Exec Chef",
+                'changes' => json_encode([
+                    'item_name' => $item->name,
+                    'action' => 'added',
+                    'qty' => $qty,
+                ]),
             ]);
 
-            return $movement;
+            return $movementItem;
         });
     }
 
     /**
-     * Tahap 2: Exc. Chef Revise Qty (ubah qty request)
-     * Gudang: qty_available(+selisih), qty_reserved(-selisih)
+     * Tahap 2c: Hapus item dari movement (Revise)
+     * Gudang: qty_reserved(+qty), qty_available(+qty)
      */
-    public static function reviseMovement(
+    public static function removeItemFromMovement(
         int $movementId,
-        float $newQty,
+        int $movementItemId,
         ?string $notes = null
-    ): Rst_Movement {
-        return DB::transaction(function () use ($movementId, $newQty) {
+    ): void {
+        DB::transaction(function () use ($movementId, $movementItemId) {
             $movement = Rst_Movement::findOrFail($movementId);
-            $movementItem = Rst_MovementItem::where('movement_id', $movementId)->firstOrFail();
 
-            $oldQty = $movementItem->qty;
+            if ($movement->status !== 'requested') {
+                throw new \Exception('Hanya bisa menghapus item pada status Requested.');
+            }
+
+            $movementItem = Rst_MovementItem::where('movement_id', $movementId)
+                ->where('id', $movementItemId)
+                ->firstOrFail();
+
             $itemId = $movementItem->item_id;
+            $qty = $movementItem->qty;
             $fromLocationId = $movement->from_location_id;
 
             $balance = Rst_StockBalance::where('item_id', $itemId)
                 ->where('location_id', $fromLocationId)
                 ->first();
 
-            if ($newQty > $oldQty) {
-                $diff = $newQty - $oldQty;
-                if ($balance->qty_available < $diff) {
-                    throw new \Exception('Stok Available tidak cukup untuk increase.');
-                }
-                $balance->qty_available -= $diff;
-                $balance->qty_reserved += $diff;
-            } elseif ($newQty < $oldQty) {
-                $diff = $oldQty - $newQty;
-                $balance->qty_reserved -= $diff;
-                $balance->qty_available += $diff;
+            if ($balance) {
+                $balance->qty_reserved -= $qty;
+                $balance->qty_available += $qty;
+                $balance->save();
             }
 
-            $balance->save();
-            $movementItem->qty = $newQty;
-            $movementItem->save();
-
             $item = Rst_MasterItem::findOrFail($itemId);
+            $movementItem->delete();
 
             Rst_RequestActivity::create([
                 'movement_id' => $movement->id,
@@ -118,11 +258,13 @@ class StockMovementService
                 'action' => 'revised',
                 'status_from' => 'PENDING',
                 'status_to' => 'PENDING',
-                'comment' => "Qty revised to {$newQty} by Exc. Chef",
-                'changes' => json_encode(['qty' => ['from' => $oldQty, 'to' => $newQty]]),
+                'comment' => "Removed item {$item->name} qty {$qty} by Exec Chef",
+                'changes' => json_encode([
+                    'item_name' => $item->name,
+                    'action' => 'removed',
+                    'qty' => $qty,
+                ]),
             ]);
-
-            return $movement;
         });
     }
 

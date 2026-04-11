@@ -230,6 +230,29 @@
                                             <x-ui.sccr-icon name="eye" :size="18" />
                                         </x-ui.sccr-button>
                                     </div>
+                                    @if ($item['status'] === 'requested')
+                                    <div class="flex justify-center gap-2">
+                                        <x-ui.sccr-button type="button" variant="icon"
+                                            wire:click="excChefCanEdit('{{ $item['id'] }}')"
+                                            class="text-yellow-600 hover:scale-125" title="Edit/Revise Qty">
+                                            <x-ui.sccr-icon name="edit" :size="18" />
+                                        </x-ui.sccr-button>
+                                    </div>
+                                    <div class="flex justify-center gap-2">
+                                        <x-ui.sccr-button type="button" variant="icon"
+                                            wire:click="excChefCanApprove('{{ $item['id'] }}')"
+                                            class="text-green-600 hover:scale-125" title="Approve">
+                                            <x-ui.sccr-icon name="approve" :size="18" />
+                                        </x-ui.sccr-button>
+                                    </div>
+                                    <div class="flex justify-center gap-2">
+                                        <x-ui.sccr-button type="button" variant="icon"
+                                            wire:click="excChefCanReject('{{ $item['id'] }}')"
+                                            class="text-red-600 hover:scale-125" title="Reject">
+                                            <x-ui.sccr-icon name="no" :size="18" />
+                                        </x-ui.sccr-button>
+                                    </div>
+                                    @endif
                                 </td>
                             </tr>
                         @empty
@@ -366,6 +389,95 @@
                 <div class="p-6 text-center text-gray-500">
                     <p class="text-lg font-semibold">Form Edit</p>
                     <p class="text-sm">Coming Soon</p>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- ================= OVERLAY: EDIT-REVISE (Exec Chef) ================= --}}
+    @if ($overlayMode === 'edit-revise' && $overlayId)
+        <div class="fixed inset-0 bg-black/40 z-40" wire:click="closeOverlay"></div>
+
+        <div class="fixed inset-0 z-50 flex items-center justify-center px-6">
+            <div class="w-full max-w-2xl bg-white rounded-2xl shadow-2xl relative max-h-[90vh] overflow-hidden flex flex-col">
+                <x-ui.sccr-button type="button" variant="icon" wire:click="closeOverlay"
+                    class="absolute top-4 right-4 text-gray-400 hover:text-red-500 z-10" title="Tutup">
+                    <span class="text-xl leading-none">✕</span>
+                </x-ui.sccr-button>
+
+                <div class="p-6 overflow-y-auto flex-1">
+                    <h3 class="text-lg font-bold mb-4">Revise Qty - Movement #{{ $overlayId }}</h3>
+                    
+                    <div class="mb-4 flex gap-2 items-end">
+                        <div class="flex-1">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tambah Item</label>
+                            <select wire:model="reviseItemToAdd" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                                <option value="0">-- Pilih Item --</option>
+                                @foreach($availableItemsForRevise as $availItem)
+                                    <option value="{{ $availItem['id'] }}">{{ $availItem['name'] }} (tersedia: {{ $availItem['available'] }} {{ $availItem['uom_symbols'] }})</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="w-24">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Qty</label>
+                            <input type="number" wire:model="reviseQtyToAdd" step="0.01" min="0"
+                                class="w-full border border-gray-300 rounded-md px-3 py-2 text-center" placeholder="0">
+                        </div>
+                        <x-ui.sccr-button type="button" wire:click="addItemToRevise"
+                            class="bg-green-600 text-white hover:bg-green-700 px-4">
+                            + Tambah
+                        </x-ui.sccr-button>
+                    </div>
+
+                    <div class="max-h-80 overflow-y-auto border rounded-md mb-4">
+                        <table class="min-w-full text-sm">
+                            <thead class="bg-gray-100 sticky top-0">
+                                <tr>
+                                    <th class="px-3 py-2 text-left">Item</th>
+                                    <th class="px-3 py-2 text-center">Qty Lama</th>
+                                    <th class="px-3 py-2 text-center">Qty Baru</th>
+                                    <th class="px-3 py-2 text-center">Satuan</th>
+                                    <th class="px-3 py-2 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($reviseItems as $index => $item)
+                                    @if(!$item['is_removed'])
+                                    <tr class="border-t">
+                                        <td class="px-3 py-2 font-medium">{{ $item['item_name'] }}</td>
+                                        <td class="px-3 py-2 text-center text-gray-500">{{ number_format($item['qty_original'], 2) }}</td>
+                                        <td class="px-3 py-2">
+                                            <input type="number" wire:model="reviseItems.{{ $index }}.qty_temp" step="0.01" min="0"
+                                                class="w-full border border-gray-300 rounded px-2 py-1 text-center">
+                                        </td>
+                                        <td class="px-3 py-2 text-center text-gray-500">{{ $item['uom_symbols'] }}</td>
+                                        <td class="px-3 py-2 text-center">
+                                            <x-ui.sccr-button type="button" variant="icon" wire:click="removeItemFromRevise({{ $index }})"
+                                                class="text-red-600 hover:scale-125" title="Hapus">
+                                                <x-ui.sccr-icon name="no" :size="16" />
+                                            </x-ui.sccr-button>
+                                        </td>
+                                    </tr>
+                                    @endif
+                                @empty
+                                    <tr>
+                                        <td colspan="5" class="px-3 py-4 text-center text-gray-500">Tidak ada items</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <x-ui.sccr-button type="button" wire:click="closeOverlay"
+                            class="flex-1 bg-gray-300 text-gray-700 hover:bg-gray-400">
+                            Batal
+                        </x-ui.sccr-button>
+                        <x-ui.sccr-button type="button" wire:click="excChefSaveRevise"
+                            class="flex-1 bg-yellow-500 text-white hover:bg-yellow-600">
+                            Simpan Revisi
+                        </x-ui.sccr-button>
+                    </div>
                 </div>
             </div>
         </div>

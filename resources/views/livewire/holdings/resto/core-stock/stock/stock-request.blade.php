@@ -219,15 +219,29 @@
 
                                 <td class="px-3 py-2 text-sm">
                                     @if ($item->changes)
-                                        @php $changes = is_string($item->changes) ? json_decode($item->changes, true) : $item->changes; @endphp
-                                        @if (isset($changes['qty']))
-                                            <span class="text-xs font-mono bg-gray-200 px-1 rounded">
-                                                qty: {{ $changes['qty'] }}
-                                            </span>
+                                        @php 
+                                            $changes = is_string($item->changes) ? json_decode($item->changes, true) : $item->changes;
+                                            $itemName = $changes['item_name'] ?? null;
+                                            $qtyFrom = null;
+                                            $qtyTo = null;
+                                            
+                                            if (isset($changes['qty']['from']) && isset($changes['qty']['to'])) {
+                                                $qtyFrom = $changes['qty']['from'];
+                                                $qtyTo = $changes['qty']['to'];
+                                            } elseif (isset($changes['qty']) && is_numeric($changes['qty'])) {
+                                                $qtyFrom = $changes['qty'];
+                                            }
+                                        @endphp
+                                        @if ($itemName)
+                                            <span class="text-xs font-medium text-blue-600">{{ $itemName }}</span>
                                         @endif
-                                        @if (isset($changes['qty']['from']) && isset($changes['qty']['to']))
-                                            <span class="text-xs text-gray-500 ml-1">
-                                                ({{ $changes['qty']['from'] }} → {{ $changes['qty']['to'] }})
+                                        @if ($qtyFrom !== null && $qtyTo !== null)
+                                            <span class="text-xs font-mono bg-gray-200 px-1 rounded ml-1">
+                                                ({{ $qtyFrom }} → {{ $qtyTo }})
+                                            </span>
+                                        @elseif ($qtyFrom !== null)
+                                            <span class="text-xs font-mono bg-gray-200 px-1 rounded ml-1">
+                                                qty: {{ $qtyFrom }}
                                             </span>
                                         @endif
                                     @else

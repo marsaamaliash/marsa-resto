@@ -2,8 +2,9 @@
 
 namespace App\Livewire\Holdings\Resto\Movement\Internal;
 
+use App\Models\Holdings\Resto\CoreStock\Rst_StockBalance;
 use App\Models\Holdings\Resto\Movement\Rst_Movement;
-use App\Services\Resto\StockService;
+use App\Services\Resto\StockMovementService;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\On;
@@ -324,6 +325,237 @@ class MovementInternalTable extends Component
         $this->openEdit($id);
     }
 
+    public function excChefCanEdit(string $id): void
+    {
+        $movement = Rst_Movement::with(['items.item', 'items.uom'])->find($id);
+        if (! $movement) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data tidak ditemukan.'];
+
+            return;
+        }
+
+        if ($movement->status !== 'requested') {
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Hanya bisa edit pada status Requested.'];
+
+            return;
+        }
+
+        $this->reviseItems = $movement->items->map(fn ($item) => [
+            'movement_item_id' => $item->id,
+            'item_id' => $item->item_id,
+            'item_name' => $item->item?->name ?? '-',
+            'qty' => $item->qty,
+            'qty_original' => $item->qty,
+            'qty_temp' => $item->qty,
+            'uom_symbols' => $item->uom?->symbols ?? '',
+            'is_removed' => false,
+        ])->toArray();
+
+        $this->reviseItemToAdd = 0;
+        $this->reviseQtyToAdd = 0;
+        $this->loadAvailableItemsForRevise($movement->from_location_id);
+
+        $this->overlayMode = 'edit-revise';
+        $this->overlayId = $id;
+    }
+
+    public array $reviseItems = [];
+
+    public int $reviseItemToAdd = 0;
+
+    public float $reviseQtyToAdd = 0;
+
+    public array $availableItemsForRevise = [];
+
+    private function loadAvailableItemsForRevise(int $locationId): void
+    {
+        $existingItemIds = collect($this->reviseItems)->pluck('item_id')->toArray();
+
+        $this->availableItemsForRevise = Rst_StockBalance::where('location_id', $locationId)
+            ->where('qty_available', '>', 0)
+            ->with(['item', 'item.uom'])
+            ->get()
+            ->filter(fn ($b) => ! in_array($b->item_id, $existingItemIds))
+            ->map(fn ($b) => [
+                'id' => $b->item_id,
+                'name' => $b->item?->name ?? '-',
+                'available' => $b->qty_available,
+                'uom_symbols' => $b->item?->uom?->symbols ?? '',
+            ])
+            ->toArray();
+    }
+
+    public function addItemToRevise(): void
+    {
+        if (! $this->overlayId || ! $this->reviseItemToAdd) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Pilih item terlebih dahulu.'];
+
+            return;
+        }
+
+        if (! $this->reviseQtyToAdd || $this->reviseQtyToAdd <= 0) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Masukkan qty yang diinginkan.'];
+
+            return;
+        }
+
+        $selectedItem = collect($this->availableItemsForRevise)->firstWhere('id', $this->reviseItemToAdd);
+        if (! $selectedItem) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Item tidak valid.'];
+
+            return;
+        }
+
+        if ($this->reviseQtyToAdd > $selectedItem['available']) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Qty tidak boleh melebihi stok tersedia.'];
+
+            return;
+        }
+
+        try {
+            StockMovementService::addItemToMovement(
+                (int) $this->overlayId,
+                (int) $this->reviseItemToAdd,
+                (float) $this->reviseQtyToAdd,
+                'Added via revise'
+            );
+
+            $this->reviseItems[] = [
+                'movement_item_id' => null,
+                'item_id' => $selectedItem['id'],
+                'item_name' => $selectedItem['name'],
+                'qty' => $this->reviseQtyToAdd,
+                'qty_original' => 0,
+                'qty_temp' => $this->reviseQtyToAdd,
+                'uom_symbols' => $selectedItem['uom_symbols'],
+                'is_removed' => false,
+            ];
+
+            $this->reviseItemToAdd = 0;
+            $this->reviseQtyToAdd = 0;
+            $this->loadAvailableItemsForRevise(Rst_Movement::find($this->overlayId)->from_location_id);
+
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Item berhasil ditambahkan.'];
+        } catch (\Exception $e) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
+        }
+    }
+
+    public function removeItemFromRevise(int $index): void
+    {
+        if (! isset($this->reviseItems[$index])) {
+            return;
+        }
+
+        $item = $this->reviseItems[$index];
+
+        if ($item['qty_original'] > 0) {
+            try {
+                StockMovementService::removeItemFromMovement(
+                    (int) $this->overlayId,
+                    (int) $item['movement_item_id'],
+                    'Removed via revise'
+                );
+            } catch (\Exception $e) {
+                $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
+
+                return;
+            }
+        }
+
+        $this->reviseItems[$index]['is_removed'] = true;
+    }
+
+    public function excChefSaveRevise(): void
+    {
+        if (! $this->overlayId || empty($this->reviseItems)) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data tidak valid.'];
+
+            return;
+        }
+
+        try {
+            $changes = [];
+
+            foreach ($this->reviseItems as $item) {
+                if ($item['is_removed']) {
+                    continue;
+                }
+
+                $oldQty = $item['qty_original'];
+                $newQty = $item['qty_temp'];
+
+                if ($oldQty != $newQty && $oldQty > 0) {
+                    StockMovementService::reviseMovement(
+                        (int) $this->overlayId,
+                        (int) $item['item_id'],
+                        (float) $newQty,
+                        "Revised from {$oldQty} to {$newQty}"
+                    );
+
+                    $changes[] = "{$item['item_name']}: {$oldQty} → {$newQty}";
+                }
+            }
+
+            // if (empty($changes)) {
+            //     $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak ada perubahan qty.'];
+
+            //     return;
+            // }
+
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Item(s) berhasil direvisi: '.implode(', ', $changes)];
+            $this->closeOverlay();
+            $this->reviseItems = [];
+            $this->availableItemsForRevise = [];
+        } catch (\Exception $e) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
+        }
+    }
+
+    public function excChefCanApprove(string $id): void
+    {
+        $movement = Rst_Movement::find($id);
+        if (! $movement) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data tidak ditemukan.'];
+
+            return;
+        }
+
+        if ($movement->status !== 'requested') {
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Hanya bisa approve pada status Requested.'];
+
+            return;
+        }
+
+        try {
+            StockMovementService::approveMovement((int) $id, 'Approved by RM/SPV');
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Movement approved.'];
+        } catch (\Exception $e) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
+        }
+    }
+
+    public function excChefCanReject(string $id): void
+    {
+        $movement = Rst_Movement::find($id);
+        if (! $movement) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data tidak ditemukan.'];
+
+            return;
+        }
+
+        if ($movement->status !== 'requested') {
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Hanya bisa reject pada status Requested.'];
+
+            return;
+        }
+
+        $movement->status = 'rejected';
+        $movement->save();
+
+        $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Movement rejected.'];
+    }
+
     protected function filter1Options(): array
     {
         return [
@@ -332,6 +564,7 @@ class MovementInternalTable extends Component
             'approved' => 'Approved',
             'in_transit' => 'In Transit',
             'completed' => 'Completed',
+            'rejected' => 'Rejected',
         ];
     }
 

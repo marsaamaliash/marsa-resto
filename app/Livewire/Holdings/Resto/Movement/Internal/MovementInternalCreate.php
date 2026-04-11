@@ -166,15 +166,18 @@ class MovementInternalCreate extends Component
         }
 
         try {
-            foreach ($validItems as $item) {
-                StockMovementService::createMovement(
-                    itemId: $item['item_id'],
-                    fromLocationId: $this->from_location_id,
-                    toLocationId: $this->to_location_id,
-                    qty: $item['qty'],
-                    notes: $item['remark']
-                );
-            }
+            $itemsData = array_map(fn ($item) => [
+                'item_id' => $item['item_id'],
+                'qty' => $item['qty'],
+                'notes' => $item['remark'],
+            ], $validItems);
+
+            StockMovementService::createMovement(
+                fromLocationId: $this->from_location_id,
+                toLocationId: $this->to_location_id,
+                items: $itemsData,
+                notes: $this->remark
+            );
 
             $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Request Movement berhasil dibuat.'];
             $this->dispatch('movement-internal-created');

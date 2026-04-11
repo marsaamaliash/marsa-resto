@@ -67,4 +67,6 @@
     🗃️
     @elseif ($name === 'truck')
     🚛
+        @elseif ($name === 'no')
+    ❌
 @endif
