@@ -33,6 +33,8 @@ return new class extends Migration
             $table->boolean('has_batch')->default(false);
             $table->boolean('has_expiry')->default(false);
 
+            $table->enum('type', ['raw', 'prep', 'menu'])->default('raw');
+
             $table->timestamps();
             $table->softDeletes(); // Jaga-jaga kalau salah hapus, data tidak hilang permanen
         });

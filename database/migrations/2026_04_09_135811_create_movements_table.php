@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::connection('sccr_resto')->create('movements', function (Blueprint $table) {
             $table->id();
-            $table->string('reference_number')->nullable();
+            $table->string('reference_number')->unique();
 
             // Location Tracking
             $table->foreignId('from_location_id')->constrained('locations');

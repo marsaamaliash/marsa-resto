@@ -13,7 +13,9 @@ use App\Livewire\Holdings\Resto\Master\Lokasi\LokasiTable;
 use App\Livewire\Holdings\Resto\Master\Satuan\SatuanTable;
 use App\Livewire\Holdings\Resto\Master\Vendor\VendorTable;
 use App\Livewire\Holdings\Resto\Movement\DashboardMovement;
+use App\Livewire\Holdings\Resto\Movement\Internal\MovementInternalDetail;
 use App\Livewire\Holdings\Resto\Movement\Internal\MovementInternalTable;
+use App\Livewire\Holdings\Resto\Movement\Internal\MovementInternalTable2;
 use Illuminate\Support\Facades\Route;
 
 // ✅ Ubah prefix dan name di sini
@@ -37,4 +39,6 @@ Route::prefix('dashboard/resto')
         Route::get('/stock-request', StockRequestTable::class)->name('stock-request');
 
         Route::get('/movement-internal', MovementInternalTable::class)->name('movement-internal');
+        Route::get('/movement-internal-2', MovementInternalTable2::class)->name('movement-internal-2');
+        Route::get('/movement-internal/{id}', MovementInternalDetail::class)->name('movement-internal-2.detail');
     });

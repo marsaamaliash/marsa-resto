@@ -6,16 +6,11 @@ use App\Models\Holdings\Resto\CoreStock\Rst_RequestActivity;
 use App\Models\Holdings\Resto\CoreStock\Rst_StockMutation;
 use App\Models\Holdings\Resto\Movement\Rst_Movement;
 use App\Services\Resto\StockMovementService;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
-use Livewire\Attributes\On;
 use Livewire\Component;
-use Livewire\WithPagination;
 
-class MovementInternalTable extends Component
+class MovementInternalDetail extends Component
 {
-    use WithPagination;
-
     public array $breadcrumbs = [];
 
     public array $toast = ['show' => false, 'type' => 'success', 'message' => ''];
@@ -38,57 +33,13 @@ class MovementInternalTable extends Component
 
     public bool $canInTransit = false;
 
-    public string $search = '';
-
-    public string $filter1 = '';
-
-    public string $filter2 = '';
-
-    public int $perPage = 10;
-
-    public string $sortField = 'created_at';
-
-    public string $sortDirection = 'desc';
-
-    protected array $allowedSortFields = [
-        'id',
-        'reference_number',
-        'from_location_id',
-        'to_location_id',
-        'type',
-        'status',
-        'pic_name',
-        'created_at',
-    ];
-
-    public array $selectedItems = [];
-
-    public bool $selectAll = false;
-
-    public ?string $overlayMode = null;
-
-    public ?string $overlayId = null;
-
-    public ?string $receiveOverlayMode = null;
-
-    public ?string $receiveOverlayId = null;
-
-    public string $receiveNotes = '';
-
     public ?string $rejectOverlayMode = null;
 
     public ?string $rejectOverlayId = null;
 
     public string $rejectNotes = '';
 
-    protected $queryString = [
-        'search' => ['except' => ''],
-        'filter1' => ['except' => ''],
-        'filter2' => ['except' => ''],
-        'perPage' => ['except' => 10],
-        'sortField' => ['except' => 'created_at'],
-        'sortDirection' => ['except' => 'desc'],
-    ];
+    public int $id;
 
     private function syncCaps(): void
     {
@@ -106,14 +57,17 @@ class MovementInternalTable extends Component
         $this->canWrite = $this->canCreate || $this->canUpdate;
     }
 
-    public function mount(): void
+    public function mount(int $id): void
     {
+        $this->id = $id;
+
         $this->breadcrumbs = [
             ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
             ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
             ['label' => 'Resto', 'route' => 'dashboard.resto', 'color' => 'text-gray-800'],
             ['label' => 'Master Movement', 'route' => 'dashboard.resto.master-movement', 'color' => 'text-gray-900 font-semibold'],
-            ['label' => 'Movement Internal 2', 'color' => 'text-gray-900 font-semibold'],
+            ['label' => 'Movement Internal 2', 'route' => 'dashboard.resto.movement-internal-2', 'color' => 'text-gray-800'],
+            ['label' => 'Detail', 'color' => 'text-gray-900 font-semibold'],
         ];
 
         $this->syncCaps();
@@ -124,141 +78,14 @@ class MovementInternalTable extends Component
         $this->syncCaps();
     }
 
-    protected function dataQuery(): Collection
-    {
-        $query = Rst_Movement::with(['items.item', 'items.uom', 'fromLocation', 'toLocation']);
-
-        if ($this->search !== '') {
-            $search = $this->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('reference_number', 'like', "%{$search}%")
-                    ->orWhereHas('fromLocation', fn ($lq) => $lq->where('name', 'like', "%{$search}%"))
-                    ->orWhereHas('toLocation', fn ($lq) => $lq->where('name', 'like', "%{$search}%"))
-                    ->orWhere('status', 'like', "%{$search}%")
-                    ->orWhere('pic_name', 'like', "%{$search}%")
-                    ->orWhere('remark', 'like', "%{$search}%");
-            });
-        }
-
-        if ($this->filter1 !== '') {
-            $query->where('status', $this->filter1);
-        }
-
-        if ($this->filter2 !== '') {
-            $query->where('type', $this->filter2);
-        }
-
-        if (in_array($this->sortField, $this->allowedSortFields, true)) {
-            $query->orderBy($this->sortField, $this->sortDirection);
-        }
-
-        return $query->get();
-    }
-
-    protected function paginateCollection(Collection $collection, int $perPage): LengthAwarePaginator
-    {
-        $currentPage = LengthAwarePaginator::resolveCurrentPage();
-        $items = $collection->slice(($currentPage - 1) * $perPage, $perPage)->values();
-
-        return new LengthAwarePaginator(
-            $items,
-            $collection->count(),
-            $perPage,
-            $currentPage,
-            ['path' => request()->url(), 'query' => request()->query()]
-        );
-    }
-
-    protected function visibleIds(): array
-    {
-        $p = $this->paginateCollection($this->dataQuery(), $this->perPage);
-
-        return $p->getCollection()
-            ->pluck('id')
-            ->map(fn ($v) => (string) $v)
-            ->toArray();
-    }
-
-    public function sortBy(string $field): void
-    {
-        if (! in_array($field, $this->allowedSortFields, true)) {
-            return;
-        }
-
-        if ($this->sortField === $field) {
-            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
-
-            return;
-        }
-
-        $this->sortField = $field;
-        $this->sortDirection = 'asc';
-    }
-
-    public function applyFilter(): void
-    {
-        $this->resetPage();
-        $this->selectedItems = [];
-        $this->selectAll = false;
-    }
-
-    public function clearFilters(): void
-    {
-        $this->reset(['search', 'filter1', 'filter2']);
-        $this->applyFilter();
-    }
-
-    public function updated($property): void
-    {
-        if (in_array($property, ['search', 'perPage', 'sortField', 'sortDirection'], true)) {
-            $this->resetPage();
-        }
-    }
-
-    public function updatedSelectAll(bool $value): void
-    {
-        $visible = $this->visibleIds();
-
-        if ($value) {
-            $this->selectedItems = array_values(array_unique(array_merge($this->selectedItems, $visible)));
-
-            return;
-        }
-
-        $this->selectedItems = array_values(array_diff($this->selectedItems, $visible));
-    }
-
-    public function updatedSelectedItems(): void
-    {
-        $visible = $this->visibleIds();
-        $this->selectAll = count($visible) > 0 && empty(array_diff($visible, $this->selectedItems));
-    }
-
-    public function openShow(string $id): void
-    {
-        $this->overlayMode = 'show';
-        $this->overlayId = $id;
-    }
-
-    public function closeOverlay(): void
-    {
-        $this->reset(['overlayMode', 'overlayId']);
-    }
-
-    #[On('movement-internal-2-overlay-close')]
-    public function handleOverlayClose(): void
-    {
-        $this->closeOverlay();
-    }
-
     public function getDetailData(): ?Rst_Movement
     {
-        if (! $this->overlayId) {
+        if (! $this->id) {
             return null;
         }
 
         return Rst_Movement::with(['items.item', 'items.uom', 'fromLocation', 'toLocation'])
-            ->find($this->overlayId);
+            ->find($this->id);
     }
 
     public function getStockMutations(): Collection
@@ -429,42 +256,17 @@ class MovementInternalTable extends Component
         }
     }
 
-    protected function filter1Options(): array
-    {
-        return [
-            '' => '-- Semua Status --',
-            'requested' => 'Requested',
-            'approved' => 'Approved',
-            'in_transit' => 'In Transit',
-            'completed' => 'Completed',
-            'rejected' => 'Rejected',
-        ];
-    }
-
-    protected function filter2Options(): array
-    {
-        return [
-            '' => '-- Semua Tipe --',
-            'internal_transfer' => 'Internal Transfer',
-        ];
-    }
-
     public function render()
     {
-        $data = $this->paginateCollection($this->dataQuery(), $this->perPage);
+        $detail = $this->getDetailData();
+        $stockMutations = $this->getStockMutations();
+        $requestActivities = $this->getRequestActivities();
 
-        $visible = $data->getCollection()
-            ->pluck('id')
-            ->map(fn ($v) => (string) $v)
-            ->toArray();
-
-        $this->selectAll = count($visible) > 0 && empty(array_diff($visible, $this->selectedItems));
-
-        return view('livewire.holdings.resto.movement.internal.movement-internal-table-2', [
-            'data' => $data,
+        return view('livewire.holdings.resto.movement.internal.movement-internal-detail', [
+            'detail' => $detail,
+            'stockMutations' => $stockMutations,
+            'requestActivities' => $requestActivities,
             'breadcrumbs' => $this->breadcrumbs,
-            'filter1Options' => $this->filter1Options(),
-            'filter2Options' => $this->filter2Options(),
         ])->layout('components.sccr-layout');
     }
 }

@@ -25,6 +25,7 @@ class StockMovementService
     ): Rst_Movement {
         return DB::transaction(function () use ($fromLocationId, $toLocationId, $items, $notes) {
             $movement = Rst_Movement::create([
+                'reference_number' => ReferenceNumberService::generateMovementNumber(),
                 'from_location_id' => $fromLocationId,
                 'to_location_id' => $toLocationId,
                 'type' => 'internal_transfer',
@@ -74,6 +75,7 @@ class StockMovementService
                     'location_id' => $fromLocationId,
                     'uom_id' => $item->uom_id,
                     'type' => 'reservation',
+                    'reference_number' => $movement->reference_number,
                     'qty' => $qty,
                     'qty_before' => $beforeReserve,
                     'qty_after' => $afterReserve,
@@ -411,6 +413,7 @@ class StockMovementService
                     'location_id' => $fromLocationId,
                     'uom_id' => $item->uom_id,
                     'type' => 'out',
+                    'reference_number' => $movement->reference_number,
                     'qty' => $qty,
                     'qty_before' => $beforeOut,
                     'qty_after' => $afterOut,
@@ -494,6 +497,7 @@ class StockMovementService
                     'location_id' => $toLocationId,
                     'uom_id' => $item->uom_id,
                     'type' => 'in',
+                    'reference_number' => $movement->reference_number,
                     'qty' => $qty,
                     'qty_before' => $beforeDapur,
                     'qty_after' => $afterDapur,
@@ -568,6 +572,7 @@ class StockMovementService
                         'location_id' => $fromLocationId,
                         'uom_id' => $item->uom_id,
                         'type' => 'unreserved',
+                        'reference_number' => $movement->reference_number,
                         'qty' => $qty,
                         'qty_before' => $beforeUnreserve,
                         'qty_after' => $afterUnreserve,
@@ -645,6 +650,7 @@ class StockMovementService
                         'location_id' => $fromLocationId,
                         'uom_id' => $item->uom_id,
                         'type' => 'waste',
+                        'reference_number' => $movement->reference_number,
                         'qty' => $qty,
                         'qty_before' => $before,
                         'qty_after' => $after,

@@ -12,7 +12,7 @@ use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-class MovementInternalTable extends Component
+class MovementInternalTable2 extends Component
 {
     use WithPagination;
 

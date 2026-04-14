@@ -44,21 +44,21 @@
                 </span>
             </a>
 
-            <a href="{{ route('dashboard.resto.stock-mutation') }}"
+            {{-- <a href="{{ route('dashboard.resto.stock-mutation') }}"
                 class="flex items-center justify-center rounded-2xl shadow-lg h-40 bg-green-500 hover:bg-green-600 transform hover:scale-105 transition duration-300">
 
                 <span class="text-white text-lg font-semibold">
                     Log Stok Movement
                 </span>
-            </a>
+            </a> --}}
 
-            <a href="{{ route('dashboard.resto.stock-request') }}"
+            {{-- <a href="{{ route('dashboard.resto.stock-request') }}"
                 class="flex items-center justify-center rounded-2xl shadow-lg h-40 bg-green-500 hover:bg-green-600 transform hover:scale-105 transition duration-300">
 
                 <span class="text-white text-lg font-semibold">
                     Log Aktivitas Movement
                 </span>
-            </a>
+            </a> --}}
         </div>
     </div>
 </div>
