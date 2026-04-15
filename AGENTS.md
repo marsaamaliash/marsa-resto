@@ -5,10 +5,12 @@ Laravel 12 + Livewire 3 + Alpine.js + TailwindCSS 4 HR/attendance management sys
 ## Commands
 
 ```bash
-composer run dev          # server + queue + logs + Vite (concurrently)
+composer run dev          # server + queue + logs(pail) + Vite (concurrently)
 composer run test         # config:clear + artisan test
 vendor/bin/pint           # format (run before committing)
 vendor/bin/pint --test    # dry-run
+php artisan test tests/Feature/File.php   # single file
+php artisan test --filter=name            # filtered
 ```
 
 ## Architecture
@@ -20,27 +22,30 @@ All routes loaded from `routes/web.php`. Module route files are `require`d insid
 ```
 routes/
   web.php                  # root, requires all sub-files
-  auth.php                 # Livewire auth routes
+  auth.php                 # Livewire auth routes (login/logout only)
   dashboard.php            # /dashboard and /dashboard/{holding}
   sso/sso.php              # SSO admin (roles, users, nav-items, approvals)
   holdings/hq/sdm.php      # HR (module 01001) + Inventaris (module 01005)
-  holdings/hq/finance.php  # Finance
+  holdings/hq/finance.php  # Finance (module 01003, mostly commented out)
   holdings/campus/campus.php  # LMS + Siakad
-  holdings/resto/resto.php    # Resto
-  holdings/clinic/         # exists, check if active
-  holdings/farm/           # exists, check if active
-  holdings/hospital/       # exists, check if active
-  holdings/resort/         # exists but empty (commented out)
+  holdings/resto/resto.php    # Resto (prefix: dashboard/resto, NO module auth)
 ```
 
-### Authorization
+Note: `holdings/clinic/`, `holdings/farm/`, `holdings/hospital/`, `holdings/resort/` directories may exist but are NOT loaded in `web.php`.
 
-Two-tier middleware on module routes:
+### Middleware Stack
 
-- `authorize.module:XXXX` — checks `auth_modules` table (cached 12h), user module assignment, lock/inactive status. Super admin bypasses.
-- `authorize.permission:XXX` — fine-grained permission check
+Global module routes (`routes/web.php` line 36): `['auth', 'force.password.change', 'auth.membership']`
 
-SSO routes use `authorize.module:00000`. LMS routes use `role:dosen` instead.
+- `force.password.change` — redirects to `/sso/change-password` if `must_change_password=1` AND password is default (`password123`/`Password123`/`PASSWORD123`). Super admin bypasses.
+- `auth.membership` → `SetAuthMembership` — sets user's auth membership context
+
+Two-tier authorization on module routes:
+
+- `authorize.module:XXXX` — checks `auth_modules` table (cached 12h), user module assignment, lock/inactive status. Super admin bypasses. Also accepts second param `full` for access level.
+- `authorize.permission:XXX` — fine-grained permission check, also verifies module membership first
+
+SSO routes use `authorize.module:00000`. LMS routes use `role:dosen` instead of module auth. Resto and Siakad routes have NO module-level authorization.
 
 ### Directory Layout
 
@@ -57,7 +62,16 @@ app/
     Dashboard/                 # Main dashboards per holding
     Auth/                      # Auth components
     Sso/                       # SSO-specific (approvals)
+    Layout/                    # SccrSidebar
+    GlobalToast.php, SccrToolbar.php
   Models/                      # Eloquent models
+    Auth/                      # AuthUser, AuthIdentity, AuthApproval, AuthNavItem, AuthPersonalAccessToken
+    Holdings/Hq/Sdm/Hr/        # Emp_Employee, Emp_Position, Emp_JobTitle
+    Holdings/Hq/Sdm/Rt/Inventaris/
+    Holdings/Hq/Finance/       # Fin_Account, Fin_Account_List
+    Holdings/Campus/LMS/       # LmsRoom, Quiz*, Participant, etc.
+    Holdings/Campus/Siakads/Students/
+    Holdings/Resto/            # Rst_* prefixed models
   Http/Middleware/             # AuthorizeModule, AuthorizePermission, ForcePasswordChange, SetAuthMembership, SSOVerified, ApiTokenGuard
 ```
 
@@ -71,27 +85,31 @@ app/
 - Permissions: check in `mount()` via `$user?->hasPermission('CODE')`
 - Events: `$this->dispatch('event-name')` / `#[On('event-name')]`
 - Toast: `$this->toast = ['show' => false, 'type' => 'success', 'message' => '']`
-- Vite: uses `@defstudio/vite-livewire-plugin`
+- Vite: uses `@defstudio/vite-livewire-plugin`. Default Blade refresh is disabled; livewire plugin triggers Tailwind CSS refresh.
 
 ### Database
 
-- Default: SQLite (`.env.example`). Testing: SQLite `:memory:`
+- Default: SQLite (`database/database.sqlite`). Testing: SQLite `:memory:`
 - Queue/session/cache: `database` driver
 - Legacy `absensi` table: model `AbsensiPWA`, `primaryKey = 'id_absensi'`, no migration
 - Tables without models: use `\DB::table()`
+- Auth tables: `auth_modules`, `auth_permissions`, `auth_users` (separate from `users` table)
 
 ### Models
 
 - Use `$fillable`, not `$guarded`
 - Typed properties and return types everywhere
 - Models mirror route structure: `app/Models/Holdings/Hq/`, `app/Models/Holdings/Campus/`, etc.
+- Resto models use `Rst_` prefix convention (e.g., `Rst_Menu`, `Rst_Order`)
+- Auth models live in `app/Models/Auth/`
 
 ### Testing
 
-- Pest with `RefreshDatabase` for Feature tests
-- SQLite in-memory, sync queue, array cache/mail/session
+- Pest with `RefreshDatabase` for Feature tests (configured in `tests/Pest.php`)
+- SQLite in-memory, sync queue, array cache/mail/session (configured in `phpunit.xml`)
 - `php artisan test tests/Feature/File.php` for single file
 - `php artisan test --filter=name` for filtered
+- No Unit tests currently exist
 
 ## Key Rules
 

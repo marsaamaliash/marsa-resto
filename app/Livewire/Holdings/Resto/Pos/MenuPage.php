@@ -30,6 +30,10 @@ class MenuPage extends Component
 
     public string $toastMessage = '';
 
+    public ?int $editOrderId = null;
+
+    public ?Rst_Order $editOrder = null;
+
     public function mount(): void
     {
         $this->breadcrumbs = [
@@ -37,6 +41,16 @@ class MenuPage extends Component
             ['label' => 'Resto', 'route' => 'dashboard.resto', 'color' => 'text-gray-800'],
             ['label' => 'Daftar Menu', 'color' => 'text-gray-900 font-semibold'],
         ];
+
+        $orderId = request()->query('order_id');
+        if ($orderId) {
+            $this->editOrderId = (int) $orderId;
+            $this->editOrder = Rst_Order::with(['items.menu'])->find($this->editOrderId);
+            if ($this->editOrder) {
+                $this->customerName = $this->editOrder->customer_name ?? '';
+                $this->tableNumber = $this->editOrder->table_number ?? '';
+            }
+        }
     }
 
     public function updatedCart(array $cart): void
@@ -54,6 +68,33 @@ class MenuPage extends Component
             return;
         }
 
+        if ($this->editOrderId && $this->editOrder) {
+            foreach ($cartData as $item) {
+                $this->editOrder->items()->create([
+                    'menu_id' => $item['id'],
+                    'quantity' => $item['qty'],
+                    'unit_price' => $item['price'],
+                    'subtotal' => $item['price'] * $item['qty'],
+                    'notes' => $item['note'] ?? null,
+                    'status' => 'waiting',
+                ]);
+            }
+
+            $this->editOrder->update([
+                'total_amount' => $this->editOrder->items()->sum('subtotal'),
+                'customer_name' => $customerName ?: $this->editOrder->customer_name,
+                'table_number' => $tableNumber ?: $this->editOrder->table_number,
+            ]);
+
+            $this->toastShow = true;
+            $this->toastType = 'success';
+            $this->toastMessage = 'Item ditambahkan ke order '.$this->editOrder->order_number;
+
+            $this->redirect(route('dashboard.resto.orders'));
+
+            return;
+        }
+
         $orderNumber = Rst_Order::generateOrderNumber();
         $totalAmount = 0;
 
@@ -65,7 +106,6 @@ class MenuPage extends Component
             'order_number' => $orderNumber,
             'customer_name' => $customerName ?: 'Guest',
             'table_number' => $tableNumber,
-            'status' => 'waiting',
             'total_amount' => $totalAmount,
         ]);
 

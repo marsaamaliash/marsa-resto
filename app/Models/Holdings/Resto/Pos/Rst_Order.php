@@ -15,16 +15,23 @@ class Rst_Order extends Model
         'order_number',
         'customer_name',
         'table_number',
-        'status',
         'total_amount',
         'notes',
         'created_by',
+        'payment_status',
+        'paid_at',
     ];
 
     protected $casts = [
         'total_amount' => 'decimal:2',
         'created_by' => 'integer',
+        'paid_at' => 'datetime',
     ];
+
+    public function scopeUnpaid($query)
+    {
+        return $query->where('payment_status', '!=', 'paid');
+    }
 
     public function items(): HasMany
     {

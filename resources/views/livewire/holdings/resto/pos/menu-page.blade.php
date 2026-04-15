@@ -1,7 +1,8 @@
 <div x-data="{
     cart: {},
-    customerName: '',
-    tableNumber: '',
+    customerName: @js($editOrder?->customer_name ?? ''),
+    tableNumber: @js($editOrder?->table_number ?? ''),
+    isEditMode: @js((bool) $editOrderId),
     showConfirmModal: false,
     showNoteModal: false,
     noteItemId: null,
@@ -61,20 +62,21 @@
     },
     confirmOrder() {
         if (this.cartCount === 0) return;
-        if (!this.tableNumber.trim()) {
-            // 2. UBAH DARI $wire MENJADI this.
-            this.toastType = 'error';
-            this.toastMessage = 'Nomor Meja wajib diisi';
-            this.toastShow = true;
-            setTimeout(() => this.toastShow = false, 3000); // Otomatis hilang dalam 3 detik
-            return;
-        }
-        if (!this.customerName.trim()) {
-            this.toastType = 'error';
-            this.toastMessage = 'Nama Pelanggan wajib diisi';
-            this.toastShow = true;
-            setTimeout(() => this.toastShow = false, 3000); 
-            return;
+        if (!this.isEditMode) {
+            if (!this.tableNumber.trim()) {
+                this.toastType = 'error';
+                this.toastMessage = 'Nomor Meja wajib diisi';
+                this.toastShow = true;
+                setTimeout(() => this.toastShow = false, 3000);
+                return;
+            }
+            if (!this.customerName.trim()) {
+                this.toastType = 'error';
+                this.toastMessage = 'Nama Pelanggan wajib diisi';
+                this.toastShow = true;
+                setTimeout(() => this.toastShow = false, 3000); 
+                return;
+            }
         }
         this.showConfirmModal = true;
     },
@@ -93,9 +95,26 @@
     <div class="relative px-8 py-6 bg-yellow-500/60 rounded-b-3xl shadow-lg overflow-hidden">
         <div class="flex justify-between items-start">
             <div>
-                <h1 class="text-3xl md:text-4xl font-bold mb-2">Daftar Menu</h1>
-                <p class="text-lg text-gray-800">Pilih menu untuk menambahkan order pelanggan</p>
+                <h1 class="text-3xl md:text-4xl font-bold mb-2">
+                    @if ($editOrderId)
+                        Tambah ke Order {{ $editOrder->order_number }}
+                    @else
+                        Daftar Menu
+                    @endif
+                </h1>
+                <p class="text-lg text-gray-800">
+                    @if ($editOrderId)
+                        Menambahkan item ke order
+                    @else
+                        Pilih menu untuk menambahkan order pelanggan
+                    @endif
+                </p>
             </div>
+            @if ($editOrderId)
+                <a href="{{ route('dashboard.resto.orders') }}" class="px-4 py-2 bg-white/50 hover:bg-white/70 text-gray-800 rounded-xl font-medium transition">
+                    ← Kembali
+                </a>
+            @endif
         </div>
         <div class="mt-4 flex justify-between items-center text-sm">
             <x-ui.sccr-breadcrumb :items="$breadcrumbs" />
@@ -198,22 +217,35 @@
                         <svg class="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/>
                         </svg>
-                        Order
+                        @if ($editOrderId)
+                            Edit Order
+                        @else
+                            Order
+                        @endif
                         <template x-if="cartCount > 0">
                             <span class="bg-yellow-500 text-white text-xs font-bold px-2 py-0.5 rounded-full" x-text="cartCount"></span>
                         </template>
                     </h2>
 
                     <div class="space-y-3 mb-4">
+                        @if ($editOrderId)
+                            <div class="bg-yellow-50 rounded-xl p-3 mb-3">
+                                <p class="text-xs font-semibold text-yellow-700">Order: {{ $editOrder->order_number }}</p>
+                            </div>
+                        @endif
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1">Nama Pelanggan</label>
                             <input x-model="customerName" type="text" placeholder="Nama pelanggan..."
-                                class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400">
+                                x-bind:readonly="isEditMode"
+                                class="w-full px-3 py-2 rounded-lg border text-sm"
+                                :class="isEditMode ? 'border-gray-200 bg-gray-50 text-gray-500' : 'border-gray-300 focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400'">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1">No. Meja</label>
                             <input x-model="tableNumber" type="number" placeholder="Nomor meja..."
-                                class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400">
+                                x-bind:readonly="isEditMode"
+                                class="w-full px-3 py-2 rounded-lg border text-sm"
+                                :class="isEditMode ? 'border-gray-200 bg-gray-50 text-gray-500' : 'border-gray-300 focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400'">
                         </div>
                     </div>
 
@@ -265,7 +297,11 @@
                                 <button type="button"
                                     @click="confirmOrder()"
                                     class="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl transition-colors">
-                                    Kirim ke Dapur
+                                    @if ($editOrderId)
+                                        Tambah ke Order
+                                    @else
+                                        Kirim ke Dapur
+                                    @endif
                                 </button>
                             </div>
                         </div>

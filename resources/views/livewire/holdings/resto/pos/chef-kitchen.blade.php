@@ -30,10 +30,63 @@
                 <button wire:click="setFilter('waiting')" class="px-4 py-2 rounded-xl font-medium transition {{ $statusFilter === 'waiting' ? 'bg-orange-600 text-white shadow' : 'bg-white text-gray-700 hover:bg-gray-50' }}">Waiting</button>
                 <button wire:click="setFilter('ready')" class="px-4 py-2 rounded-xl font-medium transition {{ $statusFilter === 'ready' ? 'bg-orange-600 text-white shadow' : 'bg-white text-gray-700 hover:bg-gray-50' }}">Ready</button>
                 <button wire:click="setFilter('deliver')" class="px-4 py-2 rounded-xl font-medium transition {{ $statusFilter === 'deliver' ? 'bg-orange-600 text-white shadow' : 'bg-white text-gray-700 hover:bg-gray-50' }}">Deliver</button>
+                <button wire:click="setFilter('reject')" class="px-4 py-2 rounded-xl font-medium transition {{ $statusFilter === 'reject' ? 'bg-orange-600 text-white shadow' : 'bg-white text-gray-700 hover:bg-gray-50' }}">Reject</button>
+                <button wire:click="setFilter('failed')" class="px-4 py-2 rounded-xl font-medium transition {{ $statusFilter === 'failed' ? 'bg-orange-600 text-white shadow' : 'bg-white text-gray-700 hover:bg-gray-50' }}">Gagal</button>
             </div>
         </div>
 
-        @if ($items->isEmpty())
+        @if ($statusFilter === 'failed')
+            @if ($failedItems && $failedItems->isEmpty())
+                <div class="text-center py-16 bg-white/60 backdrop-blur-sm rounded-2xl shadow">
+                    <svg class="mx-auto w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                    </svg>
+                    <p class="text-gray-500 text-lg">Belum ada item gagal</p>
+                </div>
+            @else
+                <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg overflow-hidden">
+                    <table class="w-full">
+                        <thead class="bg-orange-100">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Order</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Meja</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Menu</th>
+                                <th class="px-4 py-3 text-center text-sm font-semibold text-gray-700">Qty</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Alasan</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Waktu</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            @foreach ($failedItems as $item)
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-4 py-3">
+                                        <div class="font-bold text-gray-800">{{ $item->order->order_number }}</div>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <div class="font-medium text-gray-800">{{ $item->order->table_number }}</div>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <div class="text-sm font-medium text-gray-800">{{ $item->menu->name }}</div>
+                                    </td>
+                                    <td class="px-4 py-3 text-center">
+                                        <span class="bg-orange-100 text-orange-700 font-bold px-2 py-1 rounded-lg">{{ $item->quantity }}x</span>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <span class="text-sm text-red-600">{{ $item->reject_reason }}</span>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <span class="text-xs text-gray-500">{{ $item->created_at->diffForHumans() }}</span>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-6">
+                    {{ $failedItems->links() }}
+                </div>
+            @endif
+        @elseif ($items->isEmpty())
             <div class="text-center py-16 bg-white/60 backdrop-blur-sm rounded-2xl shadow">
                 <svg class="mx-auto w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>

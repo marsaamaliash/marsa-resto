@@ -16,6 +16,8 @@ class ChefKitchen extends Component
 
     public string $statusFilter = 'waiting';
 
+    public array $statusFilters = ['all', 'waiting', 'ready', 'deliver', 'reject', 'failed'];
+
     public string $sortField = 'order_created_at';
 
     public string $sortDirection = 'asc';
@@ -61,11 +63,29 @@ class ChefKitchen extends Component
 
     public function render()
     {
+        if ($this->statusFilter === 'failed') {
+            $failedItems = Rst_FailedOrderItem::query()
+                ->with(['menu', 'order'])
+                ->join('orders', 'failed_order_items.order_id', '=', 'orders.id')
+                ->join('menus', 'failed_order_items.menu_id', '=', 'menus.id')
+                ->select('failed_order_items.*')
+                ->where('orders.payment_status', '!=', 'paid')
+                ->when($this->search, fn ($q) => $q->where('menus.name', 'like', '%'.$this->search.'%'))
+                ->orderBy('failed_order_items.created_at', 'desc')
+                ->paginate(20);
+
+            return view('livewire.holdings.resto.pos.chef-kitchen', [
+                'items' => collect([]),
+                'failedItems' => $failedItems,
+            ])->layout('components.sccr-layout');
+        }
+
         $items = Rst_OrderItem::query()
             ->with(['menu', 'order'])
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
             ->join('menus', 'order_items.menu_id', '=', 'menus.id')
             ->select('order_items.*')
+            ->where('orders.payment_status', '!=', 'paid')
             ->when($this->statusFilter !== 'all', fn ($q) => $q->where('order_items.status', $this->statusFilter))
             ->when($this->search, fn ($q) => $q->where('menus.name', 'like', '%'.$this->search.'%'));
 
@@ -109,24 +129,6 @@ class ChefKitchen extends Component
     {
         $item = Rst_OrderItem::findOrFail($itemId);
         $item->update(['status' => $status]);
-
-        $order = $item->order;
-        $allItems = $order->items()->get();
-
-        $allReady = $allItems->every(fn ($i) => in_array($i->status, ['ready', 'deliver']));
-        $allReject = $allItems->every(fn ($i) => $i->status === 'reject');
-        $anyWaiting = $allItems->some(fn ($i) => $i->status === 'waiting');
-        $anyReady = $allItems->some(fn ($i) => $i->status === 'ready');
-
-        if ($allReject) {
-            $order->update(['status' => 'reject']);
-        } elseif ($allReady) {
-            $order->update(['status' => 'ready']);
-        } elseif ($anyReady) {
-            $order->update(['status' => 'ready']);
-        } elseif ($anyWaiting) {
-            $order->update(['status' => 'waiting']);
-        }
 
         $this->toastShow = true;
         $this->toastType = 'success';
@@ -172,8 +174,6 @@ class ChefKitchen extends Component
 
         $item->update(['status' => 'reject']);
 
-        $this->recalculateOrderStatus($item->order);
-
         $this->showRejectModal = false;
         $this->toastShow = true;
         $this->toastType = 'success';
@@ -216,25 +216,7 @@ class ChefKitchen extends Component
         $this->toastMessage = 'Item gagal masak disimpan';
     }
 
-    private function recalculateOrderStatus($order): void
-    {
-        $allItems = $order->items()->get();
-
-        $allReady = $allItems->every(fn ($i) => in_array($i->status, ['ready', 'deliver']));
-        $allReject = $allItems->every(fn ($i) => $i->status === 'reject');
-        $anyWaiting = $allItems->some(fn ($i) => $i->status === 'waiting');
-        $anyReady = $allItems->some(fn ($i) => $i->status === 'ready');
-
-        if ($allReject) {
-            $order->update(['status' => 'reject']);
-        } elseif ($allReady) {
-            $order->update(['status' => 'ready']);
-        } elseif ($anyReady) {
-            $order->update(['status' => 'ready']);
-        } elseif ($anyWaiting) {
-            $order->update(['status' => 'waiting']);
-        }
-    }
+    private function recalculateOrderStatus($order): void {}
 
     public function submitRejectOrder(): void
     {
@@ -260,8 +242,6 @@ class ChefKitchen extends Component
                 'reject_reason' => $this->rejectReason,
             ]);
         }
-
-        $order->update(['status' => 'reject']);
 
         $this->showRejectOrderModal = false;
         $this->toastShow = true;
