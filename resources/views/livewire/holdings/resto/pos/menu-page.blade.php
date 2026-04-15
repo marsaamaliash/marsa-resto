@@ -2,12 +2,25 @@
     cart: {},
     customerName: '',
     tableNumber: '',
+    showConfirmModal: false,
+    showNoteModal: false,
+    noteItemId: null,
+    noteText: '',
+    toastShow: false,
+    toastType: 'success',
+    toastMessage: '',
     addToCart(id, name, price) {
         if (this.cart[id]) {
             this.cart[id].qty++;
         } else {
-            this.cart[id] = { id, name, price: parseFloat(price), qty: 1 };
+            this.cart[id] = { id, name, price: parseFloat(price), qty: 1, note: '' };
         }
+    },
+    get validationErrors() {
+        const errors = [];
+        if (!this.tableNumber.trim()) errors.push('Nomor Meja');
+        if (!this.customerName.trim()) errors.push('Nama Pelanggan');
+        return errors;
     },
     removeFromCart(id) {
         if (this.cart[id]) {
@@ -21,6 +34,19 @@
     deleteFromCart(id) {
         delete this.cart[id];
     },
+    openNoteModal(id) {
+        this.noteItemId = id;
+        this.noteText = this.cart[id]?.note || '';
+        this.showNoteModal = true;
+    },
+    saveNote() {
+        if (this.noteItemId && this.cart[this.noteItemId]) {
+            this.cart[this.noteItemId].note = this.noteText;
+        }
+        this.showNoteModal = false;
+        this.noteItemId = null;
+        this.noteText = '';
+    },
     get cartItems() {
         return Object.values(this.cart);
     },
@@ -32,6 +58,36 @@
     },
     formatRupiah(val) {
         return new Intl.NumberFormat('id-ID').format(val);
+    },
+    confirmOrder() {
+        if (this.cartCount === 0) return;
+        if (!this.tableNumber.trim()) {
+            // 2. UBAH DARI $wire MENJADI this.
+            this.toastType = 'error';
+            this.toastMessage = 'Nomor Meja wajib diisi';
+            this.toastShow = true;
+            setTimeout(() => this.toastShow = false, 3000); // Otomatis hilang dalam 3 detik
+            return;
+        }
+        if (!this.customerName.trim()) {
+            this.toastType = 'error';
+            this.toastMessage = 'Nama Pelanggan wajib diisi';
+            this.toastShow = true;
+            setTimeout(() => this.toastShow = false, 3000); 
+            return;
+        }
+        this.showConfirmModal = true;
+    },
+    submitOrder() {
+        $wire.submitOrder(this.cartItems, this.customerName, this.tableNumber);
+        this.showConfirmModal = false;
+        this.cart = {};
+        this.customerName = '';
+        this.tableNumber = '';
+        this.toastType = 'success';
+        this.toastMessage = 'Order berhasil dikirim ke dapur';
+        this.toastShow = true;
+        setTimeout(() => this.toastShow = false, 3000);
     }
 }">
     <div class="relative px-8 py-6 bg-yellow-500/60 rounded-b-3xl shadow-lg overflow-hidden">
@@ -180,8 +236,16 @@
                                             <p class="text-xs text-gray-500">
                                                 <span x-text="item.qty"></span> x Rp <span x-text="formatRupiah(item.price)"></span>
                                             </p>
+                                            <template x-if="item.note">
+                                                <p class="text-xs text-yellow-600 italic mt-1" x-text="'Catatan: ' + item.note"></p>
+                                            </template>
                                         </div>
                                         <div class="flex items-center gap-1 ml-2">
+                                            <button @click="openNoteModal(item.id)" class="text-yellow-500 hover:text-yellow-600" title="Tambah catatan">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                                </svg>
+                                            </button>
                                             <span class="text-sm font-semibold text-gray-800">Rp <span x-text="formatRupiah(item.price * item.qty)"></span></span>
                                             <button @click="deleteFromCart(item.id)" class="text-red-400 hover:text-red-600 ml-1">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -198,12 +262,93 @@
                                     <span class="font-semibold text-gray-700">Total</span>
                                     <span class="text-lg font-bold text-yellow-600">Rp <span x-text="formatRupiah(cartTotal)"></span></span>
                                 </div>
+                                <button type="button"
+                                    @click="confirmOrder()"
+                                    class="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl transition-colors">
+                                    Kirim ke Dapur
+                                </button>
                             </div>
                         </div>
                     </template>
                 </div>
             </div>
 
+        </div>
+    </div>
+
+    <div x-show="showConfirmModal" x-transition.opacity.duration.300ms
+        class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display: none;">
+        <div class="absolute inset-0 bg-black/50" @click="showConfirmModal = false"></div>
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Konfirmasi Order</h3>
+            <p class="text-gray-600 mb-2">Meja: <span x-text="tableNumber || '-'" class="font-medium"></span></p>
+            <p class="text-gray-600 mb-4">Pelanggan: <span x-text="customerName || '-'" class="font-medium"></span></p>
+            <div class="bg-gray-50 rounded-xl p-4 max-h-48 overflow-y-auto mb-4">
+<template x-for="item in cartItems" :key="item.id">
+                                    <div class="py-2 border-b border-gray-200 last:border-0">
+                                        <div class="flex justify-between items-center">
+                                            <div>
+                                                <span class="font-medium text-gray-800" x-text="item.name"></span>
+                                                <span class="text-sm text-gray-500 ml-2">x<span x-text="item.qty"></span></span>
+                                            </div>
+                                            <span class="font-medium text-gray-800">Rp <span x-text="formatRupiah(item.price * item.qty)"></span></span>
+                                        </div>
+                                        <template x-if="item.note">
+                                            <p class="text-xs text-yellow-600 italic mt-1" x-text="'Catatan: ' + item.note"></p>
+                                        </template>
+                                    </div>
+                                </template>
+            </div>
+            <div class="flex justify-between items-center mb-6">
+                <span class="font-bold text-lg text-gray-700">Total</span>
+                <span class="text-xl font-bold text-yellow-600">Rp <span x-text="formatRupiah(cartTotal)"></span></span>
+            </div>
+            <div class="flex gap-3">
+                <button type="button" @click="showConfirmModal = false"
+                    class="flex-1 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-xl transition-colors">
+                    Batal
+                </button>
+                <button type="button" @click="submitOrder()"
+                    class="flex-1 py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl transition-colors">
+                    Kirim
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div x-show="showNoteModal" x-transition.opacity.duration.300ms
+        class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display: none;">
+        <div class="absolute inset-0 bg-black/50" @click="showNoteModal = false"></div>
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
+            <h3 class="text-lg font-bold text-gray-800 mb-2">Catatan Menu</h3>
+            <p class="text-sm text-gray-500 mb-4" x-text="cart[noteItemId]?.name"></p>
+            <textarea x-model="noteText" rows="3" placeholder="Tambahkan catatan khusus untuk menu ini..."
+                class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 mb-4"></textarea>
+            <div class="flex gap-3">
+                <button type="button" @click="showNoteModal = false"
+                    class="flex-1 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-xl transition-colors">
+                    Batal
+                </button>
+                <button type="button" @click="saveNote()"
+                    class="flex-1 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-xl transition-colors">
+                    Simpan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div x-show="toastShow" x-transition.opacity.duration.300ms
+        class="fixed top-[80px] right-6 z-50 px-5 py-3 rounded-xl shadow-lg"
+        :class="toastType === 'success' ? 'bg-green-500' : 'bg-red-500'"
+        style="display: none;">
+        <div class="flex items-center gap-3">
+            <span class="text-white font-medium" x-text="toastMessage"></span>
+            
+            <button @click="toastShow = false" class="text-white/80 hover:text-white">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
         </div>
     </div>
 </div>

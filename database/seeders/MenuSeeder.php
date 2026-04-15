@@ -58,7 +58,7 @@ class MenuSeeder extends Seeder
                 'slug' => Str::slug('Kentang Goreng Keju'),
                 'created_at' => now(),
                 'updated_at' => now(),
-            ]
+            ],
         ];
 
         // Masukkan data ke dalam tabel menggunakan koneksi sccr_resto

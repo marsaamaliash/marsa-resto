@@ -1,0 +1,48 @@
+<?php
+
+namespace App\Models\Holdings\Resto\Pos;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class Rst_Order extends Model
+{
+    protected $connection = 'sccr_resto';
+
+    protected $table = 'orders';
+
+    protected $fillable = [
+        'order_number',
+        'customer_name',
+        'table_number',
+        'status',
+        'total_amount',
+        'notes',
+        'created_by',
+    ];
+
+    protected $casts = [
+        'total_amount' => 'decimal:2',
+        'created_by' => 'integer',
+    ];
+
+    public function items(): HasMany
+    {
+        return $this->hasMany(Rst_OrderItem::class, 'order_id');
+    }
+
+    public static function generateOrderNumber(): string
+    {
+        $prefix = 'ORD';
+        $date = now()->format('Ymd');
+        $lastOrder = self::whereDate('created_at', today())
+            ->orderByDesc('id')
+            ->first();
+
+        $sequence = $lastOrder
+            ? (int) substr($lastOrder->order_number, -4) + 1
+            : 1;
+
+        return $prefix.$date.str_pad($sequence, 4, '0', STR_PAD_LEFT);
+    }
+}

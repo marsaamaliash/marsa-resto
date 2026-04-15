@@ -4,7 +4,7 @@ namespace App\Models\Holdings\Resto\Pos;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Menu extends Model
+class Rst_Menu extends Model
 {
     protected $connection = 'sccr_resto';
 

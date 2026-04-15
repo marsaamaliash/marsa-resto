@@ -19,10 +19,17 @@
     <div class="max-w-7xl mx-auto px-6 lg:px-8 py-10">
         <div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-6">
 
-            <a href="{{ route('dashboard.resto.menu') }}"
+<a href="{{ route('dashboard.resto.menu') }}"
                 class="flex items-center justify-center rounded-2xl shadow-lg h-40 bg-orange-500 hover:bg-orange-600 transform hover:scale-105 transition duration-300">
                 <span class="text-white text-lg font-semibold">
-                    Daftar Menu &amp; Order
+                    Daftar Menu & Order
+                </span>
+            </a>
+
+            <a href="{{ route('dashboard.resto.chef') }}"
+                class="flex items-center justify-center rounded-2xl shadow-lg h-40 bg-red-600 hover:bg-red-700 transform hover:scale-105 transition duration-300">
+                <span class="text-white text-lg font-semibold">
+                    Kitchen / Chef
                 </span>
             </a>
 
