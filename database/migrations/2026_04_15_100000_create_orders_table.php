@@ -13,7 +13,8 @@ return new class extends Migration
             $table->string('order_number')->unique();
             $table->string('customer_name')->nullable();
             $table->string('table_number')->nullable();
-            $table->enum('status', ['waiting', 'ready', 'deliver', 'reject', 'cancelled'])->default('waiting');
+            $table->string('payment_status', 20)->default('unpaid');
+            $table->timestamp('paid_at')->nullable();
             $table->decimal('total_amount', 10, 2)->default(0);
             $table->text('notes')->nullable();
             $table->unsignedBigInteger('created_by')->nullable();
@@ -28,7 +29,8 @@ return new class extends Migration
             $table->decimal('unit_price', 10, 2);
             $table->decimal('subtotal', 10, 2);
             $table->text('notes')->nullable();
-            $table->enum('status', ['waiting', 'ready', 'deliver', 'reject'])->default('waiting');
+            $table->string('status')->default('waiting');
+            $table->string('reject_reason', 500)->nullable();
             $table->timestamps();
         });
     }

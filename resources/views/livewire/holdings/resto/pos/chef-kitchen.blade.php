@@ -1,4 +1,12 @@
-<div x-data>
+<div x-data wire:poll.5s.keep="poll">
+    <div x-show="$wire.isPolling" x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+        class="fixed top-20 left-1/2 -translate-x-1/2 z-50">
+        <div class="flex items-center gap-2 bg-white/90 backdrop-blur px-3 py-1.5 rounded-full shadow text-xs text-gray-500">
+            <svg class="animate-spin w-3 h-3" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+            Memperbarui...
+        </div>
+    </div>
+
     <div class="relative px-8 py-6 bg-orange-600/80 rounded-b-3xl shadow-lg overflow-hidden">
         <div class="flex justify-between items-start">
             <div>
@@ -25,13 +33,53 @@
                     class="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-300 focus:ring-2 focus:ring-orange-400 focus:border-orange-400 bg-white/80 backdrop-blur-sm">
             </div>
             
-            <div class="flex gap-2 overflow-x-auto">
-                <button wire:click="setFilter('all')" class="px-4 py-2 rounded-xl font-medium transition {{ $statusFilter === 'all' ? 'bg-orange-600 text-white shadow' : 'bg-white text-gray-700 hover:bg-gray-50' }}">Semua</button>
-                <button wire:click="setFilter('waiting')" class="px-4 py-2 rounded-xl font-medium transition {{ $statusFilter === 'waiting' ? 'bg-orange-600 text-white shadow' : 'bg-white text-gray-700 hover:bg-gray-50' }}">Waiting</button>
-                <button wire:click="setFilter('ready')" class="px-4 py-2 rounded-xl font-medium transition {{ $statusFilter === 'ready' ? 'bg-orange-600 text-white shadow' : 'bg-white text-gray-700 hover:bg-gray-50' }}">Ready</button>
-                <button wire:click="setFilter('deliver')" class="px-4 py-2 rounded-xl font-medium transition {{ $statusFilter === 'deliver' ? 'bg-orange-600 text-white shadow' : 'bg-white text-gray-700 hover:bg-gray-50' }}">Deliver</button>
-                <button wire:click="setFilter('reject')" class="px-4 py-2 rounded-xl font-medium transition {{ $statusFilter === 'reject' ? 'bg-orange-600 text-white shadow' : 'bg-white text-gray-700 hover:bg-gray-50' }}">Reject</button>
-                <button wire:click="setFilter('failed')" class="px-4 py-2 rounded-xl font-medium transition {{ $statusFilter === 'failed' ? 'bg-orange-600 text-white shadow' : 'bg-white text-gray-700 hover:bg-gray-50' }}">Gagal</button>
+            <div x-data="{ filterOpen: false }" class="relative">
+                <button @click="filterOpen = !filterOpen" type="button"
+                    class="px-4 py-2 rounded-xl font-medium transition inline-flex items-center gap-1 bg-white text-gray-700 hover:bg-gray-50 shadow-sm border border-gray-200">
+                    @if ($statusFilter === 'all') Semua
+                    @elseif ($statusFilter === 'waiting') Waiting
+                    @elseif ($statusFilter === 'ready') Ready
+                    @elseif ($statusFilter === 'deliver') Deliver
+                    @elseif ($statusFilter === 'reject') Reject
+                    @elseif ($statusFilter === 'failed') Gagal
+                    @endif
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div x-show="filterOpen"
+                    @click.away="filterOpen = false"
+                    x-transition:enter="transition ease-out duration-100"
+                    x-transition:enter-start="transform opacity-0 scale-95"
+                    x-transition:enter-end="transform opacity-100 scale-100"
+                    x-transition:leave="transition ease-in duration-75"
+                    x-transition:leave-start="transform opacity-100 scale-100"
+                    x-transition:leave-end="transform opacity-0 scale-95"
+                    class="absolute right-0 z-30 mt-1 w-40 origin-top-right rounded-xl bg-white shadow-lg ring-1 ring-black/5 py-1"
+                    style="display: none;">
+                    <button wire:click="setFilter('all')" @click="filterOpen = false"
+                        class="w-full text-left px-4 py-2 text-sm {{ $statusFilter === 'all' ? 'bg-orange-50 text-orange-700 font-semibold' : 'text-gray-700 hover:bg-gray-50' }}">
+                        Semua
+                    </button>
+                    <button wire:click="setFilter('waiting')" @click="filterOpen = false"
+                        class="w-full text-left px-4 py-2 text-sm {{ $statusFilter === 'waiting' ? 'bg-orange-50 text-orange-700 font-semibold' : 'text-gray-700 hover:bg-gray-50' }}">
+                        <span class="inline-block w-2 h-2 rounded-full bg-yellow-500 mr-2"></span>Waiting
+                    </button>
+                    <button wire:click="setFilter('ready')" @click="filterOpen = false"
+                        class="w-full text-left px-4 py-2 text-sm {{ $statusFilter === 'ready' ? 'bg-orange-50 text-orange-700 font-semibold' : 'text-gray-700 hover:bg-gray-50' }}">
+                        <span class="inline-block w-2 h-2 rounded-full bg-blue-500 mr-2"></span>Ready
+                    </button>
+                    <button wire:click="setFilter('deliver')" @click="filterOpen = false"
+                        class="w-full text-left px-4 py-2 text-sm {{ $statusFilter === 'deliver' ? 'bg-orange-50 text-orange-700 font-semibold' : 'text-gray-700 hover:bg-gray-50' }}">
+                        <span class="inline-block w-2 h-2 rounded-full bg-green-500 mr-2"></span>Deliver
+                    </button>
+                    <button wire:click="setFilter('reject')" @click="filterOpen = false"
+                        class="w-full text-left px-4 py-2 text-sm {{ $statusFilter === 'reject' ? 'bg-orange-50 text-orange-700 font-semibold' : 'text-gray-700 hover:bg-gray-50' }}">
+                        <span class="inline-block w-2 h-2 rounded-full bg-red-500 mr-2"></span>Reject
+                    </button>
+                    <button wire:click="setFilter('failed')" @click="filterOpen = false"
+                        class="w-full text-left px-4 py-2 text-sm {{ $statusFilter === 'failed' ? 'bg-orange-50 text-orange-700 font-semibold' : 'text-gray-700 hover:bg-gray-50' }}">
+                        <span class="inline-block w-2 h-2 rounded-full bg-gray-500 mr-2"></span>Gagal
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -138,7 +186,7 @@
                             <tr class="hover:bg-gray-50 transition-colors">
                                 <td class="px-4 py-3">
                                     <div class="font-bold text-gray-800">{{ $item->order->order_number }}</div>
-                                    <div class="text-xs text-gray-500">{{ $item->order->created_at->diffForHumans() }}</div>
+                                    <div class="text-xs text-gray-500">{{ $item->created_at->diffForHumans() }}</div>
                                 </td>
                                 <td class="px-4 py-3">
                                     <div class="font-medium text-gray-800">{{ $item->order->table_number }}</div>
@@ -199,7 +247,7 @@
         <div class="absolute inset-0 bg-black/50" x-on:click="$wire.showRejectModal = false"></div>
         <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 z-10">
             <h3 class="text-lg font-bold text-gray-800 mb-2">Tolak Item</h3>
-            <p class="text-sm text-gray-500 mb-4">Item akan dipindahkan ke daftar gagal masak dan status akan diubah menjadi reject.</p>
+            <p class="text-sm text-gray-500 mb-4">Status item akan diubah menjadi reject.</p>
             <textarea wire:model.live="rejectReason" rows="3" placeholder="Masukkan alasan penolakan..."
                 class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-red-400 focus:border-red-400 mb-4"></textarea>
             <div class="flex gap-3">
@@ -221,6 +269,11 @@
         <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 z-10">
             <h3 class="text-lg font-bold text-gray-800 mb-2">Gagal Masak</h3>
             <p class="text-sm text-gray-500 mb-4">Item akan disimpan ke daftar gagal masak tanpa mengubah status.</p>
+            <div class="mb-3">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Qty Gagal</label>
+                <input wire:model.live="failedQty" type="number" min="1"
+                    class="w-24 px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-gray-400 focus:border-gray-400">
+            </div>
             <textarea wire:model.live="failedReason" rows="3" placeholder="Masukkan alasan gagal masak..."
                 class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-gray-400 focus:border-gray-400 mb-4"></textarea>
             <div class="flex gap-3">

@@ -30,6 +30,8 @@ class ChefKitchen extends Component
 
     public string $toastMessage = '';
 
+    public bool $isPolling = false;
+
     public bool $showRejectModal = false;
 
     public int $rejectItemId = 0;
@@ -45,6 +47,8 @@ class ChefKitchen extends Component
     public int $failedItemId = 0;
 
     public string $failedReason = '';
+
+    public int $failedQty = 1;
 
     public function setFilter(string $filter): void
     {
@@ -105,6 +109,13 @@ class ChefKitchen extends Component
         ])->layout('components.sccr-layout');
     }
 
+    public function poll(): void
+    {
+        $this->isPolling = true;
+        $this->render();
+        $this->isPolling = false;
+    }
+
     public function sortBy(string $field): void
     {
         if ($this->sortField === $field) {
@@ -160,19 +171,10 @@ class ChefKitchen extends Component
         }
 
         $item = Rst_OrderItem::findOrFail($this->rejectItemId);
-
-        Rst_FailedOrderItem::create([
-            'original_order_item_id' => $item->id,
-            'order_id' => $item->order_id,
-            'menu_id' => $item->menu_id,
-            'quantity' => $item->quantity,
-            'unit_price' => $item->unit_price,
-            'subtotal' => $item->subtotal,
-            'notes' => $item->notes,
+        $item->update([
+            'status' => 'reject',
             'reject_reason' => $this->rejectReason,
         ]);
-
-        $item->update(['status' => 'reject']);
 
         $this->showRejectModal = false;
         $this->toastShow = true;
@@ -184,6 +186,7 @@ class ChefKitchen extends Component
     {
         $this->failedItemId = $itemId;
         $this->failedReason = '';
+        $this->failedQty = 1;
         $this->showFailedModal = true;
     }
 
@@ -199,13 +202,21 @@ class ChefKitchen extends Component
 
         $item = Rst_OrderItem::findOrFail($this->failedItemId);
 
+        if ($this->failedQty < 1) {
+            $this->toastShow = true;
+            $this->toastType = 'error';
+            $this->toastMessage = 'Qty gagal minimal 1';
+
+            return;
+        }
+
         Rst_FailedOrderItem::create([
             'original_order_item_id' => $item->id,
             'order_id' => $item->order_id,
             'menu_id' => $item->menu_id,
-            'quantity' => $item->quantity,
+            'quantity' => $this->failedQty,
             'unit_price' => $item->unit_price,
-            'subtotal' => $item->subtotal,
+            'subtotal' => $this->failedQty * $item->unit_price,
             'notes' => $item->notes,
             'reject_reason' => $this->failedReason,
         ]);

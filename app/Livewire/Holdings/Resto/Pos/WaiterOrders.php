@@ -27,6 +27,8 @@ class WaiterOrders extends Component
 
     public string $toastMessage = '';
 
+    public bool $isPolling = false;
+
     public bool $showTambahModal = false;
 
     public bool $showEditModal = false;
@@ -50,7 +52,7 @@ class WaiterOrders extends Component
         $this->breadcrumbs = [
             ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
             ['label' => 'Resto', 'route' => 'dashboard.resto', 'color' => 'text-gray-800'],
-            ['label' => 'Order Saya', 'color' => 'text-gray-900 font-semibold'],
+            ['label' => 'Order List', 'color' => 'text-gray-900 font-semibold'],
         ];
     }
 
@@ -77,6 +79,13 @@ class WaiterOrders extends Component
             'items' => $items,
             'availableOrders' => $availableOrders,
         ])->layout('components.sccr-layout');
+    }
+
+    public function poll(): void
+    {
+        $this->isPolling = true;
+        $this->render();
+        $this->isPolling = false;
     }
 
     public function updatingSearch(): void

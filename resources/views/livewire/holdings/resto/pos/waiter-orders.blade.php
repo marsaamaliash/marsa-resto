@@ -1,8 +1,16 @@
-<div x-data>
+<div x-data wire:poll.5s.keep="poll">
+    <div x-show="$wire.isPolling" x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+        class="fixed top-20 left-1/2 -translate-x-1/2 z-50">
+        <div class="flex items-center gap-2 bg-white/90 backdrop-blur px-3 py-1.5 rounded-full shadow text-xs text-gray-500">
+            <svg class="animate-spin w-3 h-3" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+            Memperbarui...
+        </div>
+    </div>
+
     <div class="relative px-8 py-6 bg-yellow-500/60 rounded-b-3xl shadow-lg overflow-hidden">
         <div class="flex justify-between items-start">
             <div>
-                <h1 class="text-3xl md:text-4xl font-bold mb-2 text-white">Order Saya</h1>
+                <h1 class="text-3xl md:text-4xl font-bold mb-2 text-white">Order List</h1>
                 <p class="text-lg text-yellow-100">Lihat dan kelola status order</p>
             </div>
         </div>
@@ -84,6 +92,9 @@
                                     <div class="text-sm font-medium text-gray-800">{{ $item->menu->name }}</div>
                                     @if ($item->notes)
                                         <div class="text-xs text-yellow-600 italic mt-0.5">{{ $item->notes }}</div>
+                                    @endif
+                                    @if ($item->reject_reason)
+                                        <div class="text-xs text-red-600 font-medium mt-0.5">Ditolak: {{ $item->reject_reason }}</div>
                                     @endif
                                 </td>
                                 <td class="px-4 py-3 text-center">
