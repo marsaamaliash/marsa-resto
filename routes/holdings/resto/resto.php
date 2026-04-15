@@ -17,7 +17,9 @@ use App\Livewire\Holdings\Resto\Movement\Internal\MovementInternalDetail;
 use App\Livewire\Holdings\Resto\Movement\Internal\MovementInternalTable;
 use App\Livewire\Holdings\Resto\Resep\DashboardResep;
 use App\Livewire\Holdings\Resto\Resep\KonversiSatuan\KonversiSatuanTable;
+use App\Livewire\Holdings\Resto\Resep\Menu\ResepMenuTable as MenuResepMenuTable;
 use App\Livewire\Holdings\Resto\Resep\Repack\RepackTable;
+use App\Livewire\Holdings\Resto\Resep\Repack\ResepMenuTable;
 use Illuminate\Support\Facades\Route;
 
 // ✅ Ubah prefix dan name di sini
@@ -46,4 +48,6 @@ Route::prefix('dashboard/resto')
 
         Route::get('/konversi-satuan', KonversiSatuanTable::class)->name('konversi-satuan');
         Route::get('/repack', RepackTable::class)->name('repack');
+
+        Route::get('/resep-menu', MenuResepMenuTable::class)->name('resep-menu');
     });

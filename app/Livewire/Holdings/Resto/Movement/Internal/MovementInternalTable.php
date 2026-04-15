@@ -286,6 +286,13 @@ class MovementInternalTable extends Component
         }
     }
 
+    public function onCreateFromLocationChanged(): void
+    {
+        $this->createItems = [
+            ['item_id' => 0, 'qty' => 0, 'remark' => ''],
+        ];
+    }
+
     public function processCreate(): void
     {
         if ($this->createFromLocationId === 0) {

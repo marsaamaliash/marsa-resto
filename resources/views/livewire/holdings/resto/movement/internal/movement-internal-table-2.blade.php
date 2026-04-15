@@ -374,7 +374,7 @@
                         <div class="grid grid-cols-3 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Dari Gudang <span class="text-red-500">*</span></label>
-                                <select wire:model="createFromLocationId" class="w-full border-gray-300 rounded-md shadow-sm">
+                                <select wire:model="createFromLocationId" wire:change="onCreateFromLocationChanged" class="w-full border-gray-300 rounded-md shadow-sm">
                                     <option value="0">-- Pilih Gudang --</option>
                                     @foreach($this->getCreateFromLocations() as $loc)
                                         <option value="{{ $loc['id'] }}">{{ $loc['name'] }}</option>
