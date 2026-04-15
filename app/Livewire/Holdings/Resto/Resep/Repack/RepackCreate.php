@@ -5,6 +5,7 @@ namespace App\Livewire\Holdings\Resto\Resep\Repack;
 use App\Models\Holdings\Resto\Master\Rst_MasterItem;
 use App\Models\Holdings\Resto\Master\Rst_MasterKategori;
 use App\Models\Holdings\Resto\Master\Rst_MasterLokasi;
+use App\Models\Holdings\Resto\Master\Rst_MasterSatuan;
 use App\Services\Resto\StockRepackService;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -36,6 +37,8 @@ class RepackCreate extends Component
     public string $newItemMinStock = '0';
 
     public string $newItemType = 'raw';
+
+    public string $newItemUomId = '';
 
     public array $categories = [];
 
@@ -110,6 +113,7 @@ class RepackCreate extends Component
         $this->newItemCategoryId = '';
         $this->newItemMinStock = '0';
         $this->newItemType = 'raw';
+        $this->newItemUomId = '';
     }
 
     public function closeNewItemModal(): void
@@ -132,6 +136,7 @@ class RepackCreate extends Component
             'newItemCategoryId' => ['required', 'integer', 'exists:sccr_resto.categories,id'],
             'newItemMinStock' => ['nullable', 'numeric', 'min:0'],
             'newItemType' => ['required', 'string', 'in:raw,prep,menu'],
+            'newItemUomId' => ['required', 'integer', 'exists:sccr_resto.uoms,id'],
         ];
     }
 
@@ -144,7 +149,7 @@ class RepackCreate extends Component
             'sku' => $this->newItemSku,
             'description' => $this->newItemDescription ?: null,
             'category_id' => $this->newItemCategoryId,
-            'uom_id' => 1,
+            'uom_id' => $this->newItemUomId,
             'min_stock' => $this->newItemMinStock ?: 0,
             'type' => $this->newItemType,
             'is_active' => true,
@@ -169,6 +174,14 @@ class RepackCreate extends Component
             ->pluck('name', 'id')
             ->toArray();
 
+        $itemUoms = Rst_MasterItem::where('is_active', true)
+            ->pluck('uom_id', 'id')
+            ->toArray();
+
+        $uoms = Rst_MasterSatuan::orderBy('name')
+            ->pluck('name', 'id')
+            ->toArray();
+
         $categories = Rst_MasterKategori::where('is_active', true)
             ->orderBy('name')
             ->get()
@@ -178,6 +191,8 @@ class RepackCreate extends Component
         return view('livewire.holdings.resto.resep.repack.repack-create', [
             'locations' => $locations,
             'items' => $items,
+            'itemUoms' => $itemUoms,
+            'uoms' => $uoms,
             'categories' => $categories,
         ])->layout('components.sccr-layout');
     }

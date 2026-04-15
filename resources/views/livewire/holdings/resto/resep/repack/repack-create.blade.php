@@ -44,7 +44,7 @@
                         class="flex-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
                         <option value="">-- Pilih Item --</option>
                         @foreach ($items as $id => $name)
-                            <option value="{{ $id }}">{{ $name }}</option>
+                            <option value="{{ $id }}">{{ $name }} ({{ $uoms[$itemUoms[$id] ?? 1] }})</option>
                         @endforeach
                     </select>
                     <button type="button" wire:click="openNewItemModal"
@@ -152,7 +152,7 @@
                                 <span class="text-red-600 text-sm">{{ $message }}</span>
                             @enderror
                         </div>
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-3 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Min Stock</label>
                                 <input type="number" step="0.01" min="0" wire:model.defer="newItemMinStock"
@@ -167,6 +167,19 @@
                                     <option value="prep">Prep</option>
                                     <option value="menu">Menu</option>
                                 </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Satuan</label>
+                                <select wire:model.defer="newItemUomId"
+                                    class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    <option value="">-- Pilih --</option>
+                                    @foreach ($uoms as $id => $name)
+                                        <option value="{{ $id }}">{{ $name }}</option>
+                                    @endforeach
+                                </select>
+                                @error('newItemUomId')
+                                    <span class="text-red-600 text-sm">{{ $message }}</span>
+                                @enderror
                             </div>
                         </div>
                         <div class="flex gap-3 pt-4">

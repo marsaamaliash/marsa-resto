@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Holdings\Resto\Resep\Repack;
 
+use App\Models\Holdings\Resto\CoreStock\Rst_StockMutation;
 use App\Models\Holdings\Resto\Resep\Rst_StockRepack;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
@@ -61,6 +62,39 @@ class RepackTable extends Component
         'sortField' => ['except' => 'id'],
         'sortDirection' => ['except' => 'desc'],
     ];
+
+    public function getDetailData(): ?Rst_StockRepack
+    {
+        if (! $this->overlayId) {
+            return null;
+        }
+
+        return Rst_StockRepack::with(['sourceItem', 'targetItem', 'location', 'creator'])
+            ->find($this->overlayId);
+    }
+
+    public function getStockMutations(): Collection
+    {
+        $detail = $this->getDetailData();
+        if (! $detail || ! $detail->repack_number) {
+            return collect();
+        }
+
+        return Rst_StockMutation::where('reference_number', $detail->repack_number)
+            ->with(['item', 'uom', 'location'])
+            ->orderBy('created_at', 'asc')
+            ->get();
+    }
+
+    public function getRepackOutMutation(): ?Rst_StockMutation
+    {
+        return $this->getStockMutations()->where('type', 'repack_out')->first();
+    }
+
+    public function getRepackInMutation(): ?Rst_StockMutation
+    {
+        return $this->getStockMutations()->where('type', 'repack_in')->first();
+    }
 
     private function syncCaps(): void
     {
@@ -316,9 +350,18 @@ class RepackTable extends Component
 
         $this->selectAll = count($visible) > 0 && empty(array_diff($visible, $this->selectedItems));
 
+        $detail = $this->overlayMode === 'show' ? $this->getDetailData() : null;
+        $stockMutations = $this->overlayMode === 'show' ? $this->getStockMutations() : collect();
+        $repackOut = $this->overlayMode === 'show' ? $this->getRepackOutMutation() : null;
+        $repackIn = $this->overlayMode === 'show' ? $this->getRepackInMutation() : null;
+
         return view('livewire.holdings.resto.resep.repack.repack-table', [
 
             'data' => $data,
+            'detail' => $detail,
+            'stockMutations' => $stockMutations,
+            'repackOut' => $repackOut,
+            'repackIn' => $repackIn,
             'breadcrumbs' => $this->breadcrumbs,
             'filter1Options' => $this->filter1Options(),
             'filter2Options' => $this->filter2Options(),
