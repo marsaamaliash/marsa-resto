@@ -26,6 +26,13 @@
                 </span>
             </a>
 
+            <a href="{{ route('dashboard.resto.orders') }}"
+                class="flex items-center justify-center rounded-2xl shadow-lg h-40 bg-blue-500 hover:bg-blue-600 transform hover:scale-105 transition duration-300">
+                <span class="text-white text-lg font-semibold">
+                    List Order
+                </span>
+            </a>
+
             <a href="{{ route('dashboard.resto.chef') }}"
                 class="flex items-center justify-center rounded-2xl shadow-lg h-40 bg-red-600 hover:bg-red-700 transform hover:scale-105 transition duration-300">
                 <span class="text-white text-lg font-semibold">

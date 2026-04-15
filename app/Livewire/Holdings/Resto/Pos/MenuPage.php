@@ -65,7 +65,7 @@ class MenuPage extends Component
             'order_number' => $orderNumber,
             'customer_name' => $customerName ?: 'Guest',
             'table_number' => $tableNumber,
-            'status' => 'pending',
+            'status' => 'waiting',
             'total_amount' => $totalAmount,
         ]);
 
@@ -77,7 +77,7 @@ class MenuPage extends Component
                 'unit_price' => $item['price'],
                 'subtotal' => $item['price'] * $item['qty'],
                 'notes' => $item['note'] ?? null,
-                'status' => 'pending',
+                'status' => 'waiting',
             ]);
         }
 

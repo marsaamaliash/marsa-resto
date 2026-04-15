@@ -212,7 +212,7 @@
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1">No. Meja</label>
-                            <input x-model="tableNumber" type="text" placeholder="Nomor meja..."
+                            <input x-model="tableNumber" type="number" placeholder="Nomor meja..."
                                 class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400">
                         </div>
                     </div>

@@ -2,7 +2,6 @@
 
 namespace App\Livewire\Holdings\Resto\Pos;
 
-use App\Models\Holdings\Resto\Pos\Rst_Order;
 use App\Models\Holdings\Resto\Pos\Rst_OrderItem;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -13,13 +12,25 @@ class ChefKitchen extends Component
 
     public array $breadcrumbs = [];
 
-    public string $statusFilter = 'pending';
+    public string $statusFilter = 'waiting';
+
+    public string $sortField = 'order_created_at';
+
+    public string $sortDirection = 'asc';
+
+    public string $search = '';
 
     public bool $toastShow = false;
 
     public string $toastType = '';
 
     public string $toastMessage = '';
+
+    public function setFilter(string $filter): void
+    {
+        $this->statusFilter = $filter;
+        $this->resetPage();
+    }
 
     public function mount(): void
     {
@@ -32,15 +43,48 @@ class ChefKitchen extends Component
 
     public function render()
     {
-        $orders = Rst_Order::with(['items.menu'])
-            ->whereIn('status', ['pending', 'confirmed', 'processing'])
-            ->when($this->statusFilter !== 'all', fn ($q) => $q->where('status', $this->statusFilter))
-            ->orderBy('created_at', 'asc')
-            ->paginate(10);
+        $items = Rst_OrderItem::query()
+            ->with(['menu', 'order'])
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->join('menus', 'order_items.menu_id', '=', 'menus.id')
+            ->select('order_items.*')
+            ->when($this->statusFilter !== 'all', fn ($q) => $q->where('order_items.status', $this->statusFilter))
+            ->when($this->search, fn ($q) => $q->where('menus.name', 'like', '%'.$this->search.'%'));
+
+        if ($this->sortField === 'menu_name') {
+            $items->orderBy('menus.name', $this->sortDirection);
+        } elseif ($this->sortField === 'table_number') {
+            $items->orderBy('orders.table_number', 'asc');
+        } else {
+            // UBAH INI: Agar waktu yang dihitung adalah waktu spesifik item itu masuk dapur
+            $items->orderBy('order_items.created_at', $this->sortDirection);
+        }
+
+        $items = $items->paginate(20);
 
         return view('livewire.holdings.resto.pos.chef-kitchen', [
-            'orders' => $orders,
+            'items' => $items,
         ])->layout('components.sccr-layout');
+    }
+
+    public function sortBy(string $field): void
+    {
+        if ($this->sortField === $field) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortField = $field;
+            $this->sortDirection = 'asc';
+        }
+    }
+
+    public function updatingSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedStatusFilter(): void
+    {
+        $this->resetPage();
     }
 
     public function updateItemStatus(int $itemId, string $status): void
@@ -51,35 +95,24 @@ class ChefKitchen extends Component
         $order = $item->order;
         $allItems = $order->items()->get();
 
-        $allReady = $allItems->every(fn ($i) => in_array($i->status, ['ready', 'served']));
-        $anyProcessing = $allItems->some(fn ($i) => $i->status === 'processing');
-        $anyPending = $allItems->some(fn ($i) => $i->status === 'pending');
+        $allReady = $allItems->every(fn ($i) => in_array($i->status, ['ready', 'deliver']));
+        $allReject = $allItems->every(fn ($i) => $i->status === 'reject');
+        $anyWaiting = $allItems->some(fn ($i) => $i->status === 'waiting');
+        $anyReady = $allItems->some(fn ($i) => $i->status === 'ready');
 
-        if ($allReady) {
+        if ($allReject) {
+            $order->update(['status' => 'reject']);
+        } elseif ($allReady) {
             $order->update(['status' => 'ready']);
-        } elseif ($anyProcessing) {
-            $order->update(['status' => 'processing']);
-        } elseif ($anyPending && ! $anyProcessing) {
-            $order->update(['status' => 'confirmed']);
+        } elseif ($anyReady) {
+            $order->update(['status' => 'ready']);
+        } elseif ($anyWaiting) {
+            $order->update(['status' => 'waiting']);
         }
 
         $this->toastShow = true;
         $this->toastType = 'success';
         $this->toastMessage = 'Status updated';
-    }
-
-    public function updateOrderStatus(int $orderId, string $status): void
-    {
-        $order = Rst_Order::findOrFail($orderId);
-        $order->update(['status' => $status]);
-
-        if (in_array($status, ['processing', 'ready'])) {
-            $order->items()->update(['status' => $status]);
-        }
-
-        $this->toastShow = true;
-        $this->toastType = 'success';
-        $this->toastMessage = 'Order status updated';
     }
 
     public function hideToast(): void
