@@ -16,6 +16,7 @@ use App\Livewire\Holdings\Resto\Movement\DashboardMovement;
 use App\Livewire\Holdings\Resto\Movement\Internal\MovementInternalDetail;
 use App\Livewire\Holdings\Resto\Movement\Internal\MovementInternalTable;
 use App\Livewire\Holdings\Resto\Movement\Internal\MovementInternalTable2;
+use App\Livewire\Holdings\Resto\Pos\Cashier;
 use App\Livewire\Holdings\Resto\Pos\ChefKitchen;
 use App\Livewire\Holdings\Resto\Pos\MenuPage;
 use App\Livewire\Holdings\Resto\Pos\WaiterOrders;
@@ -32,6 +33,7 @@ Route::prefix('dashboard/resto')
         Route::get('/menu', MenuPage::class)->name('menu');
         Route::get('/chef', ChefKitchen::class)->name('chef');
         Route::get('/orders', WaiterOrders::class)->name('orders');
+        Route::get('/cashier', Cashier::class)->name('cashier');
 
         Route::get('/satuan', SatuanTable::class)->name('satuan');
         Route::get('/kategori', KategoriTable::class)->name('kategori');

@@ -40,6 +40,13 @@
                 </span>
             </a>
 
+            <a href="{{ route('dashboard.resto.cashier') }}"
+                class="flex items-center justify-center rounded-2xl shadow-lg h-40 bg-emerald-500 hover:bg-emerald-600 transform hover:scale-105 transition duration-300">
+                <span class="text-white text-lg font-semibold">
+                    Kasir
+                </span>
+            </a>
+
             <!-- Card Master -->
             {{-- <a href="{{ route('dashboard.clinic') }}" --}}
             <a href="{{ route('dashboard.resto.master') }}"
