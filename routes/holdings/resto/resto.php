@@ -16,6 +16,7 @@ use App\Livewire\Holdings\Resto\Movement\DashboardMovement;
 use App\Livewire\Holdings\Resto\Movement\Internal\MovementInternalDetail;
 use App\Livewire\Holdings\Resto\Movement\Internal\MovementInternalTable;
 use App\Livewire\Holdings\Resto\Movement\Internal\MovementInternalTable2;
+use App\Livewire\Holdings\Resto\Pos\MenuPage;
 use Illuminate\Support\Facades\Route;
 
 // ✅ Ubah prefix dan name di sini
@@ -25,6 +26,8 @@ Route::prefix('dashboard/resto')
         Route::get('/master-resto', DashboardMaster::class)->name('master');
         Route::get('/core-stock', DashboardCoreStock::class)->name('core-stock');
         Route::get('/master-movement', DashboardMovement::class)->name('master-movement');
+
+        Route::get('/menu', MenuPage::class)->name('menu');
 
         Route::get('/satuan', SatuanTable::class)->name('satuan');
         Route::get('/kategori', KategoriTable::class)->name('kategori');

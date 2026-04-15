@@ -1,0 +1,167 @@
+<div>
+    <div class="relative px-8 py-6 bg-yellow-500/60 rounded-b-3xl shadow-lg overflow-hidden">
+        <div class="flex justify-between items-start">
+            <div>
+                <h1 class="text-3xl md:text-4xl font-bold mb-2">Daftar Menu</h1>
+                <p class="text-lg text-gray-800">Pilih menu untuk menambahkan order pelanggan</p>
+            </div>
+        </div>
+        <div class="mt-4 flex justify-between items-center text-sm">
+            <x-ui.sccr-breadcrumb :items="$breadcrumbs" />
+        </div>
+    </div>
+
+    <div class="fixed top-0 left-0 w-full h-full z-0 pointer-events-none">
+        <img src="{{ asset('images/bg-gedung.jpg') }}" alt="Background" class="w-full h-full object-cover opacity-30">
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 lg:px-8 py-8">
+        <div class="flex flex-col lg:flex-row gap-6">
+
+            <div class="flex-1">
+                <div class="flex flex-col sm:flex-row gap-3 mb-6">
+                    <div class="relative flex-1">
+                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                        <input wire:model.live.debounce.300ms="search" type="text" placeholder="Cari menu..."
+                            class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 bg-white/80 backdrop-blur-sm">
+                    </div>
+                    <select wire:model.live="categoryFilter"
+                        class="px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 bg-white/80 backdrop-blur-sm">
+                        <option value="">Semua Kategori</option>
+                        @foreach ($categories as $cat)
+                            <option value="{{ $cat }}">{{ $cat }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                @if ($menus->isEmpty())
+                    <div class="text-center py-16 bg-white/60 backdrop-blur-sm rounded-2xl shadow">
+                        <svg class="mx-auto w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                        </svg>
+                        <p class="text-gray-500 text-lg">Belum ada menu tersedia</p>
+                    </div>
+                @else
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                        @foreach ($menus as $menu)
+                            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden group">
+                                <div class="aspect-square bg-gray-100 relative overflow-hidden">
+                                    @if ($menu->image)
+                                        <img src="{{ asset('storage/' . $menu->image) }}" alt="{{ $menu->name }}"
+                                            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                    @else
+                                        <div class="w-full h-full flex items-center justify-center text-gray-300">
+                                            <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                            </svg>
+                                        </div>
+                                    @endif
+                                    @if ($menu->discount > 0)
+                                        <span class="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-lg">
+                                            -{{ number_format($menu->discount, 0) }}%
+                                        </span>
+                                    @endif
+                                </div>
+                                <div class="p-3">
+                                    @if ($menu->category)
+                                        <span class="text-xs text-yellow-700 bg-yellow-100 px-2 py-0.5 rounded-full font-medium">{{ $menu->category }}</span>
+                                    @endif
+                                    <h3 class="font-semibold text-gray-800 mt-1 text-sm leading-tight truncate">{{ $menu->name }}</h3>
+                                    <p class="text-yellow-600 font-bold text-sm mt-1">Rp {{ number_format($menu->price, 0, ',', '.') }}</p>
+
+                                    @if (isset($cart[$menu->id]))
+                                        <div class="mt-2 flex items-center justify-between bg-yellow-50 rounded-xl px-2 py-1">
+                                            <button wire:click="removeFromCart({{ $menu->id }})"
+                                                class="w-7 h-7 rounded-lg bg-red-100 hover:bg-red-200 text-red-600 flex items-center justify-center font-bold transition">
+                                                -
+                                            </button>
+                                            <span class="font-semibold text-gray-800 text-sm">{{ $cart[$menu->id]['qty'] }}</span>
+                                            <button wire:click="addToCart({{ $menu->id }})"
+                                                class="w-7 h-7 rounded-lg bg-green-100 hover:bg-green-200 text-green-600 flex items-center justify-center font-bold transition">
+                                                +
+                                            </button>
+                                        </div>
+                                    @else
+                                        <button wire:click="addToCart({{ $menu->id }})"
+                                            class="mt-2 w-full py-1.5 bg-yellow-500 hover:bg-yellow-600 text-white rounded-xl text-sm font-semibold transition-colors duration-200">
+                                            + Tambah
+                                        </button>
+                                    @endif
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+
+                    <div class="mt-6">
+                        {{ $menus->links() }}
+                    </div>
+                @endif
+            </div>
+
+            <div class="w-full lg:w-80 xl:w-96">
+                <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-5 sticky top-24">
+                    <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/>
+                        </svg>
+                        Order
+                        @if ($this->cartCount > 0)
+                            <span class="bg-yellow-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">{{ $this->cartCount }}</span>
+                        @endif
+                    </h2>
+
+                    <div class="space-y-3 mb-4">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Nama Pelanggan</label>
+                            <input wire:model="customerName" type="text" placeholder="Nama pelanggan..."
+                                class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">No. Meja</label>
+                            <input wire:model="tableNumber" type="text" placeholder="Nomor meja..."
+                                class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400">
+                        </div>
+                    </div>
+
+                    @if (empty($cart))
+                        <div class="text-center py-8 text-gray-400">
+                            <svg class="mx-auto w-10 h-10 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/>
+                            </svg>
+                            <p class="text-sm">Belum ada item</p>
+                        </div>
+                    @else
+                        <div class="space-y-2 max-h-64 overflow-y-auto pr-1">
+                            @foreach ($cart as $id => $item)
+                                <div class="flex items-center justify-between bg-gray-50 rounded-xl px-3 py-2">
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-medium text-gray-800 truncate">{{ $item['name'] }}</p>
+                                        <p class="text-xs text-gray-500">{{ $item['qty'] }} x Rp {{ number_format($item['price'], 0, ',', '.') }}</p>
+                                    </div>
+                                    <div class="flex items-center gap-1 ml-2">
+                                        <span class="text-sm font-semibold text-gray-800">Rp {{ number_format($item['price'] * $item['qty'], 0, ',', '.') }}</span>
+                                        <button wire:click="deleteFromCart({{ $id }})" class="text-red-400 hover:text-red-600 ml-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="font-semibold text-gray-700">Total</span>
+                                <span class="text-lg font-bold text-yellow-600">Rp {{ number_format($this->cartTotal, 0, ',', '.') }}</span>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
