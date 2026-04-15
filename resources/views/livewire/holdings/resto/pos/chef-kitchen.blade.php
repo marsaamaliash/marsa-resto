@@ -93,7 +93,10 @@
                                 <td class="px-4 py-3">
                                     <div class="text-sm font-medium text-gray-800">{{ $item->menu->name }}</div>
                                     @if ($item->notes)
-                                        <div class="text-xs text-yellow-600 italic mt-0.5">"{{ $item->notes }}"</div>
+                                        <div class="text-xs text-yellow-600 italic mt-0.5">{{ $item->notes }}</div>
+                                    @endif
+                                    @if ($item->reject_reason)
+                                        <div class="text-xs text-red-600 font-medium mt-0.5">Ditolak: {{ $item->reject_reason }}</div>
                                     @endif
                                 </td>
                                 <td class="px-4 py-3 text-center">
@@ -106,6 +109,8 @@
                                         <span class="bg-blue-100 text-blue-700 text-xs font-medium px-2.5 py-1 rounded-full">Ready</span>
                                     @elseif ($item->status === 'deliver')
                                         <span class="bg-green-100 text-green-700 text-xs font-medium px-2.5 py-1 rounded-full">Deliver</span>
+                                    @elseif ($item->status === 'reject')
+                                        <span class="bg-red-100 text-red-700 text-xs font-medium px-2.5 py-1 rounded-full">Reject</span>
                                     @endif
                                 </td>
                                 <td class="px-4 py-3 text-center">
@@ -113,6 +118,14 @@
                                         <button wire:click="updateItemStatus({{ $item->id }}, 'ready')"
                                             class="px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium rounded-lg transition shadow-sm">
                                             Ready
+                                        </button>
+                                        <button wire:click="openRejectModal({{ $item->id }})"
+                                            class="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs font-medium rounded-lg transition shadow-sm ml-1">
+                                            Tolak
+                                        </button>
+                                        <button wire:click="openFailedModal({{ $item->id }})"
+                                            class="px-3 py-1.5 bg-gray-500 hover:bg-gray-600 text-white text-xs font-medium rounded-lg transition shadow-sm ml-1">
+                                            Gagal
                                         </button>
                                     @endif
                                 </td>
@@ -126,6 +139,48 @@
                 {{ $items->links() }}
             </div>
         @endif
+    </div>
+
+    <div x-show="$wire.showRejectModal" x-transition.opacity.duration.300ms
+        class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display: none;">
+        <div class="absolute inset-0 bg-black/50" x-on:click="$wire.showRejectModal = false"></div>
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 z-10">
+            <h3 class="text-lg font-bold text-gray-800 mb-2">Tolak Item</h3>
+            <p class="text-sm text-gray-500 mb-4">Item akan dipindahkan ke daftar gagal masak dan status akan diubah menjadi reject.</p>
+            <textarea wire:model.live="rejectReason" rows="3" placeholder="Masukkan alasan penolakan..."
+                class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-red-400 focus:border-red-400 mb-4"></textarea>
+            <div class="flex gap-3">
+                <button type="button" wire:click="submitReject"
+                    class="flex-1 py-2 bg-red-500 hover:bg-red-600 text-white font-medium rounded-xl transition-colors">
+                    Tolak
+                </button>
+                <button type="button" wire:click="$set('showRejectModal', false)"
+                    class="flex-1 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-xl transition-colors">
+                    Batal
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div x-show="$wire.showFailedModal" x-transition.opacity.duration.300ms
+        class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display: none;">
+        <div class="absolute inset-0 bg-black/50" x-on:click="$wire.showFailedModal = false"></div>
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 z-10">
+            <h3 class="text-lg font-bold text-gray-800 mb-2">Gagal Masak</h3>
+            <p class="text-sm text-gray-500 mb-4">Item akan disimpan ke daftar gagal masak tanpa mengubah status.</p>
+            <textarea wire:model.live="failedReason" rows="3" placeholder="Masukkan alasan gagal masak..."
+                class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-gray-400 focus:border-gray-400 mb-4"></textarea>
+            <div class="flex gap-3">
+                <button type="button" wire:click="submitFailed"
+                    class="flex-1 py-2 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-xl transition-colors">
+                    Simpan
+                </button>
+                <button type="button" wire:click="$set('showFailedModal', false)"
+                    class="flex-1 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-xl transition-colors">
+                    Batal
+                </button>
+            </div>
+        </div>
     </div>
 
     <div x-show="$wire.toastShow" x-transition.opacity.duration.300ms

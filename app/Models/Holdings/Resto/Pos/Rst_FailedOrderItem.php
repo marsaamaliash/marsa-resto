@@ -5,21 +5,22 @@ namespace App\Models\Holdings\Resto\Pos;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Rst_OrderItem extends Model
+class Rst_FailedOrderItem extends Model
 {
     protected $connection = 'sccr_resto';
 
-    protected $table = 'order_items';
+    protected $table = 'failed_order_items';
 
     protected $fillable = [
+        'original_order_item_id',
         'order_id',
         'menu_id',
         'quantity',
         'unit_price',
         'subtotal',
         'notes',
-        'status',
         'reject_reason',
+        'status',
     ];
 
     protected $casts = [

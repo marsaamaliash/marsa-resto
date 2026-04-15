@@ -22,7 +22,7 @@
 <a href="{{ route('dashboard.resto.menu') }}"
                 class="flex items-center justify-center rounded-2xl shadow-lg h-40 bg-orange-500 hover:bg-orange-600 transform hover:scale-105 transition duration-300">
                 <span class="text-white text-lg font-semibold">
-                    Daftar Menu & Order
+                    Order
                 </span>
             </a>
 
