@@ -1,4 +1,39 @@
-<div>
+<div x-data="{
+    cart: {},
+    customerName: '',
+    tableNumber: '',
+    addToCart(id, name, price) {
+        if (this.cart[id]) {
+            this.cart[id].qty++;
+        } else {
+            this.cart[id] = { id, name, price: parseFloat(price), qty: 1 };
+        }
+    },
+    removeFromCart(id) {
+        if (this.cart[id]) {
+            if (this.cart[id].qty > 1) {
+                this.cart[id].qty--;
+            } else {
+                delete this.cart[id];
+            }
+        }
+    },
+    deleteFromCart(id) {
+        delete this.cart[id];
+    },
+    get cartItems() {
+        return Object.values(this.cart);
+    },
+    get cartCount() {
+        return this.cartItems.reduce((sum, item) => sum + item.qty, 0);
+    },
+    get cartTotal() {
+        return this.cartItems.reduce((sum, item) => sum + (item.price * item.qty), 0);
+    },
+    formatRupiah(val) {
+        return new Intl.NumberFormat('id-ID').format(val);
+    }
+}">
     <div class="relative px-8 py-6 bg-yellow-500/60 rounded-b-3xl shadow-lg overflow-hidden">
         <div class="flex justify-between items-start">
             <div>
@@ -71,24 +106,25 @@
                                     <h3 class="font-semibold text-gray-800 mt-1 text-sm leading-tight truncate">{{ $menu->name }}</h3>
                                     <p class="text-yellow-600 font-bold text-sm mt-1">Rp {{ number_format($menu->price, 0, ',', '.') }}</p>
 
-                                    @if (isset($cart[$menu->id]))
+                                    <template x-if="cart[{{ $menu->id }}]">
                                         <div class="mt-2 flex items-center justify-between bg-yellow-50 rounded-xl px-2 py-1">
-                                            <button wire:click="removeFromCart({{ $menu->id }})"
+                                            <button @click="removeFromCart({{ $menu->id }})"
                                                 class="w-7 h-7 rounded-lg bg-red-100 hover:bg-red-200 text-red-600 flex items-center justify-center font-bold transition">
                                                 -
                                             </button>
-                                            <span class="font-semibold text-gray-800 text-sm">{{ $cart[$menu->id]['qty'] }}</span>
-                                            <button wire:click="addToCart({{ $menu->id }})"
+                                            <span class="font-semibold text-gray-800 text-sm" x-text="cart[{{ $menu->id }}]?.qty"></span>
+                                            <button @click="addToCart({{ $menu->id }}, '{{ addslashes($menu->name) }}', '{{ $menu->price }}')"
                                                 class="w-7 h-7 rounded-lg bg-green-100 hover:bg-green-200 text-green-600 flex items-center justify-center font-bold transition">
                                                 +
                                             </button>
                                         </div>
-                                    @else
-                                        <button wire:click="addToCart({{ $menu->id }})"
+                                    </template>
+                                    <template x-if="!cart[{{ $menu->id }}]">
+                                        <button @click="addToCart({{ $menu->id }}, '{{ addslashes($menu->name) }}', '{{ $menu->price }}')"
                                             class="mt-2 w-full py-1.5 bg-yellow-500 hover:bg-yellow-600 text-white rounded-xl text-sm font-semibold transition-colors duration-200">
                                             + Tambah
                                         </button>
-                                    @endif
+                                    </template>
                                 </div>
                             </div>
                         @endforeach
@@ -107,58 +143,64 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/>
                         </svg>
                         Order
-                        @if ($this->cartCount > 0)
-                            <span class="bg-yellow-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">{{ $this->cartCount }}</span>
-                        @endif
+                        <template x-if="cartCount > 0">
+                            <span class="bg-yellow-500 text-white text-xs font-bold px-2 py-0.5 rounded-full" x-text="cartCount"></span>
+                        </template>
                     </h2>
 
                     <div class="space-y-3 mb-4">
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1">Nama Pelanggan</label>
-                            <input wire:model="customerName" type="text" placeholder="Nama pelanggan..."
+                            <input x-model="customerName" type="text" placeholder="Nama pelanggan..."
                                 class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1">No. Meja</label>
-                            <input wire:model="tableNumber" type="text" placeholder="Nomor meja..."
+                            <input x-model="tableNumber" type="text" placeholder="Nomor meja..."
                                 class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400">
                         </div>
                     </div>
 
-                    @if (empty($cart))
+                    <template x-if="cartCount === 0">
                         <div class="text-center py-8 text-gray-400">
                             <svg class="mx-auto w-10 h-10 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/>
                             </svg>
                             <p class="text-sm">Belum ada item</p>
                         </div>
-                    @else
-                        <div class="space-y-2 max-h-64 overflow-y-auto pr-1">
-                            @foreach ($cart as $id => $item)
-                                <div class="flex items-center justify-between bg-gray-50 rounded-xl px-3 py-2">
-                                    <div class="flex-1 min-w-0">
-                                        <p class="text-sm font-medium text-gray-800 truncate">{{ $item['name'] }}</p>
-                                        <p class="text-xs text-gray-500">{{ $item['qty'] }} x Rp {{ number_format($item['price'], 0, ',', '.') }}</p>
-                                    </div>
-                                    <div class="flex items-center gap-1 ml-2">
-                                        <span class="text-sm font-semibold text-gray-800">Rp {{ number_format($item['price'] * $item['qty'], 0, ',', '.') }}</span>
-                                        <button wire:click="deleteFromCart({{ $id }})" class="text-red-400 hover:text-red-600 ml-1">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
+                    </template>
 
-                        <div class="mt-4 pt-4 border-t border-gray-200">
-                            <div class="flex justify-between items-center mb-4">
-                                <span class="font-semibold text-gray-700">Total</span>
-                                <span class="text-lg font-bold text-yellow-600">Rp {{ number_format($this->cartTotal, 0, ',', '.') }}</span>
+                    <template x-if="cartCount > 0">
+                        <div>
+                            <div class="space-y-2 max-h-64 overflow-y-auto pr-1">
+                                <template x-for="item in cartItems" :key="item.id">
+                                    <div class="flex items-center justify-between bg-gray-50 rounded-xl px-3 py-2">
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-sm font-medium text-gray-800 truncate" x-text="item.name"></p>
+                                            <p class="text-xs text-gray-500">
+                                                <span x-text="item.qty"></span> x Rp <span x-text="formatRupiah(item.price)"></span>
+                                            </p>
+                                        </div>
+                                        <div class="flex items-center gap-1 ml-2">
+                                            <span class="text-sm font-semibold text-gray-800">Rp <span x-text="formatRupiah(item.price * item.qty)"></span></span>
+                                            <button @click="deleteFromCart(item.id)" class="text-red-400 hover:text-red-600 ml-1">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <div class="mt-4 pt-4 border-t border-gray-200">
+                                <div class="flex justify-between items-center mb-4">
+                                    <span class="font-semibold text-gray-700">Total</span>
+                                    <span class="text-lg font-bold text-yellow-600">Rp <span x-text="formatRupiah(cartTotal)"></span></span>
+                                </div>
                             </div>
                         </div>
-                    @endif
+                    </template>
                 </div>
             </div>
 
