@@ -447,10 +447,13 @@ class StockMovementService
      * Gudang: qty_in_transit(-qty)
      * Dapur: qty_available(+qty)
      * Mutation: IN (Dapur +qty)
+     *
+     * @param  array<int, array{qty_received: float}>|null  $itemsWithQty  [movement_item_id => ['qty_received' => float]]
      */
     public static function receiveItems(
         int $movementId,
-        ?string $notes = null
+        ?string $notes = null,
+        ?array $itemsWithQty = null
     ): Rst_Movement {
         return DB::transaction(function () use ($movementId, $notes) {
             $movement = Rst_Movement::findOrFail($movementId);
@@ -462,7 +465,7 @@ class StockMovementService
 
             foreach ($movementItems as $movementItem) {
                 $itemId = $movementItem->item_id;
-                $qty = $movementItem->qty;
+                $qty = $itemsWithQty[$movementItem->id]['qty_received'] ?? $movementItem->qty;
 
                 $gudangBalance = Rst_StockBalance::where('item_id', $itemId)
                     ->where('location_id', $fromLocationId)

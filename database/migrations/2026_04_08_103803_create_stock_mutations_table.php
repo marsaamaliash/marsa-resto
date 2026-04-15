@@ -27,7 +27,11 @@ return new class extends Migration
              * - consume: Pemakaian bahan baku untuk pesanan (Final)
              * - adjustment: Penyesuaian stok opname
              */
-            $table->enum('type', ['in', 'out', 'transfer', 'consume', 'adjustment', 'waste']);
+            $table->enum('type', [
+                'in', 'out', 'transfer', 'consume', 'adjustment', 'waste',
+                'repack_out', // Stok barang besar berkurang
+                'repack_in',    // Stok barang kecil bertambah
+            ]);
 
             // Qty yang bermutasi
             $table->decimal('qty', 15, 2);

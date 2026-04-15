@@ -14,21 +14,21 @@ class LokasiSeeder extends Seeder
     {
         Rst_MasterLokasi::insert([
             [
-                'name' => 'Main Warehouse',
+                'name' => 'Gudang Basah',
                 'code' => 'WH-MAIN',
                 'type' => 'warehouse',
                 'created_at' => now(),
             ],
             [
-                'name' => 'Kitchen Central',
-                'code' => 'KIT-01',
+                'name' => 'Gudang Kering',
+                'code' => 'WH-DRY',
                 'type' => 'kitchen',
                 'created_at' => now(),
             ],
             [
                 'name' => 'Internal Transit',
                 'code' => 'TRNS-01',
-                'type' => 'transit', // WAJIB ADA untuk mutasi antar lokasi
+                'type' => 'transit',
                 'created_at' => now(),
             ],
         ]);

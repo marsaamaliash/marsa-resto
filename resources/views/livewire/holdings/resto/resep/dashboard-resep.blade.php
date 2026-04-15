@@ -2,7 +2,7 @@
     <div class="relative px-8 py-6 bg-yellow-500/60 rounded-b-3xl shadow-lg overflow-hidden">
         <div class="flex justify-between items-start">
             <div>
-                <h1 class="text-3xl md:text-4xl font-bold mb-2">Master Resto</h1>
+                <h1 class="text-3xl md:text-4xl font-bold mb-2">Resep</h1>
                 <p class="text-lg text-gray-800">Silakan pilih modul Resto yang ingin diakses</p>
             </div>
         </div>
@@ -21,44 +21,22 @@
 
             <!-- Card Master -->
             {{-- <a href="{{ route('dashboard.clinic') }}" --}}
-            <a href="{{ route('dashboard.resto.stock-location') }}"
+            <a href="{{ route('dashboard.resto.konversi-satuan') }}"
                 class="flex items-center justify-center rounded-2xl shadow-lg h-40 bg-green-500 hover:bg-green-600 transform hover:scale-105 transition duration-300">
 
                 <span class="text-white text-lg font-semibold">
-                    Stok
+                    Konversi Satuan
                 </span>
             </a>
 
-            {{-- <a href="{{ route('dashboard.resto.stock-item') }}"
+            <a href="{{ route('dashboard.resto.repack') }}"
                 class="flex items-center justify-center rounded-2xl shadow-lg h-40 bg-green-500 hover:bg-green-600 transform hover:scale-105 transition duration-300">
 
                 <span class="text-white text-lg font-semibold">
-                    Stok Barang
-                </span>
-            </a> --}}
-
-            <a href="{{ route('dashboard.resto.stock-minimal') }}"
-                class="flex items-center justify-center rounded-2xl shadow-lg h-40 bg-green-500 hover:bg-green-600 transform hover:scale-105 transition duration-300">
-                <span class="text-white text-lg font-semibold">
-                    Stok Kritis
+                    Repack
                 </span>
             </a>
 
-            <a href="{{ route('dashboard.resto.stock-mutation') }}"
-                class="flex items-center justify-center rounded-2xl shadow-lg h-40 bg-green-500 hover:bg-green-600 transform hover:scale-105 transition duration-300">
-
-                <span class="text-white text-lg font-semibold">
-                    Log Stok Movement
-                </span>
-            </a>
-
-            <a href="{{ route('dashboard.resto.stock-request') }}"
-                class="flex items-center justify-center rounded-2xl shadow-lg h-40 bg-green-500 hover:bg-green-600 transform hover:scale-105 transition duration-300">
-
-                <span class="text-white text-lg font-semibold">
-                    Log Aktivitas Movement
-                </span>
-            </a>
         </div>
     </div>
 </div>
