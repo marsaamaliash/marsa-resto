@@ -66,16 +66,16 @@ class MasterDataSeeder extends Seeder
 
             $items = [
                 [
-                    'name' => 'Daging Ayam Fillet',
-                    'sku' => 'ITM-AYM-001',
+                    'name' => 'Kecap Manis Bango 700ml',
+                    'sku' => 'ITM-KCP-001',
                     'category_id' => $catId,
                     'uom_id' => $uomKg,
-                    'min_stock' => 10.00,
-                    'has_batch' => true, // Ayam butuh batch/expiry
+                    'min_stock' => 2.00,
+                    'has_batch' => true,
                     'has_expiry' => true,
                 ],
                 [
-                    'name' => 'Minyak Goreng 2L',
+                    'name' => 'Bimoli Minyak Goreng 2L/Pouch',
                     'sku' => 'ITM-MNG-001',
                     'category_id' => $catId,
                     'uom_id' => $uomPcs,
@@ -84,8 +84,8 @@ class MasterDataSeeder extends Seeder
                     'has_expiry' => true,
                 ],
                 [
-                    'name' => 'Beras Organik',
-                    'sku' => 'ITM-BRS-001',
+                    'name' => 'Gulaku Gula Pasir 1kg',
+                    'sku' => 'ITM-GLK-001',
                     'category_id' => $catId,
                     'uom_id' => $uomKg,
                     'min_stock' => 25.00,

@@ -5,6 +5,7 @@ namespace App\Livewire\Holdings\Resto\Movement\Internal;
 use App\Models\Holdings\Resto\CoreStock\Rst_RequestActivity;
 use App\Models\Holdings\Resto\CoreStock\Rst_StockMutation;
 use App\Models\Holdings\Resto\Movement\Rst_Movement;
+use App\Models\Holdings\Resto\Movement\Rst_MovementItem;
 use App\Services\Resto\StockMovementService;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
@@ -75,11 +76,23 @@ class MovementInternalTable extends Component
 
     public string $receiveNotes = '';
 
+    public array $receiveItems = [];
+
     public ?string $rejectOverlayMode = null;
 
     public ?string $rejectOverlayId = null;
 
     public string $rejectNotes = '';
+
+    public int $createFromLocationId = 0;
+
+    public int $createToLocationId = 0;
+
+    public string $createPicName = '';
+
+    public string $createRemark = '';
+
+    public array $createItems = [];
 
     protected $queryString = [
         'search' => ['except' => ''],
@@ -113,7 +126,7 @@ class MovementInternalTable extends Component
             ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
             ['label' => 'Resto', 'route' => 'dashboard.resto', 'color' => 'text-gray-800'],
             ['label' => 'Master Movement', 'route' => 'dashboard.resto.master-movement', 'color' => 'text-gray-900 font-semibold'],
-            ['label' => 'Movement Internal 2', 'color' => 'text-gray-900 font-semibold'],
+            ['label' => 'Movement Internal', 'color' => 'text-gray-900 font-semibold'],
         ];
 
         $this->syncCaps();
@@ -240,9 +253,137 @@ class MovementInternalTable extends Component
         $this->overlayId = $id;
     }
 
+    public function openCreateOverlay(): void
+    {
+        $this->overlayMode = 'create';
+        $this->overlayId = null;
+    }
+
     public function closeOverlay(): void
     {
-        $this->reset(['overlayMode', 'overlayId']);
+        $this->reset(['overlayMode', 'overlayId', 'createFromLocationId', 'createToLocationId', 'createPicName', 'createRemark', 'createItems']);
+    }
+
+    public function initCreateItems(): void
+    {
+        if (empty($this->createItems)) {
+            $this->createItems = [
+                ['item_id' => 0, 'qty' => 0, 'remark' => ''],
+            ];
+        }
+    }
+
+    public function addCreateItemRow(): void
+    {
+        $this->createItems[] = ['item_id' => 0, 'qty' => 0, 'remark' => ''];
+    }
+
+    public function removeCreateItemRow(int $index): void
+    {
+        if (count($this->createItems) > 1) {
+            unset($this->createItems[$index]);
+            $this->createItems = array_values($this->createItems);
+        }
+    }
+
+    public function onCreateFromLocationChanged(): void
+    {
+        $this->createItems = [
+            ['item_id' => 0, 'qty' => 0, 'remark' => ''],
+        ];
+    }
+
+    public function processCreate(): void
+    {
+        if ($this->createFromLocationId === 0) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Pilih Gudang asal.'];
+
+            return;
+        }
+
+        if ($this->createToLocationId === 0) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Pilih Dapur tujuan.'];
+
+            return;
+        }
+
+        $itemsToSave = [];
+        foreach ($this->createItems as $item) {
+            if ($item['item_id'] > 0 && $item['qty'] > 0) {
+                $itemsToSave[] = [
+                    'item_id' => (int) $item['item_id'],
+                    'qty' => (float) $item['qty'],
+                    'notes' => $item['remark'] ?? null,
+                ];
+            }
+        }
+
+        if (empty($itemsToSave)) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Pilih minimal 1 item dengan qty > 0.'];
+
+            return;
+        }
+
+        try {
+            StockMovementService::createMovement(
+                $this->createFromLocationId,
+                $this->createToLocationId,
+                $itemsToSave,
+                $this->createRemark ?: null
+            );
+
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Movement berhasil dibuat.'];
+            $this->closeOverlay();
+            $this->resetPage();
+        } catch (\Exception $e) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
+        }
+    }
+
+    public function getCreateFromLocations(): array
+    {
+        $locations = \App\Models\Holdings\Resto\Master\Rst_MasterLokasi::where('is_active', true)
+            ->where('type', 'warehouse')
+            ->orderBy('name')
+            ->get()
+            ->map(fn ($loc) => ['id' => $loc->id, 'name' => $loc->name])
+            ->toArray();
+
+        return $locations;
+    }
+
+    public function getCreateToLocations(): array
+    {
+        $locations = \App\Models\Holdings\Resto\Master\Rst_MasterLokasi::where('is_active', true)
+            ->where('type', 'kitchen')
+            ->orderBy('name')
+            ->get()
+            ->map(fn ($loc) => ['id' => $loc->id, 'name' => $loc->name])
+            ->toArray();
+
+        return $locations;
+    }
+
+    public function getCreateAvailableItems(): array
+    {
+        if ($this->createFromLocationId === 0) {
+            return [];
+        }
+
+        $items = \App\Models\Holdings\Resto\CoreStock\Rst_StockBalance::where('location_id', $this->createFromLocationId)
+            ->where('qty_available', '>', 0)
+            ->with(['item', 'uom'])
+            ->get()
+            ->map(fn ($balance) => [
+                'id' => $balance->item_id,
+                'name' => $balance->item?->name ?? '-',
+                'sku' => $balance->item?->sku ?? '-',
+                'uom_symbols' => $balance->uom?->symbols ?? '-',
+                'available_qty' => $balance->qty_available,
+            ])
+            ->toArray();
+
+        return $items;
     }
 
     #[On('movement-internal-2-overlay-close')]
@@ -427,6 +568,111 @@ class MovementInternalTable extends Component
         } catch (\Exception $e) {
             $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
         }
+    }
+
+    public function dispatchItems(string $id): void
+    {
+        $movement = Rst_Movement::find($id);
+        if (! $movement) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data tidak ditemukan.'];
+
+            return;
+        }
+
+        if ($movement->status !== 'approved') {
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Hanya bisa dispatch pada status Approved.'];
+
+            return;
+        }
+
+        try {
+            StockMovementService::dispatchItems((int) $id);
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Barang telah dikirim (In Transit).'];
+        } catch (\Exception $e) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
+        }
+    }
+
+    public function openReceiveOverlay(string $id): void
+    {
+        $movement = Rst_Movement::find($id);
+        if (! $movement) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data tidak ditemukan.'];
+
+            return;
+        }
+
+        if ($movement->status !== 'in_transit') {
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Hanya bisa terima pada status In Transit.'];
+
+            return;
+        }
+
+        $this->receiveOverlayMode = 'receive';
+        $this->receiveOverlayId = $id;
+        $this->receiveNotes = '';
+
+        $items = Rst_MovementItem::where('movement_id', $id)->with(['item', 'uom'])->get();
+        $this->receiveItems = $items->map(fn ($item) => [
+            'movement_item_id' => $item->id,
+            'item_id' => $item->item_id,
+            'item_name' => $item->item?->name ?? '-',
+            'uom_name' => $item->uom?->name ?? '-',
+            'qty_requested' => $item->qty,
+            'qty_received' => $item->qty,
+        ])->toArray();
+    }
+
+    public function closeReceiveOverlay(): void
+    {
+        $this->receiveOverlayMode = null;
+        $this->receiveOverlayId = null;
+        $this->receiveNotes = '';
+        $this->receiveItems = [];
+    }
+
+    public function processReceive(): void
+    {
+        if (! $this->receiveOverlayId) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'ID tidak valid.'];
+
+            return;
+        }
+
+        $movement = Rst_Movement::find($this->receiveOverlayId);
+        if (! $movement) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data tidak ditemukan.'];
+
+            return;
+        }
+
+        if ($movement->status !== 'in_transit') {
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Hanya bisa terima pada status In Transit.'];
+
+            return;
+        }
+
+        try {
+            $itemsWithQty = collect($this->receiveItems)->mapWithKeys(fn ($item) => [
+                $item['movement_item_id'] => ['qty_received' => (float) $item['qty_received']],
+            ])->toArray();
+
+            StockMovementService::receiveItems(
+                (int) $this->receiveOverlayId,
+                $this->receiveNotes,
+                $itemsWithQty
+            );
+
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Barang telah diterima dan selesai.'];
+            $this->closeReceiveOverlay();
+        } catch (\Exception $e) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
+        }
+    }
+
+    public function getReceiveItems(): array
+    {
+        return $this->receiveItems;
     }
 
     protected function filter1Options(): array

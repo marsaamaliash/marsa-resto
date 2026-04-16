@@ -17,6 +17,9 @@ return new class extends Migration
             $table->string('sku')->unique()->comment('Stock Keeping Unit / Barcode');
             $table->text('description')->nullable();
 
+            $table->foreignId('parent_id')->nullable()->constrained('items')->onDelete('cascade');
+            $table->decimal('conversion_ratio', 15, 2)->default(1)->comment('Rasio terhadap parent, misal: isi 24 botol');
+
             // Relasi ke Master Data lain
             $table->foreignId('category_id')->constrained('categories')->onDelete('restrict');
             $table->foreignId('uom_id')->constrained('uoms')->onDelete('restrict');

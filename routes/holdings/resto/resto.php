@@ -15,7 +15,11 @@ use App\Livewire\Holdings\Resto\Master\Vendor\VendorTable;
 use App\Livewire\Holdings\Resto\Movement\DashboardMovement;
 use App\Livewire\Holdings\Resto\Movement\Internal\MovementInternalDetail;
 use App\Livewire\Holdings\Resto\Movement\Internal\MovementInternalTable;
-use App\Livewire\Holdings\Resto\Movement\Internal\MovementInternalTable2;
+use App\Livewire\Holdings\Resto\Resep\DashboardResep;
+use App\Livewire\Holdings\Resto\Resep\KonversiSatuan\KonversiSatuanTable;
+use App\Livewire\Holdings\Resto\Resep\Menu\ResepMenuTable as MenuResepMenuTable;
+use App\Livewire\Holdings\Resto\Resep\Repack\RepackTable;
+use App\Livewire\Holdings\Resto\Resep\Repack\ResepMenuTable;
 use App\Livewire\Holdings\Resto\Pos\Cashier;
 use App\Livewire\Holdings\Resto\Pos\ChefKitchen;
 use App\Livewire\Holdings\Resto\Pos\EmployeeLunch;
@@ -31,6 +35,7 @@ Route::prefix('dashboard/resto')
         Route::get('/master-resto', DashboardMaster::class)->name('master');
         Route::get('/core-stock', DashboardCoreStock::class)->name('core-stock');
         Route::get('/master-movement', DashboardMovement::class)->name('master-movement');
+        Route::get('/resep', DashboardResep::class)->name('resep');
 
         Route::get('/menu', MenuPage::class)->name('menu');
         Route::get('/employee-lunch', EmployeeLunch::class)->name('employee-lunch');
@@ -52,6 +57,10 @@ Route::prefix('dashboard/resto')
         Route::get('/stock-request', StockRequestTable::class)->name('stock-request');
 
         Route::get('/movement-internal', MovementInternalTable::class)->name('movement-internal');
-        Route::get('/movement-internal-2', MovementInternalTable2::class)->name('movement-internal-2');
-        Route::get('/movement-internal/{id}', MovementInternalDetail::class)->name('movement-internal-2.detail');
+        Route::get('/movement-internal/{id}', MovementInternalDetail::class)->name('movement-internal.detail');
+
+        Route::get('/konversi-satuan', KonversiSatuanTable::class)->name('konversi-satuan');
+        Route::get('/repack', RepackTable::class)->name('repack');
+
+        Route::get('/resep-menu', MenuResepMenuTable::class)->name('resep-menu');
     });
