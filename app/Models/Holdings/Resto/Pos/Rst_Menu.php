@@ -2,6 +2,7 @@
 
 namespace App\Models\Holdings\Resto\Pos;
 
+use App\Models\Holdings\Resto\Resep\Rst_Recipe;
 use Illuminate\Database\Eloquent\Model;
 
 class Rst_Menu extends Model
@@ -30,4 +31,9 @@ class Rst_Menu extends Model
         'is_active' => 'boolean',
         'stock' => 'integer',
     ];
+
+    public function recipe()
+    {
+        return $this->belongsTo(Rst_Recipe::class, 'recipe_id');
+    }
 }
