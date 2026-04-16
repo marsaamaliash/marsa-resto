@@ -15,17 +15,20 @@ use App\Livewire\Holdings\Resto\Master\Vendor\VendorTable;
 use App\Livewire\Holdings\Resto\Movement\DashboardMovement;
 use App\Livewire\Holdings\Resto\Movement\Internal\MovementInternalDetail;
 use App\Livewire\Holdings\Resto\Movement\Internal\MovementInternalTable;
-use App\Livewire\Holdings\Resto\Resep\DashboardResep;
-use App\Livewire\Holdings\Resto\Resep\KonversiSatuan\KonversiSatuanTable;
-use App\Livewire\Holdings\Resto\Resep\Menu\ResepMenuTable as MenuResepMenuTable;
-use App\Livewire\Holdings\Resto\Resep\Repack\RepackTable;
-use App\Livewire\Holdings\Resto\Resep\Repack\ResepMenuTable;
 use App\Livewire\Holdings\Resto\Pos\Cashier;
 use App\Livewire\Holdings\Resto\Pos\ChefKitchen;
 use App\Livewire\Holdings\Resto\Pos\EmployeeLunch;
 use App\Livewire\Holdings\Resto\Pos\EmployeeLunchReport;
 use App\Livewire\Holdings\Resto\Pos\MenuPage;
 use App\Livewire\Holdings\Resto\Pos\WaiterOrders;
+use App\Livewire\Holdings\Resto\Procurement\DashboardProcurement;
+use App\Livewire\Holdings\Resto\Procurement\DirectOrder\DashboardDirectOrder;
+use App\Livewire\Holdings\Resto\Procurement\PurchaseOrder\DashboardPurchaseOrder;
+use App\Livewire\Holdings\Resto\Procurement\PurchaseRequest\DashboardPurchaseRequest;
+use App\Livewire\Holdings\Resto\Resep\DashboardResep;
+use App\Livewire\Holdings\Resto\Resep\KonversiSatuan\KonversiSatuanTable;
+use App\Livewire\Holdings\Resto\Resep\Menu\ResepMenuTable as MenuResepMenuTable;
+use App\Livewire\Holdings\Resto\Resep\Repack\RepackTable;
 use Illuminate\Support\Facades\Route;
 
 // ✅ Ubah prefix dan name di sini
@@ -63,4 +66,9 @@ Route::prefix('dashboard/resto')
         Route::get('/repack', RepackTable::class)->name('repack');
 
         Route::get('/resep-menu', MenuResepMenuTable::class)->name('resep-menu');
+
+        Route::get('/procurement', DashboardProcurement::class)->name('procurement');
+        Route::get('/purchase-request', DashboardPurchaseRequest::class)->name('purchase-request');
+        Route::get('/purchase-order', DashboardPurchaseOrder::class)->name('purchase-order');
+        Route::get('/direct-order', DashboardDirectOrder::class)->name('direct-order');
     });

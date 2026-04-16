@@ -32,8 +32,8 @@ class EmployeeLunch extends Component
     public function searchEmployee(): void
     {
         if (empty($this->employeeNumber)) {
-            $this->dispatch('employee-search-result', 
-                found: false, 
+            $this->dispatch('employee-search-result',
+                found: false,
                 message: 'Nomor induk karyawan wajib diisi'
             );
 
@@ -45,15 +45,15 @@ class EmployeeLunch extends Component
             ->first();
 
         if (! $employee) {
-            $this->dispatch('employee-search-result', 
-                found: false, 
+            $this->dispatch('employee-search-result',
+                found: false,
                 message: 'Karyawan tidak ditemukan atau tidak aktif'
             );
 
             return;
         }
 
-        $this->dispatch('employee-search-result', 
+        $this->dispatch('employee-search-result',
             found: true,
             message: 'Karyawan ditemukan: '.$employee->name,
             employee: [
@@ -74,13 +74,13 @@ class EmployeeLunch extends Component
         $result = $this->processTransaction($cartItems, $this->employeeNumber, $paymentMethod);
 
         if ($result['success']) {
-            $this->dispatch('transaction-complete', 
+            $this->dispatch('transaction-complete',
                 success: true,
                 message: $result['message'],
                 newRemaining: $result['newRemaining'] ?? 0
             );
         } else {
-            $this->dispatch('transaction-complete', 
+            $this->dispatch('transaction-complete',
                 success: false,
                 message: $result['message']
             );

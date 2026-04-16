@@ -110,6 +110,13 @@
                 Costing & Finance Hooks
                 </span>
             </a>
+
+            <a href="{{ route('dashboard.resto.procurement') }}"
+                class="flex items-center justify-center rounded-2xl shadow-lg h-40 bg-teal-500 hover:bg-teal-600 transform hover:scale-105 transition duration-300">
+                <span class="text-white text-lg font-semibold">
+                    Procurement
+                </span>
+            </a>
         </div>
     </div>
 </div>
