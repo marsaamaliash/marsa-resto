@@ -19,6 +19,8 @@ class Rst_Payment extends Model
         'total_amount',
         'payment_method',
         'paid_at',
+        'allowance_used',
+        'excess_amount',
     ];
 
     protected $casts = [
@@ -27,6 +29,8 @@ class Rst_Payment extends Model
         'service_amount' => 'decimal:2',
         'total_amount' => 'decimal:2',
         'paid_at' => 'datetime',
+        'allowance_used' => 'decimal:2',
+        'excess_amount' => 'decimal:2',
     ];
 
     public function order(): BelongsTo

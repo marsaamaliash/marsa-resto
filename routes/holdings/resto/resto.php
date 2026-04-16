@@ -18,6 +18,8 @@ use App\Livewire\Holdings\Resto\Movement\Internal\MovementInternalTable;
 use App\Livewire\Holdings\Resto\Movement\Internal\MovementInternalTable2;
 use App\Livewire\Holdings\Resto\Pos\Cashier;
 use App\Livewire\Holdings\Resto\Pos\ChefKitchen;
+use App\Livewire\Holdings\Resto\Pos\EmployeeLunch;
+use App\Livewire\Holdings\Resto\Pos\EmployeeLunchReport;
 use App\Livewire\Holdings\Resto\Pos\MenuPage;
 use App\Livewire\Holdings\Resto\Pos\WaiterOrders;
 use Illuminate\Support\Facades\Route;
@@ -31,6 +33,8 @@ Route::prefix('dashboard/resto')
         Route::get('/master-movement', DashboardMovement::class)->name('master-movement');
 
         Route::get('/menu', MenuPage::class)->name('menu');
+        Route::get('/employee-lunch', EmployeeLunch::class)->name('employee-lunch');
+        Route::get('/employee-lunch/report', EmployeeLunchReport::class)->name('employee-lunch.report');
         Route::get('/chef', ChefKitchen::class)->name('chef');
         Route::get('/orders', WaiterOrders::class)->name('orders');
         Route::get('/cashier', Cashier::class)->name('cashier');

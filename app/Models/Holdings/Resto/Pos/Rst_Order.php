@@ -20,12 +20,18 @@ class Rst_Order extends Model
         'created_by',
         'payment_status',
         'paid_at',
+        'employee_number',
+        'order_type',
+        'allowance_used',
+        'excess_amount',
     ];
 
     protected $casts = [
         'total_amount' => 'decimal:2',
         'created_by' => 'integer',
         'paid_at' => 'datetime',
+        'allowance_used' => 'decimal:2',
+        'excess_amount' => 'decimal:2',
     ];
 
     public function scopeUnpaid($query)

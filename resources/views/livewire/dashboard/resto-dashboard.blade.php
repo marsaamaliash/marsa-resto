@@ -47,6 +47,20 @@
                 </span>
             </a>
 
+            <a href="{{ route('dashboard.resto.employee-lunch') }}"
+                class="flex items-center justify-center rounded-2xl shadow-lg h-40 bg-amber-500 hover:bg-amber-600 transform hover:scale-105 transition duration-300">
+                <span class="text-white text-lg font-semibold">
+                    Makan Siang Karyawan
+                </span>
+            </a>
+
+            <a href="{{ route('dashboard.resto.employee-lunch.report') }}"
+                class="flex items-center justify-center rounded-2xl shadow-lg h-40 bg-purple-500 hover:bg-purple-600 transform hover:scale-105 transition duration-300">
+                <span class="text-white text-lg font-semibold">
+                    Riwayat Makan Siang
+                </span>
+            </a>
+
             <!-- Card Master -->
             {{-- <a href="{{ route('dashboard.clinic') }}" --}}
             <a href="{{ route('dashboard.resto.master') }}"
