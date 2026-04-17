@@ -253,7 +253,7 @@
                                         {{-- RM Approve --}}
                                         @if ($item['status'] === 'pending_rm' && $canApproveRM)
                                             <x-ui.sccr-button type="button" variant="icon"
-                                                wire:click="openActionOverlay('approve_rm', '{{ $item['id'] }}', 1)"
+                                                wire:click="directApproveByRM({{ $item['id'] }})"
                                                 class="text-green-600 hover:scale-125" title="Approve (RM)">
                                                 <x-ui.sccr-icon name="approve" :size="18" />
                                             </x-ui.sccr-button>
@@ -262,7 +262,7 @@
                                         {{-- SPV Approve --}}
                                         @if ($item['status'] === 'pending_spv' && $canApproveSPV)
                                             <x-ui.sccr-button type="button" variant="icon"
-                                                wire:click="openActionOverlay('approve_spv', '{{ $item['id'] }}', 2)"
+                                                wire:click="directApproveBySPV({{ $item['id'] }})"
                                                 class="text-green-600 hover:scale-125" title="Approve (SPV)">
                                                 <x-ui.sccr-icon name="approve" :size="18" />
                                             </x-ui.sccr-button>

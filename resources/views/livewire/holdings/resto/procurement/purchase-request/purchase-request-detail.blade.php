@@ -243,7 +243,7 @@
                     @endif
 
                     @if ($pr->isPendingRM() && $canApproveRM)
-                        <x-ui.sccr-button type="button" wire:click="openActionModal('approve_rm')"
+                        <x-ui.sccr-button type="button" wire:click="directApproveByRM"
                             class="bg-green-600 text-white hover:bg-green-700">
                             <x-ui.sccr-icon name="approve" :size="16" class="mr-1" />
                             Approve (RM)
@@ -263,7 +263,7 @@
                     @endif
 
                     @if ($pr->isPendingSPV() && $canApproveSPV)
-                        <x-ui.sccr-button type="button" wire:click="openActionModal('approve_spv')"
+                        <x-ui.sccr-button type="button" wire:click="directApproveBySPV"
                             class="bg-green-600 text-white hover:bg-green-700">
                             <x-ui.sccr-icon name="approve" :size="16" class="mr-1" />
                             Approve (SPV)

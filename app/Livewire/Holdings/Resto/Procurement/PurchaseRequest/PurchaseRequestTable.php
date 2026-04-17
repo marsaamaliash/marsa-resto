@@ -236,8 +236,8 @@ class PurchaseRequestTable extends Component
     public function approveByRM(): void
     {
         try {
-            $user = auth()->user()?->name ?? 'SYSTEM';
-            PurchaseRequestService::approveByRM((int) $this->actionOverlayId, $this->actionNotes, $user);
+            $user = auth()->user()?->username ?? 'SYSTEM';
+            PurchaseRequestService::approveByRM((int) $this->actionOverlayId, null, $user);
 
             $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Purchase Request berhasil diapprove oleh RM.'];
             $this->closeActionOverlay();
@@ -246,14 +246,38 @@ class PurchaseRequestTable extends Component
         }
     }
 
+    public function directApproveByRM(int $prId): void
+    {
+        try {
+            $user = auth()->user()?->username ?? 'SYSTEM';
+            PurchaseRequestService::approveByRM($prId, null, $user);
+
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Purchase Request berhasil diapprove oleh RM.'];
+        } catch (\Exception $e) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
+        }
+    }
+
     public function approveBySPV(): void
     {
         try {
-            $user = auth()->user()?->name ?? 'SYSTEM';
-            PurchaseRequestService::approveBySPV((int) $this->actionOverlayId, $this->actionNotes, $user);
+            $user = auth()->user()?->username ?? 'SYSTEM';
+            PurchaseRequestService::approveBySPV((int) $this->actionOverlayId, null, $user);
 
             $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Purchase Request berhasil diapprove oleh Supervisor.'];
             $this->closeActionOverlay();
+        } catch (\Exception $e) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
+        }
+    }
+
+    public function directApproveBySPV(int $prId): void
+    {
+        try {
+            $user = auth()->user()?->username ?? 'SYSTEM';
+            PurchaseRequestService::approveBySPV($prId, null, $user);
+
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Purchase Request berhasil diapprove oleh Supervisor.'];
         } catch (\Exception $e) {
             $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
         }
@@ -266,7 +290,7 @@ class PurchaseRequestTable extends Component
                 throw new \Exception('Alasan reject wajib diisi.');
             }
 
-            $user = auth()->user()?->name ?? 'SYSTEM';
+            $user = auth()->user()?->username ?? 'SYSTEM';
             PurchaseRequestService::reject((int) $this->actionOverlayId, $this->actionNotes, $this->actionTargetLevel, $user);
 
             $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Purchase Request berhasil direject.'];
@@ -283,7 +307,7 @@ class PurchaseRequestTable extends Component
                 throw new \Exception('Alasan revise wajib diisi.');
             }
 
-            $user = auth()->user()?->name ?? 'SYSTEM';
+            $user = auth()->user()?->username ?? 'SYSTEM';
             PurchaseRequestService::requestRevise((int) $this->actionOverlayId, $this->actionNotes, $this->actionTargetLevel, $user);
 
             $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Request revise berhasil dikirim ke Store Keeper.'];

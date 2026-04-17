@@ -333,6 +333,11 @@
                                 Batal
                             </x-ui.sccr-button>
 
+                            <x-ui.sccr-button type="button" wire:click="saveDraft"
+                                class="bg-orange-500 text-white hover:bg-orange-600">
+                                Simpan Draft
+                            </x-ui.sccr-button>
+
                             <x-ui.sccr-button type="button" wire:click="submitToRM"
                                 class="bg-blue-600 text-white hover:bg-blue-700">
                                 Submit ke RM
