@@ -32,6 +32,12 @@ class RecipeService
 
             $recipe = Rst_Recipe::create($data);
 
+            // Update the menu's recipe_id if this is a menu recipe
+            if (! empty($data['menu_id'])) {
+                \App\Models\Holdings\Resto\Pos\Rst_Menu::where('id', $data['menu_id'])
+                    ->update(['recipe_id' => $recipe->id]);
+            }
+
             // Create initial version (version 1) with is_active = true
             $version = Rst_RecipeVersion::create([
                 'recipe_id' => $recipe->id,
