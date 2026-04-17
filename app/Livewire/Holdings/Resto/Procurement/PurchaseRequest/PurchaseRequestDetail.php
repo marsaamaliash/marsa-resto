@@ -178,7 +178,11 @@ class PurchaseRequestDetail extends Component
 
     public function edit(): void
     {
-        $this->redirectRoute('dashboard.resto.purchase-request.create', ['id' => $this->pr->id]);
+        if ($this->pr->isRevised()) {
+            $this->redirectRoute('dashboard.resto.purchase-request.revise', ['id' => $this->pr->id]);
+        } else {
+            $this->redirectRoute('dashboard.resto.purchase-request.edit', ['id' => $this->pr->id]);
+        }
     }
 
     public function render()

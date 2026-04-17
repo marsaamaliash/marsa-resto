@@ -54,7 +54,7 @@ Route::prefix('dashboard/resto')
         Route::get('/menu-pos', MenuPage::class)->name('menu-pos');
         Route::get('/employee-lunch', EmployeeLunch::class)->name('employee-lunch');
         Route::get('/employee-lunch/report', EmployeeLunchReport::class)->name('employee-lunch.report');
-        
+
         Route::get('/chef', ChefKitchen::class)->name('chef');
         Route::get('/orders', WaiterOrders::class)->name('orders');
         Route::get('/cashier', Cashier::class)->name('cashier');
@@ -82,6 +82,8 @@ Route::prefix('dashboard/resto')
         Route::get('/procurement', DashboardProcurement::class)->name('procurement');
         Route::get('/purchase-request', PurchaseRequestTable::class)->name('purchase-request');
         Route::get('/purchase-request/create', PurchaseRequestCreate::class)->name('purchase-request.create');
+        Route::get('/purchase-request/edit/{id}', PurchaseRequestCreate::class)->name('purchase-request.edit');
+        Route::get('/purchase-request/revise/{id}', PurchaseRequestCreate::class)->name('purchase-request.revise');
         Route::get('/purchase-request/{id}', PurchaseRequestDetail::class)->name('purchase-request.detail');
         Route::get('/purchase-order', DashboardPurchaseOrder::class)->name('purchase-order');
         Route::get('/direct-order', DashboardDirectOrder::class)->name('direct-order');
