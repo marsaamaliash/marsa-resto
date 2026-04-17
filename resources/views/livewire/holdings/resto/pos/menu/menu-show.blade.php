@@ -48,6 +48,24 @@
                         @endif
                     </div>
                 </div>
+                <div class="bg-white rounded-xl shadow p-4">
+                    <div class="text-xs text-gray-500 uppercase font-bold">Status Resep</div>
+                    <div class="text-lg font-semibold mt-1">
+                        @if ($menu->recipe_id && $menu->recipe)
+                            @if ($menu->recipe->activeVersion)
+                                <span class="text-green-600" title="Resep Aktif - V{{ $menu->recipe->activeVersion->version_no }}">
+                                    Punya Resep (V{{ $menu->recipe->activeVersion->version_no }})
+                                </span>
+                            @elseif ($menu->recipe->is_active)
+                                <span class="text-yellow-600">Resep Aktif (Belum Ada Versi)</span>
+                            @else
+                                <span class="text-gray-600">Resep Nonaktif</span>
+                            @endif
+                        @else
+                            <span class="text-red-600">Belum Ada Resep</span>
+                        @endif
+                    </div>
+                </div>
             </div>
 
             @if ($menu->description)

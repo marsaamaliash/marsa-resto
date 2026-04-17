@@ -54,6 +54,7 @@ Route::prefix('dashboard/resto')
         Route::get('/menu-pos', MenuPage::class)->name('menu-pos');
         Route::get('/employee-lunch', EmployeeLunch::class)->name('employee-lunch');
         Route::get('/employee-lunch/report', EmployeeLunchReport::class)->name('employee-lunch.report');
+        
         Route::get('/chef', ChefKitchen::class)->name('chef');
         Route::get('/orders', WaiterOrders::class)->name('orders');
         Route::get('/cashier', Cashier::class)->name('cashier');

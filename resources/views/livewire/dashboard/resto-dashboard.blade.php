@@ -19,7 +19,7 @@
     <div class="max-w-7xl mx-auto px-6 lg:px-8 py-10">
         <div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-6">
 
-<a href="{{ route('dashboard.resto.menu') }}"
+            <a href="{{ route('dashboard.resto.menu-pos') }}"
                 class="flex items-center justify-center rounded-2xl shadow-lg h-40 bg-orange-500 hover:bg-orange-600 transform hover:scale-105 transition duration-300">
                 <span class="text-white text-lg font-semibold">
                     Order
@@ -115,6 +115,14 @@
                 class="flex items-center justify-center rounded-2xl shadow-lg h-40 bg-teal-500 hover:bg-teal-600 transform hover:scale-105 transition duration-300">
                 <span class="text-white text-lg font-semibold">
                     Procurement
+                </span>
+            </a>
+
+              <a href="{{ route('dashboard.resto.menu') }}"
+                class="flex items-center justify-center rounded-2xl shadow-lg h-40 bg-green-500 hover:bg-green-600 transform hover:scale-105 transition duration-300">
+
+                <span class="text-white text-lg font-semibold">
+                Master Menu
                 </span>
             </a>
         </div>
