@@ -15,7 +15,7 @@ return new class extends Migration
             $table->foreignId('recipe_id')->constrained('rec_recipes')->onDelete('cascade');
 
             $table->integer('version_no');
-            $table->date('effective_from');
+            $table->date('effective_from')->nullable();
             $table->date('effective_to')->nullable();
 
             $table->string('approval_status', 20)->default('draft');

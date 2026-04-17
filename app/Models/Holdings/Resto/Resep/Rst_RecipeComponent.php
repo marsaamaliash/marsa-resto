@@ -2,6 +2,7 @@
 
 namespace App\Models\Holdings\Resto\Resep;
 
+use App\Models\Holdings\Resto\Master\Rst_MasterItem;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -44,6 +45,12 @@ class Rst_RecipeComponent extends Model
         return $this->belongsTo(Rst_RecipeVersion::class, 'recipe_version_id');
     }
 
+
+        public function item()
+    {
+        return $this->belongsTo(Rst_MasterItem::class, 'recipe_version_id');
+    }
+
     public function componentItem()
     {
         return $this->belongsTo(\App\Models\Holdings\Resto\Master\Rst_MasterItem::class, 'component_item_id');
@@ -57,5 +64,13 @@ class Rst_RecipeComponent extends Model
     public function uom()
     {
         return $this->belongsTo(\App\Models\Holdings\Resto\Master\Rst_MasterSatuan::class, 'uom_id');
+    }
+
+    public function scopeItemsOnly($query)
+    {
+        return $query->where(function ($q) {
+            $q->where('component_kind', 'item')
+                ->orWhereNull('component_kind');
+        })->whereNotNull('component_item_id');
     }
 }

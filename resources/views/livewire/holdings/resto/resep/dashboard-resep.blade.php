@@ -45,6 +45,22 @@
                 </span>
             </a>
 
+             <a href="{{ route('dashboard.resto.resep.recipe') }}"
+                class="flex items-center justify-center rounded-2xl shadow-lg h-40 bg-purple-500 hover:bg-purple-600 transform hover:scale-105 transition duration-300">
+
+                <span class="text-white text-lg font-semibold">
+                    Recipe / BOM
+                </span>
+            </a>
+
+             <a href="{{ route('dashboard.resto.resep.production') }}"
+                class="flex items-center justify-center rounded-2xl shadow-lg h-40 bg-emerald-500 hover:bg-emerald-600 transform hover:scale-105 transition duration-300">
+
+                <span class="text-white text-lg font-semibold">
+                    Production Order
+                </span>
+            </a>
+
         </div>
     </div>
 </div>

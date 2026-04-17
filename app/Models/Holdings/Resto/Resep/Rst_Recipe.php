@@ -2,6 +2,7 @@
 
 namespace App\Models\Holdings\Resto\Resep;
 
+use App\Models\Holdings\Resto\Pos\Rst_Menu;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -17,6 +18,7 @@ class Rst_Recipe extends Model
         'holding_id',
         'branch_id',
         'outlet_id',
+        'menu_id',
         'recipe_code',
         'recipe_name',
         'recipe_type',
@@ -35,6 +37,11 @@ class Rst_Recipe extends Model
         'is_active' => 'boolean',
     ];
 
+    public function menu()
+    {
+        return $this->belongsTo(Rst_Menu::class, 'menu_id');
+    }
+
     public function outputItem()
     {
         return $this->belongsTo(\App\Models\Holdings\Resto\Master\Rst_MasterItem::class, 'output_item_id');
@@ -48,6 +55,16 @@ class Rst_Recipe extends Model
     public function versions()
     {
         return $this->hasMany(Rst_RecipeVersion::class, 'recipe_id');
+    }
+
+    public function activeVersion()
+    {
+        return $this->hasOne(Rst_RecipeVersion::class, 'recipe_id')->where('is_active', true);
+    }
+
+    public function latestVersion()
+    {
+        return $this->hasOne(Rst_RecipeVersion::class, 'recipe_id')->orderBy('version_no', 'desc');
     }
 
     public function modifierGroups()
