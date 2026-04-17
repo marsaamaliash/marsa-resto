@@ -11,16 +11,17 @@ use Illuminate\Support\Facades\DB;
 class PurchaseRequestService
 {
     /**
-     * Get critical stock items (qty < min_stock) for a location
+     * Get critical stock items (qty <= min_stock) for a location
+     * Uses same logic as StockMinimalTable for consistency
      *
-     * @return array<int, array{item: Rst_MasterItem, balance: Rst_StockBalance, deficit: float}>
+     * @return array<int, array{item: Rst_MasterItem, balance: Rst_StockBalance, deficit: float, status: string}>
      */
     public static function getCriticalStockItems(int $locationId): array
     {
         $balances = Rst_StockBalance::with('item')
             ->where('location_id', $locationId)
             ->whereHas('item', function ($query) {
-                $query->whereColumn('stock_balances.qty_available', '<', 'items.min_stock')
+                $query->whereColumn('stock_balances.qty_available', '<=', 'items.min_stock')
                     ->where('items.min_stock', '>', 0);
             })
             ->get();
@@ -33,19 +34,43 @@ class PurchaseRequestService
                 continue;
             }
 
-            $deficit = $item->min_stock - $balance->qty_available;
-            if ($deficit > 0) {
-                $criticalItems[] = [
-                    'item' => $item,
-                    'balance' => $balance,
-                    'deficit' => $deficit,
-                    'min_stock' => $item->min_stock,
-                    'actual_stock' => $balance->qty_available,
-                ];
+            $qtyAvailable = $balance->qty_available;
+            $minStock = $item->min_stock;
+
+            if ($minStock <= 0 || $qtyAvailable > $minStock * 1.2) {
+                continue;
             }
+
+            $status = self::getStockStatus($qtyAvailable, $minStock);
+            $deficit = $minStock - $qtyAvailable;
+
+            $criticalItems[] = [
+                'item' => $item,
+                'balance' => $balance,
+                'deficit' => $deficit,
+                'min_stock' => $minStock,
+                'actual_stock' => $qtyAvailable,
+                'status' => $status,
+            ];
         }
 
         return $criticalItems;
+    }
+
+    /**
+     * Determine stock status (critical or warning)
+     * Same logic as StockMinimalTable
+     */
+    private static function getStockStatus(float $qtyAvailable, float $minStock): string
+    {
+        if ($qtyAvailable <= $minStock) {
+            return 'critical';
+        }
+        if ($qtyAvailable <= $minStock * 1.2) {
+            return 'warning';
+        }
+
+        return 'normal';
     }
 
     /**
@@ -57,9 +82,10 @@ class PurchaseRequestService
         int $locationId,
         array $criticalItems,
         ?string $notes = null,
-        ?string $requesterName = null
+        ?string $requesterName = null,
+        ?string $requiredDate = null
     ): Rst_PurchaseRequest {
-        return DB::transaction(function () use ($locationId, $criticalItems, $notes, $requesterName) {
+        return DB::transaction(function () use ($locationId, $criticalItems, $notes, $requesterName, $requiredDate) {
             $pr = Rst_PurchaseRequest::create([
                 'pr_number' => ReferenceNumberService::generatePurchaseRequestNumber(),
                 'requester_location_id' => $locationId,
@@ -67,6 +93,8 @@ class PurchaseRequestService
                 'approval_level' => 0,
                 'notes' => $notes,
                 'requested_by' => $requesterName,
+                'required_date' => $requiredDate,
+                'created_by' => auth()->user()?->id,
             ]);
 
             $totalCost = 0;
@@ -207,9 +235,10 @@ class PurchaseRequestService
     public static function submitToRM(
         int $prId,
         ?string $notes = null,
-        ?string $requesterName = null
+        ?string $requesterName = null,
+        ?string $requiredDate = null // 1. Tambahkan parameter ini
     ): Rst_PurchaseRequest {
-        return DB::transaction(function () use ($prId, $notes, $requesterName) {
+        return DB::transaction(function () use ($prId, $notes, $requesterName, $requiredDate) { // 2. Jangan lupa di-use
             $pr = Rst_PurchaseRequest::findOrFail($prId);
 
             if (! $pr->isDraft() && ! $pr->isRevised()) {
@@ -227,6 +256,8 @@ class PurchaseRequestService
                 'notes' => $notes ?? $pr->notes,
                 'requested_by' => $requesterName ?? $pr->requested_by,
                 'requested_at' => now(),
+                // 3. Gunakan $requiredDate dari inputan, kalau kosong baru pakai dari database/default
+                'required_date' => $requiredDate ?? $pr->required_date ?? now()->addDays(7), 
             ]);
             $pr->save();
 
@@ -367,9 +398,10 @@ class PurchaseRequestService
     public static function revisePR(
         int $prId,
         array $items,
-        ?string $notes = null
+        ?string $notes = null,
+        ?string $requiredDate = null
     ): Rst_PurchaseRequest {
-        return DB::transaction(function () use ($prId, $items, $notes) {
+        return DB::transaction(function () use ($prId, $items, $notes, $requiredDate) {
             $pr = Rst_PurchaseRequest::findOrFail($prId);
 
             if (! $pr->isRevised()) {
@@ -415,6 +447,7 @@ class PurchaseRequestService
                 'status' => 'draft',
                 'approval_level' => 0,
                 'notes' => $notes ?? $pr->notes,
+                'required_date' => $requiredDate ?? $pr->required_date,
                 'total_estimated_cost' => $totalCost > 0 ? $totalCost : 0,
             ]);
             $pr->save();

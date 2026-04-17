@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Holdings\Resto\Procurement\PurchaseRequest;
 
+use App\Models\Holdings\Resto\CoreStock\Rst_StockBalance;
 use App\Models\Holdings\Resto\Master\Rst_MasterItem;
 use App\Models\Holdings\Resto\Master\Rst_MasterLokasi;
 use App\Models\Holdings\Resto\Procurement\Rst_PurchaseRequest;
@@ -33,6 +34,12 @@ class PurchaseRequestCreate extends Component
     public ?Rst_PurchaseRequest $existingPR = null;
 
     public bool $isEditMode = false;
+
+    public string $sortField = 'selisih';
+
+    public string $sortDirection = 'desc';
+
+    protected array $allowedSortFields = ['item_name', 'actual_stock', 'min_stock', 'selisih'];
 
     public function mount(?int $id = null): void
     {
@@ -79,10 +86,17 @@ class PurchaseRequestCreate extends Component
                     'pr_item_id' => $item->id,
                 ];
             } else {
+                $minStock = $item->item?->min_stock ?? 0;
+                $actualStock = $item->actual_stock ?? 0;
+                
                 $this->additionalItems[] = [
                     'id' => $item->item_id,
                     'name' => $item->item?->name ?? 'Unknown',
+                    'sku' => $item->item?->sku ?? '-',
                     'uom' => $item->uom?->name ?? 'Pcs',
+                    'actual_stock' => $actualStock,
+                    'min_stock' => $minStock,
+                    'selisih' => $minStock - $actualStock,
                     'qty' => $item->requested_qty,
                     'notes' => $item->notes ?? '',
                     'pr_item_id' => $item->id,
@@ -99,6 +113,22 @@ class PurchaseRequestCreate extends Component
         $this->selectedCriticalItems = [];
     }
 
+    public function sortBy(string $field): void
+    {
+        if (! in_array($field, $this->allowedSortFields, true)) {
+            return;
+        }
+
+        if ($this->sortField === $field) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+
+            return;
+        }
+
+        $this->sortField = $field;
+        $this->sortDirection = 'desc';
+    }
+
     public function loadCriticalItems(): void
     {
         if ($this->selectedLocationId === 0) {
@@ -112,9 +142,6 @@ class PurchaseRequestCreate extends Component
         $this->criticalItems = [];
         foreach ($criticalData as $data) {
             $item = $data['item'];
-            $balance = $data['balance'];
-
-            $suggestedQty = ceil($data['deficit'] * 1.5);
 
             $this->criticalItems[] = [
                 'id' => $item->id,
@@ -125,9 +152,11 @@ class PurchaseRequestCreate extends Component
                 'actual_stock' => $data['actual_stock'],
                 'min_stock' => $data['min_stock'],
                 'deficit' => $data['deficit'],
-                'suggested_qty' => $suggestedQty,
+                'status' => $data['status'],
             ];
         }
+
+        $this->criticalItems = $this->applySorting($this->criticalItems, 'deficit');
     }
 
     public function getLocationsProperty(): array
@@ -144,21 +173,58 @@ class PurchaseRequestCreate extends Component
 
     public function getAvailableItemsProperty(): array
     {
-        $selectedIds = array_column($this->additionalItems, 'id');
-        $criticalIds = array_column($this->criticalItems, 'id');
-        $excludeIds = array_merge($selectedIds, $criticalIds);
+        $criticalItemIds = collect($this->criticalItems)->pluck('id')->toArray();
 
-        return Rst_MasterItem::whereNotIn('id', $excludeIds)
+        $items = Rst_MasterItem::whereNotIn('id', $criticalItemIds)
             ->orderBy('name')
-            ->get()
-            ->map(fn ($item) => [
+            ->get();
+        
+        $result = $items->map(function ($item) {
+            $stokBalance = null;
+            $qtyAvailable = 0;
+            $minStock = $item->min_stock ?? 0;
+
+            if ($this->selectedLocationId > 0) {
+                $stokBalance = Rst_StockBalance::where('item_id', $item->id)
+                    ->where('location_id', $this->selectedLocationId)
+                    ->first();
+                
+                $qtyAvailable = $stokBalance?->qty_available ?? 0;
+            }
+
+            return [
                 'id' => $item->id,
                 'name' => $item->name,
+                'item_name' => $item->name,
                 'sku' => $item->sku ?? '-',
                 'uom_id' => $item->uom_id,
                 'uom' => $item->uom?->name ?? 'Pcs',
-            ])
-            ->toArray();
+                'actual_stock' => $qtyAvailable,
+                'min_stock' => $minStock,
+                'selisih' => $minStock - $qtyAvailable,
+            ];
+        })->toArray();
+
+        return $this->applySorting($result);
+    }
+
+    private function applySorting(array $items, ?string $defaultSortField = null): array
+    {
+        $sortField = $defaultSortField ?? $this->sortField;
+        $sortDirection = $defaultSortField ? 'asc' : $this->sortDirection;
+
+        $collection = collect($items);
+        $sorted = $collection->sortBy(function ($item) use ($sortField) {
+            return match ($sortField) {
+                'actual_stock' => (float) $item['actual_stock'],
+                'min_stock' => (float) $item['min_stock'],
+                'selisih', 'deficit' => abs((float) ($item['selisih'] ?? $item['deficit'] ?? 0)),
+                'item_name', 'name' => $item['item_name'] ?? $item['name'] ?? '',
+                default => $item['id'],
+            };
+        }, SORT_REGULAR, $sortDirection === 'asc');
+
+        return $sorted->values()->toArray();
     }
 
     public function toggleCriticalItem(int $itemId): void
@@ -168,12 +234,50 @@ class PurchaseRequestCreate extends Component
         } else {
             $item = collect($this->criticalItems)->firstWhere('id', $itemId);
             if ($item) {
+                $suggestedQty = ceil($item['deficit'] * 1.5);
                 $this->selectedCriticalItems[$itemId] = [
                     'id' => $itemId,
-                    'qty' => $item['suggested_qty'],
+                    'qty' => $suggestedQty,
                     'notes' => '',
                     'actual_stock' => $item['actual_stock'],
                     'min_stock' => $item['min_stock'],
+                ];
+            }
+        }
+    }
+
+    public function toggleAdditionalItem(int $itemId): void
+    {
+        $existingIndex = collect($this->additionalItems)->search(fn ($item) => $item['id'] === $itemId);
+
+        if ($existingIndex !== false) {
+            array_splice($this->additionalItems, $existingIndex, 1);
+        } else {
+            $item = Rst_MasterItem::with('uom')->find($itemId);
+            if ($item) {
+                $stokBalance = null;
+                $qtyAvailable = 0;
+
+                if ($this->selectedLocationId > 0) {
+                    $stokBalance = Rst_StockBalance::where('item_id', $itemId)
+                        ->where('location_id', $this->selectedLocationId)
+                        ->first();
+                    
+                    $qtyAvailable = $stokBalance?->qty_available ?? 0;
+                }
+
+                $minStock = $item->min_stock ?? 0;
+
+                $this->additionalItems[] = [
+                    'id' => $item->id,
+                    'name' => $item->name,
+                    'sku' => $item->sku ?? '-',
+                    'uom' => $item->uom?->name ?? 'Pcs',
+                    'actual_stock' => $qtyAvailable,
+                    'min_stock' => $minStock,
+                    'selisih' => $minStock - $qtyAvailable,
+                    'qty' => 1,
+                    'notes' => '',
                 ];
             }
         }
@@ -213,23 +317,6 @@ class PurchaseRequestCreate extends Component
     {
         if (isset($this->selectedCriticalItems[$itemId])) {
             $this->selectedCriticalItems[$itemId]['qty'] = max(0.01, $qty);
-        }
-    }
-
-    public function saveAsDraft(): void
-    {
-        try {
-            $this->validateData();
-
-            if ($this->isEditMode && $this->editingPrId) {
-                $this->updateDraft();
-            } else {
-                $this->createDraft();
-            }
-
-            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Purchase Request berhasil disimpan sebagai draft.'];
-        } catch (\Exception $e) {
-            $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
         }
     }
 
@@ -293,7 +380,8 @@ class PurchaseRequestCreate extends Component
             $this->selectedLocationId,
             $allItems,
             $this->notes,
-            $user
+            $user,
+            $this->requiredDate
         );
     }
 
@@ -317,7 +405,7 @@ class PurchaseRequestCreate extends Component
             ];
         }
 
-        return PurchaseRequestService::revisePR($this->editingPrId, $allItems, $this->notes);
+        return PurchaseRequestService::revisePR($this->editingPrId, $allItems, $this->notes, $this->requiredDate);
     }
 
     public function cancel(): void

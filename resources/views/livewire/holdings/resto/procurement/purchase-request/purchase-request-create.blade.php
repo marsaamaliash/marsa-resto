@@ -45,7 +45,7 @@
 
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-1">
-                            Tanggal Dibutuhkan
+                            Tanggal
                         </label>
                         <input type="date" wire:model="requiredDate"
                             class="w-full border-gray-300 rounded-md shadow-sm">
@@ -99,7 +99,7 @@
                             <div class="flex justify-between items-center mb-4">
                                 <h3 class="text-lg font-bold text-gray-800">Daftar Stok Kritis</h3>
                                 <p class="text-sm text-gray-600">
-                                    Item dengan stok aktual di bawah minimum
+                                    Item dengan stok aktual di bawah atau mendekati minimum
                                 </p>
                             </div>
 
@@ -115,10 +115,19 @@
                                         <thead class="bg-gray-50">
                                             <tr>
                                                 <th class="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase">Pilih</th>
-                                                <th class="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase">Item</th>
-                                                <th class="px-3 py-3 text-center text-xs font-bold text-gray-500 uppercase">Stok Aktual</th>
-                                                <th class="px-3 py-3 text-center text-xs font-bold text-gray-500 uppercase">Min Stok</th>
-                                                <th class="px-3 py-3 text-center text-xs font-bold text-gray-500 uppercase">Defisit</th>
+                                                <th wire:click="sortBy('item_name')" class="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase cursor-pointer hover:bg-gray-100">
+                                                    Item {!! $sortField === 'item_name' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                                                </th>
+                                                <th wire:click="sortBy('actual_stock')" class="px-3 py-3 text-center text-xs font-bold text-gray-500 uppercase cursor-pointer hover:bg-gray-100">
+                                                    Stok Sekarang {!! $sortField === 'actual_stock' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                                                </th>
+                                                <th wire:click="sortBy('min_stock')" class="px-3 py-3 text-center text-xs font-bold text-gray-500 uppercase cursor-pointer hover:bg-gray-100">
+                                                    Min Stok {!! $sortField === 'min_stock' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                                                </th>
+                                                <th wire:click="sortBy('selisih')" class="px-3 py-3 text-center text-xs font-bold text-gray-500 uppercase cursor-pointer hover:bg-gray-100">
+                                                    Selisih {!! $sortField === 'selisih' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                                                </th>
+                                                <th class="px-3 py-3 text-center text-xs font-bold text-gray-500 uppercase">Status</th>
                                                 <th class="px-3 py-3 text-center text-xs font-bold text-gray-500 uppercase">Qty Order</th>
                                                 <th class="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase">Catatan</th>
                                             </tr>
@@ -127,8 +136,10 @@
                                             @foreach ($criticalItems as $item)
                                                 @php
                                                     $isSelected = isset($selectedCriticalItems[$item['id']]);
+                                                    $isCritical = $item['status'] === 'critical';
+                                                    $isWarning = $item['status'] === 'warning';
                                                 @endphp
-                                                <tr class="{{ $isSelected ? 'bg-blue-50' : '' }}">
+                                                <tr class="hover:bg-gray-50 @if($isCritical) bg-red-50 @elseif($isWarning) bg-yellow-50 @endif">
                                                     <td class="px-3 py-3">
                                                         <input type="checkbox"
                                                             wire:click="toggleCriticalItem({{ $item['id'] }})"
@@ -137,25 +148,36 @@
                                                     </td>
                                                     <td class="px-3 py-3">
                                                         <div class="text-sm font-medium text-gray-900">{{ $item['name'] }}</div>
-                                                        <div class="text-xs text-gray-500">SKU: {{ $item['sku'] }}</div>
+                                                        <div class="text-xs text-gray-500">{{ $item['sku'] }}</div>
                                                     </td>
                                                     <td class="px-3 py-3 text-center">
-                                                        <span class="text-sm font-mono {{ $item['actual_stock'] < $item['min_stock'] ? 'text-red-600 font-bold' : 'text-gray-900' }}">
+                                                        <span class="text-sm font-mono font-bold @if($isCritical) text-red-600 @elseif($isWarning) text-yellow-600 @endif">
                                                             {{ number_format($item['actual_stock'], 2) }}
                                                         </span>
-                                                        <span class="text-xs text-gray-500">{{ $item['uom'] }}</span>
+                                                        <div class="text-xs text-gray-500">{{ $item['uom'] }}</div>
                                                     </td>
                                                     <td class="px-3 py-3 text-center">
                                                         <span class="text-sm font-mono text-gray-900">
                                                             {{ number_format($item['min_stock'], 2) }}
                                                         </span>
-                                                        <span class="text-xs text-gray-500">{{ $item['uom'] }}</span>
+                                                        <div class="text-xs text-gray-500">{{ $item['uom'] }}</div>
                                                     </td>
                                                     <td class="px-3 py-3 text-center">
-                                                        <span class="text-sm font-mono text-red-600 font-bold">
+                                                        <span class="text-sm font-mono font-bold @if($item['deficit'] > 0) text-red-600 @else text-gray-500 @endif">
                                                             {{ number_format($item['deficit'], 2) }}
                                                         </span>
-                                                        <span class="text-xs text-gray-500">{{ $item['uom'] }}</span>
+                                                        <div class="text-xs text-gray-500">{{ $item['uom'] }}</div>
+                                                    </td>
+                                                    <td class="px-3 py-3 text-center">
+                                                        @if($isCritical)
+                                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                                Kritis
+                                                            </span>
+                                                        @elseif($isWarning)
+                                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                                Warning
+                                                            </span>
+                                                        @endif
                                                     </td>
                                                     <td class="px-3 py-3 text-center">
                                                         @if ($isSelected)
@@ -192,76 +214,97 @@
                     @else
                         <div class="p-6">
                             <div class="flex justify-between items-center mb-4">
-                                <h3 class="text-lg font-bold text-gray-800">Item Tambahan (Non-Kritis)</h3>
+                                <h3 class="text-lg font-bold text-gray-800">Daftar Item Tersedia (Non-Kritis)</h3>
                                 <p class="text-sm text-gray-600">
-                                    Tambahkan item lain yang ingin dipesan
+                                    Pilih item tambahan yang ingin dipesan
                                 </p>
                             </div>
 
-                            {{-- ADD ITEM DROPDOWN --}}
-                            <div class="mb-6 flex gap-2">
-                                <select id="addItemSelect" class="flex-1 border-gray-300 rounded-md shadow-sm">
-                                    <option value="">-- Pilih Item --</option>
-                                    @foreach ($this->availableItems as $availItem)
-                                        <option value="{{ $availItem['id'] }}">
-                                            {{ $availItem['name'] }} ({{ $availItem['sku'] }})
-                                        </option>
-                                    @endforeach
-                                </select>
-                                <button type="button"
-                                    onclick="const select = document.getElementById('addItemSelect'); if(select.value) { $wire.addAdditionalItem(select.value); select.value = ''; }"
-                                    class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium">
-                                    <x-ui.sccr-icon name="plus" :size="16" class="inline mr-1" />
-                                    Tambah
-                                </button>
-                            </div>
-
-                            {{-- ADDITIONAL ITEMS TABLE --}}
-                            @if (count($additionalItems) === 0)
-                                <div class="text-center py-8 bg-gray-50 rounded-lg">
-                                    <p class="text-gray-500">Belum ada item tambahan</p>
-                                    <p class="text-sm text-gray-400 mt-1">Pilih item dari dropdown di atas</p>
+                            @if (count($this->availableItems) === 0)
+                                <div class="text-center py-10 bg-gray-50 rounded-lg">
+                                    <x-ui.sccr-icon name="inbox" :size="48" class="text-gray-400 mx-auto mb-3" />
+                                    <p class="text-gray-600 font-medium">Tidak ada item tersedia</p>
+                                    <p class="text-sm text-gray-500 mt-1">Semua item mungkin sudah dipilih atau tidak ada data</p>
                                 </div>
                             @else
                                 <div class="overflow-x-auto">
                                     <table class="min-w-full divide-y divide-gray-200">
                                         <thead class="bg-gray-50">
                                             <tr>
-                                                <th class="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase">Item</th>
-                                                <th class="px-3 py-3 text-center text-xs font-bold text-gray-500 uppercase w-32">Qty</th>
+                                                <th class="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase">Pilih</th>
+                                                <th wire:click="sortBy('item_name')" class="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase cursor-pointer hover:bg-gray-100">
+                                                    Item {!! $sortField === 'item_name' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                                                </th>
+                                                <th wire:click="sortBy('actual_stock')" class="px-3 py-3 text-center text-xs font-bold text-gray-500 uppercase cursor-pointer hover:bg-gray-100">
+                                                    Stok Sekarang {!! $sortField === 'actual_stock' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                                                </th>
+                                                <th wire:click="sortBy('min_stock')" class="px-3 py-3 text-center text-xs font-bold text-gray-500 uppercase cursor-pointer hover:bg-gray-100">
+                                                    Min Stok {!! $sortField === 'min_stock' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                                                </th>
+                                                <th wire:click="sortBy('selisih')" class="px-3 py-3 text-center text-xs font-bold text-gray-500 uppercase cursor-pointer hover:bg-gray-100">
+                                                    Selisih {!! $sortField === 'selisih' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                                                </th>
+                                                <th class="px-3 py-3 text-center text-xs font-bold text-gray-500 uppercase">Qty Order</th>
                                                 <th class="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase">Catatan</th>
-                                                <th class="px-3 py-3 text-center text-xs font-bold text-gray-500 uppercase w-16">Aksi</th>
                                             </tr>
                                         </thead>
                                         <tbody class="divide-y divide-gray-200 bg-white">
-                                            @foreach ($additionalItems as $index => $item)
-                                                <tr>
+                                            @foreach ($this->availableItems as $item)
+                                                @php
+                                                    $isSelected = collect($additionalItems)->contains(fn($i) => $i['id'] == $item['id']);
+                                                    $selectedIndex = collect($additionalItems)->search(fn($i) => $i['id'] == $item['id']);
+                                                @endphp
+                                                <tr class="{{ $isSelected ? 'bg-blue-50' : '' }}">
+                                                    <td class="px-3 py-3">
+                                                        <input type="checkbox"
+                                                            wire:click="toggleAdditionalItem({{ $item['id'] }})"
+                                                            {{ $isSelected ? 'checked' : '' }}
+                                                            class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                                    </td>
                                                     <td class="px-3 py-3">
                                                         <div class="text-sm font-medium text-gray-900">{{ $item['name'] }}</div>
-                                                        <div class="text-xs text-gray-500">Satuan: {{ $item['uom'] }}</div>
+                                                        <div class="text-xs text-gray-500">{{ $item['sku'] }}</div>
                                                     </td>
                                                     <td class="px-3 py-3 text-center">
-                                                        <input type="number"
-                                                            step="0.01"
-                                                            min="0.01"
-                                                            wire:change="updateAdditionalQty({{ $index }}, $event.target.value)"
-                                                            value="{{ $item['qty'] }}"
-                                                            class="w-24 border-gray-300 rounded-md text-sm text-right">
-                                                        <span class="text-xs text-gray-500 ml-1">{{ $item['uom'] }}</span>
+                                                        <span class="text-sm font-mono text-gray-900">
+                                                            {{ number_format($item['actual_stock'], 2) }}
+                                                        </span>
+                                                        <div class="text-xs text-gray-500">{{ $item['uom'] }}</div>
+                                                    </td>
+                                                    <td class="px-3 py-3 text-center">
+                                                        <span class="text-sm font-mono text-gray-900">
+                                                            {{ number_format($item['min_stock'], 2) }}
+                                                        </span>
+                                                        <div class="text-xs text-gray-500">{{ $item['uom'] }}</div>
+                                                    </td>
+                                                    <td class="px-3 py-3 text-center">
+                                                            <span class="text-sm font-mono @if($item['selisih'] > 0) text-red-600 font-semibold @else text-gray-500 @endif">
+                                                                {{ number_format(abs($item['selisih']), 2) }}
+                                                            </span>
+                                                            <div class="text-xs text-gray-500">{{ $item['uom'] }}</div>
+                                                        </td>
+                                                    <td class="px-3 py-3 text-center">
+                                                        @if ($isSelected)
+                                                            <input type="number"
+                                                                step="0.01"
+                                                                min="0.01"
+                                                                wire:change="updateAdditionalQty({{ $selectedIndex }}, $event.target.value)"
+                                                                value="{{ $additionalItems[$selectedIndex]['qty'] }}"
+                                                                class="w-24 border-gray-300 rounded-md text-sm text-right">
+                                                            <span class="text-xs text-gray-500 ml-1">{{ $item['uom'] }}</span>
+                                                        @else
+                                                            <span class="text-sm text-gray-400">-</span>
+                                                        @endif
                                                     </td>
                                                     <td class="px-3 py-3">
-                                                        <input type="text"
-                                                            wire:model="additionalItems.{{ $index }}.notes"
-                                                            class="w-full border-gray-300 rounded-md text-sm"
-                                                            placeholder="Catatan item...">
-                                                    </td>
-                                                    <td class="px-3 py-3 text-center">
-                                                        <button type="button"
-                                                            wire:click="removeAdditionalItem({{ $index }})"
-                                                            class="text-red-600 hover:text-red-800"
-                                                            title="Hapus">
-                                                            <x-ui.sccr-icon name="trash" :size="18" />
-                                                        </button>
+                                                        @if ($isSelected)
+                                                            <input type="text"
+                                                                wire:model="additionalItems.{{ $selectedIndex }}.notes"
+                                                                class="w-full border-gray-300 rounded-md text-sm"
+                                                                placeholder="Catatan item...">
+                                                        @else
+                                                            <span class="text-sm text-gray-400">-</span>
+                                                        @endif
                                                     </td>
                                                 </tr>
                                             @endforeach
@@ -282,22 +325,12 @@
                                 <span class="font-semibold">{{ count($selectedCriticalItems) }}</span> item stok kritis +
                                 <span class="font-semibold">{{ count($additionalItems) }}</span> item tambahan
                             </p>
-                            @if (count($additionalItems) > 0)
-                                <p class="text-xs text-orange-600 mt-1">
-                                    * Item non-kritis akan dilaporkan ke RM melalui field catatan
-                                </p>
-                            @endif
                         </div>
 
                         <div class="flex gap-3">
                             <x-ui.sccr-button type="button" wire:click="cancel"
                                 class="bg-gray-500 text-white hover:bg-gray-600">
                                 Batal
-                            </x-ui.sccr-button>
-
-                            <x-ui.sccr-button type="button" wire:click="saveAsDraft"
-                                class="bg-gray-700 text-white hover:bg-gray-800">
-                                Simpan Draft
                             </x-ui.sccr-button>
 
                             <x-ui.sccr-button type="button" wire:click="submitToRM"
