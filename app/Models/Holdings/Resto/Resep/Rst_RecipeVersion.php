@@ -19,6 +19,7 @@ class Rst_RecipeVersion extends Model
         'effective_from',
         'effective_to',
         'approval_status',
+        'is_active',
         'approval_request_id',
         'batch_size_qty',
         'batch_size_uom_id',
@@ -42,6 +43,7 @@ class Rst_RecipeVersion extends Model
     protected $casts = [
         'effective_from' => 'date',
         'effective_to' => 'date',
+        'is_active' => 'boolean',
         'batch_size_qty' => 'decimal:6',
         'expected_output_qty' => 'decimal:6',
         'expected_yield_pct' => 'decimal:4',
@@ -79,5 +81,15 @@ class Rst_RecipeVersion extends Model
     public function costSnapshots()
     {
         return $this->hasMany(Rst_RecipeCostSnapshot::class, 'recipe_version_id');
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    public function scopeDraft($query)
+    {
+        return $query->where('approval_status', 'draft')->orWhereNull('approval_status');
     }
 }

@@ -15,17 +15,23 @@ use App\Livewire\Holdings\Resto\Master\Vendor\VendorTable;
 use App\Livewire\Holdings\Resto\Movement\DashboardMovement;
 use App\Livewire\Holdings\Resto\Movement\Internal\MovementInternalDetail;
 use App\Livewire\Holdings\Resto\Movement\Internal\MovementInternalTable;
-use App\Livewire\Holdings\Resto\Resep\DashboardResep;
-use App\Livewire\Holdings\Resto\Resep\KonversiSatuan\KonversiSatuanTable;
-use App\Livewire\Holdings\Resto\Resep\Menu\ResepMenuTable as MenuResepMenuTable;
-use App\Livewire\Holdings\Resto\Resep\Repack\RepackTable;
-use App\Livewire\Holdings\Resto\Resep\Repack\ResepMenuTable;
 use App\Livewire\Holdings\Resto\Pos\Cashier;
 use App\Livewire\Holdings\Resto\Pos\ChefKitchen;
 use App\Livewire\Holdings\Resto\Pos\EmployeeLunch;
 use App\Livewire\Holdings\Resto\Pos\EmployeeLunchReport;
+use App\Livewire\Holdings\Resto\Pos\Menu\MenuShow;
+use App\Livewire\Holdings\Resto\Pos\Menu\MenuTable;
 use App\Livewire\Holdings\Resto\Pos\MenuPage;
 use App\Livewire\Holdings\Resto\Pos\WaiterOrders;
+use App\Livewire\Holdings\Resto\Produksi\ProductionOrder\ProductionOrderCreate;
+use App\Livewire\Holdings\Resto\Produksi\ProductionOrder\ProductionOrderShow;
+use App\Livewire\Holdings\Resto\Produksi\ProductionOrder\ProductionOrderTable;
+use App\Livewire\Holdings\Resto\Resep\DashboardResep;
+use App\Livewire\Holdings\Resto\Resep\KonversiSatuan\KonversiSatuanTable;
+use App\Livewire\Holdings\Resto\Resep\Menu\ResepMenuTable as MenuResepMenuTable;
+use App\Livewire\Holdings\Resto\Resep\Recipe\RecipeShow;
+use App\Livewire\Holdings\Resto\Resep\Recipe\RecipeTable;
+use App\Livewire\Holdings\Resto\Resep\Repack\RepackTable;
 use Illuminate\Support\Facades\Route;
 
 // ✅ Ubah prefix dan name di sini
@@ -37,7 +43,9 @@ Route::prefix('dashboard/resto')
         Route::get('/master-movement', DashboardMovement::class)->name('master-movement');
         Route::get('/resep', DashboardResep::class)->name('resep');
 
-        Route::get('/menu', MenuPage::class)->name('menu');
+        Route::get('/menu', MenuTable::class)->name('menu');
+        Route::get('/menu/{id}', MenuShow::class)->name('menu.detail');
+        Route::get('/menu-pos', MenuPage::class)->name('menu-pos');
         Route::get('/employee-lunch', EmployeeLunch::class)->name('employee-lunch');
         Route::get('/employee-lunch/report', EmployeeLunchReport::class)->name('employee-lunch.report');
         Route::get('/chef', ChefKitchen::class)->name('chef');
@@ -63,4 +71,11 @@ Route::prefix('dashboard/resto')
         Route::get('/repack', RepackTable::class)->name('repack');
 
         Route::get('/resep-menu', MenuResepMenuTable::class)->name('resep-menu');
+
+        Route::get('/resep/recipe', RecipeTable::class)->name('resep.recipe');
+        Route::get('/resep/recipe/{id}', RecipeShow::class)->name('resep.recipe.detail');
+
+        Route::get('/resep/production', ProductionOrderTable::class)->name('resep.production');
+        Route::get('/resep/production/create', ProductionOrderCreate::class)->name('resep.production.create');
+        Route::get('/resep/production/{id}', ProductionOrderShow::class)->name('resep.production.detail');
     });
