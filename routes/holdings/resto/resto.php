@@ -24,7 +24,9 @@ use App\Livewire\Holdings\Resto\Pos\WaiterOrders;
 use App\Livewire\Holdings\Resto\Procurement\DashboardProcurement;
 use App\Livewire\Holdings\Resto\Procurement\DirectOrder\DashboardDirectOrder;
 use App\Livewire\Holdings\Resto\Procurement\PurchaseOrder\DashboardPurchaseOrder;
-use App\Livewire\Holdings\Resto\Procurement\PurchaseRequest\DashboardPurchaseRequest;
+use App\Livewire\Holdings\Resto\Procurement\PurchaseRequest\PurchaseRequestCreate;
+use App\Livewire\Holdings\Resto\Procurement\PurchaseRequest\PurchaseRequestDetail;
+use App\Livewire\Holdings\Resto\Procurement\PurchaseRequest\PurchaseRequestTable;
 use App\Livewire\Holdings\Resto\Resep\DashboardResep;
 use App\Livewire\Holdings\Resto\Resep\KonversiSatuan\KonversiSatuanTable;
 use App\Livewire\Holdings\Resto\Resep\Menu\ResepMenuTable as MenuResepMenuTable;
@@ -68,7 +70,9 @@ Route::prefix('dashboard/resto')
         Route::get('/resep-menu', MenuResepMenuTable::class)->name('resep-menu');
 
         Route::get('/procurement', DashboardProcurement::class)->name('procurement');
-        Route::get('/purchase-request', DashboardPurchaseRequest::class)->name('purchase-request');
+        Route::get('/purchase-request', PurchaseRequestTable::class)->name('purchase-request');
+        Route::get('/purchase-request/create', PurchaseRequestCreate::class)->name('purchase-request.create');
+        Route::get('/purchase-request/{id}', PurchaseRequestDetail::class)->name('purchase-request.detail');
         Route::get('/purchase-order', DashboardPurchaseOrder::class)->name('purchase-order');
         Route::get('/direct-order', DashboardDirectOrder::class)->name('direct-order');
     });
