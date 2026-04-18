@@ -76,16 +76,16 @@ class PurchaseRequestService
     /**
      * Create a new Purchase Request from critical stock items
      *
-     * @param  array<int, array{item_id: int, qty: float, notes: ?string}>  $criticalItems
+     * @param  array<int, array{item_id: int, qty: float, notes: ?string, is_critical?: bool}>  $items
      */
     public static function createFromCritical(
         int $locationId,
-        array $criticalItems,
+        array $items,
         ?string $notes = null,
         ?string $requesterName = null,
         ?string $requiredDate = null
     ): Rst_PurchaseRequest {
-        return DB::transaction(function () use ($locationId, $criticalItems, $notes, $requesterName, $requiredDate) {
+        return DB::transaction(function () use ($locationId, $items, $notes, $requesterName, $requiredDate) {
             $pr = Rst_PurchaseRequest::create([
                 'pr_number' => ReferenceNumberService::generatePurchaseRequestNumber(),
                 'requester_location_id' => $locationId,
@@ -100,7 +100,7 @@ class PurchaseRequestService
 
             $totalCost = 0;
 
-            foreach ($criticalItems as $itemData) {
+            foreach ($items as $itemData) {
                 $item = Rst_MasterItem::findOrFail($itemData['item_id']);
                 $balance = Rst_StockBalance::where('item_id', $itemData['item_id'])
                     ->where('location_id', $locationId)
@@ -109,6 +109,7 @@ class PurchaseRequestService
                 $unitCost = $item->last_purchase_price ?? $item->default_cost ?? 0;
                 $qty = $itemData['qty'];
                 $itemTotal = $unitCost * $qty;
+                $isCritical = $itemData['is_critical'] ?? true;
 
                 Rst_PurchaseRequestItem::create([
                     'purchase_request_id' => $pr->id,
@@ -117,7 +118,7 @@ class PurchaseRequestService
                     'uom_id' => $item->uom_id,
                     'unit_cost' => $unitCost > 0 ? $unitCost : null,
                     'total_cost' => $itemTotal > 0 ? $itemTotal : null,
-                    'is_critical' => true,
+                    'is_critical' => $isCritical,
                     'actual_stock' => $balance?->qty_available ?? 0,
                     'min_stock' => $item->min_stock ?? 0,
                     'notes' => $itemData['notes'] ?? null,
@@ -394,7 +395,7 @@ class PurchaseRequestService
     /**
      * Revise PR - store keeper updates items after revise request
      *
-     * @param  array<int, array{id: ?int, item_id: int, qty: float, notes: ?string}>  $items
+     * @param  array<int, array{id: ?int, item_id: int, qty: float, notes: ?string, is_critical?: bool}>  $items
      */
     public static function revisePR(
         int $prId,
@@ -409,10 +410,8 @@ class PurchaseRequestService
                 throw new \Exception('Hanya PR dengan status Revised yang dapat direvisi.');
             }
 
-            // Delete existing items
             $pr->items()->delete();
 
-            // Recreate items
             $totalCost = 0;
             $locationId = $pr->requester_location_id;
 
@@ -425,8 +424,7 @@ class PurchaseRequestService
                 $unitCost = $item->last_purchase_price ?? $item->default_cost ?? 0;
                 $qty = $itemData['qty'];
                 $itemTotal = $unitCost * $qty;
-
-                $isCritical = $balance && $balance->qty_available < $item->min_stock;
+                $isCritical = $itemData['is_critical'] ?? false;
 
                 Rst_PurchaseRequestItem::create([
                     'purchase_request_id' => $prId,
@@ -445,8 +443,8 @@ class PurchaseRequestService
             }
 
             $pr->fill([
-                'status' => 'draft',
-                'approval_level' => 0,
+                'status' => 'pending_rm',
+                'approval_level' => 1,
                 'notes' => $notes ?? $pr->notes,
                 'required_date' => $requiredDate ?? $pr->required_date,
                 'total_estimated_cost' => $totalCost > 0 ? $totalCost : 0,
@@ -489,8 +487,7 @@ class PurchaseRequestService
                 $unitCost = $item->last_purchase_price ?? $item->default_cost ?? 0;
                 $qty = $itemData['qty'];
                 $itemTotal = $unitCost * $qty;
-
-                $isCritical = $balance && $balance->qty_available < $item->min_stock;
+                $isCritical = $itemData['is_critical'] ?? false;
 
                 Rst_PurchaseRequestItem::create([
                     'purchase_request_id' => $prId,

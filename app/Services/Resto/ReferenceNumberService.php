@@ -27,7 +27,7 @@ class ReferenceNumberService
 
     public static function generatePurchaseRequestNumber(): string
     {
-        $today = now()->format('dmY');
+        $today = now()->format('Ymd');
         $prefix = "PR-{$today}-";
 
         $lastPR = Rst_PurchaseRequest::where('pr_number', 'like', "{$prefix}%")

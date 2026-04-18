@@ -140,12 +140,6 @@
                                 Items
                             </th>
 
-                            {{-- Total Cost --}}
-                            <th wire:click="sortBy('total_estimated_cost')"
-                                class="px-3 py-3 text-right text-xs font-bold cursor-pointer">
-                                Total {!! $sortField === 'total_estimated_cost' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
-                            </th>
-
                             {{-- Actions --}}
                             <th class="px-4 py-3 text-center text-xs font-bold">
                                 <div class="flex items-center justify-center gap-2">
@@ -226,11 +220,6 @@
                                             ({{ $item->items->where('is_critical', true)->count() }} kritis)
                                         </span>
                                     @endif
-                                </td>
-
-                                {{-- Total Cost --}}
-                                <td class="px-3 py-2 text-right text-sm font-mono">
-                                    {{ number_format($item['total_estimated_cost'] ?? 0, 0, ',', '.') }}
                                 </td>
 
                                 {{-- ROW ACTIONS --}}

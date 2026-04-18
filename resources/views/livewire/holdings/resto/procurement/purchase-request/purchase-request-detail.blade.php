@@ -149,14 +149,8 @@
 
                 {{-- ITEMS TABLE --}}
                 <div class="bg-white rounded-xl shadow border overflow-hidden">
-                    <div class="px-6 py-4 border-b bg-gray-50 flex justify-between items-center">
+                    <div class="px-6 py-4 border-b bg-gray-50">
                         <h3 class="text-lg font-bold text-gray-800">Daftar Item</h3>
-                        <div class="text-right">
-                            <span class="text-sm text-gray-600">Total Estimasi:</span>
-                            <span class="text-lg font-bold text-gray-800 font-mono">
-                                Rp {{ number_format($pr->total_estimated_cost, 0, ',', '.') }}
-                            </span>
-                        </div>
                     </div>
 
                     <div class="overflow-x-auto">
@@ -167,8 +161,6 @@
                                     <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Item</th>
                                     <th class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">Stok Info</th>
                                     <th class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">Qty Order</th>
-                                    <th class="px-4 py-3 text-right text-xs font-bold text-gray-500 uppercase">Est. Harga</th>
-                                    <th class="px-4 py-3 text-right text-xs font-bold text-gray-500 uppercase">Total</th>
                                     <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Catatan</th>
                                 </tr>
                             </thead>
@@ -187,34 +179,21 @@
                                             @endif
                                         </td>
                                         <td class="px-4 py-3 text-center">
-                                            @if ($item->is_critical)
-                                                <div class="text-xs">
-                                                    <span class="text-red-600 font-bold">{{ number_format($item->actual_stock, 2) }}</span>
-                                                    <span class="text-gray-400">/</span>
-                                                    <span class="text-gray-600">{{ number_format($item->min_stock, 2) }}</span>
+                                            <div class="text-xs">
+                                                <div class="flex justify-center items-center gap-2">
+                                                    <span class="text-gray-600">Actual:</span>
+                                                    <span class="{{ $item->is_critical ? 'text-red-600 font-bold' : 'text-gray-900 font-medium' }}">{{ number_format($item->actual_stock, 2) }}</span>
                                                 </div>
-                                                <div class="text-xs text-gray-400">{{ $item->uom?->name ?? 'Pcs' }}</div>
-                                            @else
-                                                <span class="text-xs text-gray-400">-</span>
-                                            @endif
+                                                <div class="flex justify-center items-center gap-2">
+                                                    <span class="text-gray-600">Minimal:</span>
+                                                    <span class="text-gray-900 font-medium">{{ number_format($item->min_stock, 2) }}</span>
+                                                </div>
+                                                <div class="text-xs text-gray-400 mt-1">{{ $item->uom?->name ?? 'Pcs' }}</div>
+                                            </div>
                                         </td>
                                         <td class="px-4 py-3 text-center">
                                             <span class="text-sm font-mono font-medium">{{ number_format($item->requested_qty, 2) }}</span>
-                                            <span class="text-xs text-gray-500">{{ $item->uom?->name ?? 'Pcs' }}</span>
-                                        </td>
-                                        <td class="px-4 py-3 text-right">
-                                            @if ($item->unit_cost)
-                                                <span class="text-sm font-mono">{{ number_format($item->unit_cost, 0, ',', '.') }}</span>
-                                            @else
-                                                <span class="text-xs text-gray-400">-</span>
-                                            @endif
-                                        </td>
-                                        <td class="px-4 py-3 text-right">
-                                            @if ($item->total_cost)
-                                                <span class="text-sm font-mono font-medium">{{ number_format($item->total_cost, 0, ',', '.') }}</span>
-                                            @else
-                                                <span class="text-xs text-gray-400">-</span>
-                                            @endif
+                                            <div class="text-xs text-gray-500">{{ $item->uom?->name ?? 'Pcs' }}</div>
                                         </td>
                                         <td class="px-4 py-3 text-sm text-gray-600">
                                             {{ $item->notes ?? '-' }}

@@ -383,6 +383,7 @@ class PurchaseRequestCreate extends Component
                 'item_id' => $itemId,
                 'qty' => $data['qty'],
                 'notes' => $data['notes'] ?? null,
+                'is_critical' => true,
             ];
         }
 
@@ -391,6 +392,7 @@ class PurchaseRequestCreate extends Component
                 'item_id' => $item['id'],
                 'qty' => $item['qty'],
                 'notes' => $item['notes'] ?? null,
+                'is_critical' => false,
             ];
         }
 
@@ -414,6 +416,7 @@ class PurchaseRequestCreate extends Component
                 'item_id' => $itemId,
                 'qty' => $data['qty'],
                 'notes' => $data['notes'] ?? null,
+                'is_critical' => true,
             ];
         }
 
@@ -422,6 +425,7 @@ class PurchaseRequestCreate extends Component
                 'item_id' => $item['id'],
                 'qty' => $item['qty'],
                 'notes' => $item['notes'] ?? null,
+                'is_critical' => false,
             ];
         }
 
