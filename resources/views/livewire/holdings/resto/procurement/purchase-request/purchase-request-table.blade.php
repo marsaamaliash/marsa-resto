@@ -250,6 +250,15 @@
                                             </a>
                                         @endif
 
+                                        {{-- Submit to RM --}}
+                                        @if ($item->canBeEdited() && $canCreate)
+                                            <x-ui.sccr-button type="button" variant="icon"
+                                                wire:click="submitDraftPRToRM({{ $item['id'] }})"
+                                                class="text-orange-600 hover:scale-125" title="Submit to RM">
+                                                <x-ui.sccr-icon name="send" :size="18" />
+                                            </x-ui.sccr-button>
+                                        @endif
+
                                         {{-- RM Approve --}}
                                         @if ($item['status'] === 'pending_rm' && $canApproveRM)
                                             <x-ui.sccr-button type="button" variant="icon"

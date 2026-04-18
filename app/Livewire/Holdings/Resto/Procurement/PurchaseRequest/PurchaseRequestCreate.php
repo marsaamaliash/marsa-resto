@@ -425,7 +425,7 @@ class PurchaseRequestCreate extends Component
             ];
         }
 
-        return PurchaseRequestService::revisePR($this->editingPrId, $allItems, $this->notes, $this->requiredDate);
+        return PurchaseRequestService::updatePRItems($this->editingPrId, $allItems, $this->notes, $this->requiredDate);
     }
 
     public function cancel(): void

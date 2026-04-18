@@ -458,6 +458,68 @@ class PurchaseRequestService
     }
 
     /**
+     * Update PR items while keeping status unchanged (draft or revised)
+     *
+     * @param  array<int, array{id: ?int, item_id: int, qty: float, notes: ?string}>  $items
+     */
+    public static function updatePRItems(
+        int $prId,
+        array $items,
+        ?string $notes = null,
+        ?string $requiredDate = null
+    ): Rst_PurchaseRequest {
+        return DB::transaction(function () use ($prId, $items, $notes, $requiredDate) {
+            $pr = Rst_PurchaseRequest::findOrFail($prId);
+
+            if (! $pr->canBeEdited()) {
+                throw new \Exception('Purchase Request tidak dapat diedit pada status ini.');
+            }
+
+            $pr->items()->delete();
+
+            $totalCost = 0;
+            $locationId = $pr->requester_location_id;
+
+            foreach ($items as $itemData) {
+                $item = Rst_MasterItem::findOrFail($itemData['item_id']);
+                $balance = Rst_StockBalance::where('item_id', $itemData['item_id'])
+                    ->where('location_id', $locationId)
+                    ->first();
+
+                $unitCost = $item->last_purchase_price ?? $item->default_cost ?? 0;
+                $qty = $itemData['qty'];
+                $itemTotal = $unitCost * $qty;
+
+                $isCritical = $balance && $balance->qty_available < $item->min_stock;
+
+                Rst_PurchaseRequestItem::create([
+                    'purchase_request_id' => $prId,
+                    'item_id' => $itemData['item_id'],
+                    'requested_qty' => $qty,
+                    'uom_id' => $item->uom_id,
+                    'unit_cost' => $unitCost > 0 ? $unitCost : null,
+                    'total_cost' => $itemTotal > 0 ? $itemTotal : null,
+                    'is_critical' => $isCritical,
+                    'actual_stock' => $balance?->qty_available ?? 0,
+                    'min_stock' => $item->min_stock ?? 0,
+                    'notes' => $itemData['notes'] ?? null,
+                ]);
+
+                $totalCost += $itemTotal;
+            }
+
+            $pr->fill([
+                'notes' => $notes ?? $pr->notes,
+                'required_date' => $requiredDate ?? $pr->required_date,
+                'total_estimated_cost' => $totalCost > 0 ? $totalCost : 0,
+            ]);
+            $pr->save();
+
+            return $pr;
+        });
+    }
+
+    /**
      * Recalculate total cost after item changes
      */
     private static function recalculateTotalCost(Rst_PurchaseRequest $pr): void

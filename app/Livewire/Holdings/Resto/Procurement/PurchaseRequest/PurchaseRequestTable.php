@@ -317,6 +317,17 @@ class PurchaseRequestTable extends Component
         }
     }
 
+    public function submitDraftPRToRM(int $prId): void
+    {
+        try {
+            PurchaseRequestService::submitToRM($prId);
+
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Purchase Request berhasil disubmit ke Restaurant Manager.'];
+        } catch (\Exception $e) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
+        }
+    }
+
     public function deletePR(string $id): void
     {
         try {
