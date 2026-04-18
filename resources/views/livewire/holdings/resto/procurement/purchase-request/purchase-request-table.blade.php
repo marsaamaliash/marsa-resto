@@ -223,7 +223,7 @@
                                     <span class="font-semibold">{{ $item->items->count() }}</span>
                                     @if ($item->items->where('is_critical', true)->count() > 0)
                                         <span class="text-red-600 text-xs" title="Stok Kritis">
-                                            ({{ $item->items->where('is_critical', true)->count() }} critical)
+                                            ({{ $item->items->where('is_critical', true)->count() }} kritis)
                                         </span>
                                     @endif
                                 </td>
