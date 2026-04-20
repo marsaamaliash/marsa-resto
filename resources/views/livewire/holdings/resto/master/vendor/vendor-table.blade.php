@@ -6,7 +6,7 @@
             <div>
                 <h1 class="text-3xl font-bold text-white">Vendor</h1>
                 <p class="text-blue-100 text-sm">
-                    Vendor adalah pihak yang menyediakan barang atau jasa kepada perusahaan. Dalam konteks restoran, vendor dapat mencakup pemasok bahan baku makanan, minuman, peralatan dapur, dan layanan lainnya yang mendukung operasional restoran. Manajemen vendor yang
+                    Master Data Vendor Pemasok
                 </p>
             </div>
         </div>
@@ -14,7 +14,7 @@
         <div class="mt-4 flex justify-between items-center text-sm">
             <x-ui.sccr-breadcrumb :items="$breadcrumbs" />
             <div class="text-white">
-                Menampilkan <span class="font-bold text-black">{{ $data->total() }}</span> data
+                Menampilkan <span class="font-bold text-black">{{ $data->total() }}</span> dari <span class="font-bold text-black">{{ $totalAll }}</span> data
             </div>
         </div>
     </div>
@@ -28,25 +28,37 @@
                 {{-- SEARCH INPUT --}}
                 <div class="relative top-1">
                     <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">
-                        Nama Vendor
+                        Nama / Kode / Email
                     </span>
                     <x-ui.sccr-input name="search" wire:model="search" placeholder="Ketik lalu enter..."
                         class="w-64" />
                 </div>
 
-                {{-- FILTER 1 --}}
-                {{-- <div class="relative top-1">
-                    <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">{{FILTER1_LABEL}}</span>
+                {{-- FILTER 1: Terms --}}
+                <div class="relative top-1">
+                    <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">Terms</span>
                     <x-ui.sccr-select name="filter1" wire:model.live="filter1" :options="$filter1Options"
                         class="w-40" />
-                </div> --}}
+                </div>
 
-                {{-- FILTER 2 --}}
-                {{-- <div class="relative top-1">
-                    <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">{{FILTER2_LABEL}}</span>
+                {{-- FILTER 2: Aktif --}}
+                <div class="relative top-1">
+                    <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">Aktif</span>
                     <x-ui.sccr-select name="filter2" wire:model.live="filter2" :options="$filter2Options"
                         class="w-40" />
-                </div> --}}
+                </div>
+
+                {{-- FILTER STATUS --}}
+                <div class="relative top-1">
+                    <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">Status</span>
+                    <select wire:model.live="filterStatus" class="border-gray-300 rounded-md text-sm w-32">
+                        <option value="">Semua</option>
+                        <option value="requested">Requested</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                        <option value="deleted">Deleted</option>
+                    </select>
+                </div>
 
                 {{-- ACTION BUTTONS --}}
                 <div class="flex flex-wrap items-center gap-1">
@@ -65,7 +77,7 @@
                     <x-ui.sccr-button type="button" wire:click="exportFiltered" variant="success"
                         class="bg-gray-600 text-gray-100 hover:bg-gray-400">
                         <x-ui.sccr-icon name="exportfiltered" :size="20" />
-                        Export Filtered
+                        Export Excel
                     </x-ui.sccr-button>
 
                     <x-ui.sccr-button type="button" wire:click="exportSelected" variant="info"
@@ -73,6 +85,34 @@
                         <x-ui.sccr-icon name="exportselected" :size="20" />
                         Export Selected ({{ count($selectedItems) }})
                     </x-ui.sccr-button>
+
+                    {{-- COLUMN PICKER --}}
+                    <div class="relative">
+                        <x-ui.sccr-button type="button" wire:click="toggleColumnPicker" variant="info"
+                            class="bg-gray-400 text-gray-900 hover:bg-gray-300">
+                            <x-ui.sccr-icon name="columns" :size="20" />
+                            Kolom
+                        </x-ui.sccr-button>
+
+                        @if ($showColumnPicker)
+                            <div class="absolute right-0 top-full mt-1 w-56 bg-white rounded-lg shadow-xl border z-30 p-3">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-xs font-bold text-gray-700 uppercase">Tampilkan Kolom</span>
+                                    <button type="button" wire:click="resetColumns"
+                                        class="text-xs text-blue-600 hover:text-blue-800">Reset</button>
+                                </div>
+                                <div class="space-y-1 max-h-64 overflow-y-auto">
+                                    @foreach ($availableColumns as $col)
+                                        <label class="flex items-center gap-2 text-sm cursor-pointer">
+                                            <input type="checkbox" wire:model.live="columnVisibility.{{ $col['key'] }}"
+                                                class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                            <span class="text-gray-700">{{ $col['label'] }}</span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+                    </div>
                 </div>
             </form>
 
@@ -107,31 +147,70 @@
                                 <input type="checkbox" wire:model.live="selectAll" class="rounded border-gray-300">
                             </th>
 
-                            {{-- COLUMNS: duplicate this block for each column --}}
-                            <th wire:click="sortBy('id')"
-                                class="px-4 py-3 text-left text-xs font-bold cursor-pointer">
-                                ID {!! $sortField === 'id' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
-                            </th>
+                            @if ($columnVisibility['id'])
+                                <th wire:click="sortBy('id')"
+                                    class="px-4 py-3 text-left text-xs font-bold cursor-pointer">
+                                    ID {!! $sortField === 'id' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                                </th>
+                            @endif
 
-                            <th wire:click="sortBy('name')"
-                                class="px-4 py-3 text-left text-xs font-bold cursor-pointer">
-                                Name {!! $sortField === 'name' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
-                            </th>
+                            @if ($columnVisibility['code'])
+                                <th wire:click="sortBy('code')"
+                                    class="px-4 py-3 text-left text-xs font-bold cursor-pointer">
+                                    Kode {!! $sortField === 'code' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                                </th>
+                            @endif
 
-                            <th wire:click="sortBy('code')"
-                                class="px-4 py-3 text-left text-xs font-bold cursor-pointer">
-                                Code {!! $sortField === 'code' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
-                            </th>
+                            @if ($columnVisibility['name'])
+                                <th wire:click="sortBy('name')"
+                                    class="px-4 py-3 text-left text-xs font-bold cursor-pointer">
+                                    Nama {!! $sortField === 'name' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                                </th>
+                            @endif
 
-                                                        <th wire:click="sortBy('no_telp')"
-                                class="px-4 py-3 text-left text-xs font-bold cursor-pointer">
-                                Telepon {!! $sortField === 'no_telp' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
-                            </th>
+                            @if ($columnVisibility['email'])
+                                <th class="px-4 py-3 text-left text-xs font-bold">Email</th>
+                            @endif
 
-                                                        <th wire:click="sortBy('address')"
-                                class="px-4 py-3 text-left text-xs font-bold cursor-pointer">
-                                Alamat {!! $sortField === 'address' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
-                            </th>
+                            @if ($columnVisibility['pic'])
+                                <th class="px-4 py-3 text-left text-xs font-bold">PIC</th>
+                            @endif
+
+                            @if ($columnVisibility['no_telp'])
+                                <th wire:click="sortBy('no_telp')"
+                                    class="px-4 py-3 text-left text-xs font-bold cursor-pointer">
+                                    Telepon {!! $sortField === 'no_telp' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                                </th>
+                            @endif
+
+                            @if ($columnVisibility['default_terms'])
+                                <th class="px-4 py-3 text-center text-xs font-bold">Terms</th>
+                            @endif
+
+                            @if ($columnVisibility['status'])
+                                <th class="px-4 py-3 text-center text-xs font-bold">Status</th>
+                            @endif
+
+                            @if ($columnVisibility['is_active'])
+                                <th wire:click="sortBy('is_active')"
+                                    class="px-4 py-3 text-center text-xs font-bold cursor-pointer">
+                                    Aktif {!! $sortField === 'is_active' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                                </th>
+                            @endif
+
+                            @if ($columnVisibility['created_at'])
+                                <th wire:click="sortBy('created_at')"
+                                    class="px-4 py-3 text-left text-xs font-bold cursor-pointer">
+                                    Dibuat {!! $sortField === 'created_at' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                                </th>
+                            @endif
+
+                            @if ($columnVisibility['updated_at'])
+                                <th wire:click="sortBy('updated_at')"
+                                    class="px-4 py-3 text-left text-xs font-bold cursor-pointer">
+                                    Diubah {!! $sortField === 'updated_at' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                                </th>
+                            @endif
 
                             {{-- ACTIONS HEADER --}}
                             <th class="px-4 py-3 text-center text-xs font-bold">
@@ -152,33 +231,98 @@
 
                     <tbody class="divide-y divide-gray-100 bg-gray-100">
                         @forelse ($data as $item)
-                            <tr class="hover:bg-gray-200 transition">
+                            <tr class="hover:bg-gray-200 transition {{ $item->deleted_at ? 'bg-red-50' : '' }}">
                                 {{-- ROW CHECKBOX --}}
                                 <td class="px-4 py-2 text-center">
                                     <input type="checkbox" value="{{ $item['id'] }}"
                                         wire:model.live="selectedItems" class="rounded border-gray-300">
                                 </td>
 
-                                {{-- ROW CELLS: match columns above --}}
-                                <td class="px-4 py-2 font-mono text-sm font-semibold">
-                                    {{ $item['id'] }}
-                                </td>
+                                @if ($columnVisibility['id'])
+                                    <td class="px-4 py-2 font-mono text-sm font-semibold">
+                                        {{ $item['id'] }}
+                                    </td>
+                                @endif
 
-                                <td class="px-4 py-2 text-sm">
-                                    {{ $item['name'] }}
-                                </td>
+                                @if ($columnVisibility['code'])
+                                    <td class="px-4 py-2 font-mono text-sm">
+                                        {{ $item['code'] }}
+                                    </td>
+                                @endif
 
-                                <td class="px-4 py-2 text-sm">
-                                    {{ $item['code'] }}
-                                </td>
+                                @if ($columnVisibility['name'])
+                                    <td class="px-4 py-2 text-sm">
+                                        {{ $item['name'] }}
+                                    </td>
+                                @endif
 
-                                <td class="px-4 py-2 text-sm">
-                                    {{ $item['no_telp'] }}
-                                </td>
+                                @if ($columnVisibility['email'])
+                                    <td class="px-4 py-2 text-sm">
+                                        {{ $item['email'] ?? '-' }}
+                                    </td>
+                                @endif
 
-                                <td class="px-4 py-2 text-sm">
-                                    {{ $item['address'] }}
-                                </td>
+                                @if ($columnVisibility['pic'])
+                                    <td class="px-4 py-2 text-sm">
+                                        {{ $item['pic'] ?? '-' }}
+                                    </td>
+                                @endif
+
+                                @if ($columnVisibility['no_telp'])
+                                    <td class="px-4 py-2 text-sm">
+                                        {{ $item['no_telp'] ?? '-' }}
+                                    </td>
+                                @endif
+
+                                @if ($columnVisibility['default_terms'])
+                                    <td class="px-4 py-2 text-center text-sm">
+                                        @if ($item->default_terms === 'cash')
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Cash</span>
+                                        @elseif ($item->default_terms === '7_hari')
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">7 Hari</span>
+                                        @elseif ($item->default_terms === '30_hari')
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">30 Hari</span>
+                                        @else
+                                            <span class="text-gray-400">-</span>
+                                        @endif
+                                    </td>
+                                @endif
+
+                                @if ($columnVisibility['status'])
+                                    <td class="px-4 py-2 text-center text-sm">
+                                        @if ($item->deleted_at)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">Deleted</span>
+                                        @elseif ($item->status === 'approved')
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Approved</span>
+                                        @elseif ($item->status === 'rejected')
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800">Rejected</span>
+                                        @else
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">Requested</span>
+                                        @endif
+                                    </td>
+                                @endif
+
+                                @if ($columnVisibility['is_active'])
+                                    <td class="px-4 py-2 text-center text-sm">
+                                        @if ($item['is_active'])
+                                            <span class="text-green-600 font-semibold">Ya</span>
+                                        @else
+                                            <span class="text-red-600">Tidak</span>
+                                        @endif
+                                    </td>
+                                @endif
+
+                                @if ($columnVisibility['created_at'])
+                                    <td class="px-4 py-2 text-sm text-gray-500">
+                                        {{ $item->created_at?->format('d M Y H:i') ?? '-' }}
+                                    </td>
+                                @endif
+
+                                @if ($columnVisibility['updated_at'])
+                                    <td class="px-4 py-2 text-sm text-gray-500">
+                                        {{ $item->updated_at?->format('d M Y H:i') ?? '-' }}
+                                    </td>
+                                @endif
 
                                 {{-- ROW ACTIONS --}}
                                 <td class="px-4 py-2 text-center">
@@ -189,11 +333,43 @@
                                             <x-ui.sccr-icon name="eye" :size="20" />
                                         </x-ui.sccr-button>
 
-                                        @if ($canUpdate)
+                                        @if ($canUpdate && ! $item->deleted_at)
                                             <x-ui.sccr-button type="button" variant="icon"
                                                 wire:click="openEdit('{{ $item['id'] }}')"
                                                 class="text-blue-600 hover:scale-125" title="Edit">
                                                 <x-ui.sccr-icon name="edit" :size="20" />
+                                            </x-ui.sccr-button>
+                                        @endif
+
+                                        @if ($canApprove && ! $item->deleted_at && $item->status === 'requested')
+                                            <x-ui.sccr-button type="button" variant="icon"
+                                                wire:click="openApprove('{{ $item['id'] }}')"
+                                                class="text-green-600 hover:scale-125" title="Approve">
+                                                <x-ui.sccr-icon name="check" :size="20" />
+                                            </x-ui.sccr-button>
+
+                                            <x-ui.sccr-button type="button" variant="icon"
+                                                wire:click="openReject('{{ $item['id'] }}')"
+                                                class="text-orange-600 hover:scale-125" title="Reject">
+                                                <x-ui.sccr-icon name="x" :size="20" />
+                                            </x-ui.sccr-button>
+                                        @endif
+
+                                        @if ($canDelete && ! $item->deleted_at)
+                                            <x-ui.sccr-button type="button" variant="icon"
+                                                wire:click="deleteItem('{{ $item['id'] }}')"
+                                                class="text-red-600 hover:scale-125" title="Hapus"
+                                                wire:confirm="Yakin ingin menghapus data ini?">
+                                                <x-ui.sccr-icon name="trash" :size="20" />
+                                            </x-ui.sccr-button>
+                                        @endif
+
+                                        @if ($canDelete && $item->deleted_at)
+                                            <x-ui.sccr-button type="button" variant="icon"
+                                                wire:click="restoreItem('{{ $item['id'] }}')"
+                                                class="text-green-600 hover:scale-125" title="Restore"
+                                                wire:confirm="Yakin ingin me-restore data ini?">
+                                                <x-ui.sccr-icon name="refresh" :size="20" />
                                             </x-ui.sccr-button>
                                         @endif
                                     </div>
@@ -233,10 +409,10 @@
         <div class="fixed inset-0 bg-black/40 z-40" wire:click="closeOverlay"></div>
 
         <div class="fixed inset-0 z-50 flex items-center justify-center px-6">
-            <div class="w-full max-w-xl bg-white rounded-2xl shadow-2xl relative">
+            <div class="w-full max-w-2xl bg-white rounded-2xl shadow-2xl relative max-h-[90vh] overflow-y-auto">
                 <x-ui.sccr-button type="button" variant="icon" wire:click="closeOverlay"
-                    class="absolute top-4 right-4 text-gray-400 hover:text-red-500" title="Tutup">
-                    <span class="text-xl leading-none">✕</span>
+                    class="absolute top-4 right-4 text-gray-400 hover:text-red-500 z-10" title="Tutup">
+                    <span class="text-xl leading-none">&#x2715;</span>
                 </x-ui.sccr-button>
 
                 @livewire('holdings.resto.master.vendor.vendor-create')
@@ -249,17 +425,13 @@
         <div class="fixed inset-0 bg-black/40 z-40" wire:click="closeOverlay"></div>
 
         <div class="fixed inset-0 z-50 flex items-center justify-center px-6">
-            <div class="w-full max-w-6xl bg-white rounded-2xl shadow-2xl relative">
+            <div class="w-full max-w-3xl bg-white rounded-2xl shadow-2xl relative max-h-[90vh] overflow-y-auto">
                 <x-ui.sccr-button type="button" variant="icon" wire:click="closeOverlay"
-                    class="absolute top-4 right-4 text-gray-400 hover:text-red-500" title="Tutup">
-                    <span class="text-xl leading-none">✕</span>
+                    class="absolute top-4 right-4 text-gray-400 hover:text-red-500 z-10" title="Tutup">
+                    <span class="text-xl leading-none">&#x2715;</span>
                 </x-ui.sccr-button>
 
-                {{-- Replace with actual show component --}}
-                <div class="p-6 text-center text-gray-500">
-                    <p class="text-lg font-semibold">Detail Data</p>
-                    <p class="text-sm">ID: {{ $overlayId }}</p>
-                </div>
+                @livewire('holdings.resto.master.vendor.vendor-show', ['id' => $overlayId], key($overlayId))
             </div>
         </div>
     @endif
@@ -269,16 +441,80 @@
         <div class="fixed inset-0 bg-black/40 z-40" wire:click="closeOverlay"></div>
 
         <div class="fixed inset-0 z-50 flex items-center justify-center px-6">
-            <div class="w-full max-w-6xl bg-white rounded-2xl shadow-2xl relative">
+            <div class="w-full max-w-2xl bg-white rounded-2xl shadow-2xl relative max-h-[90vh] overflow-y-auto">
                 <x-ui.sccr-button type="button" variant="icon" wire:click="closeOverlay"
-                    class="absolute top-4 right-4 text-gray-400 hover:text-red-500" title="Tutup">
-                    <span class="text-xl leading-none">✕</span>
+                    class="absolute top-4 right-4 text-gray-400 hover:text-red-500 z-10" title="Tutup">
+                    <span class="text-xl leading-none">&#x2715;</span>
                 </x-ui.sccr-button>
 
-                {{-- Replace with actual edit component --}}
-                <div class="p-6 text-center text-gray-500">
-                    <p class="text-lg font-semibold">Form Edit</p>
-                    <p class="text-sm">ID: {{ $overlayId }}</p>
+                @livewire('holdings.resto.master.vendor.vendor-edit', ['id' => $overlayId], key($overlayId))
+            </div>
+        </div>
+    @endif
+
+    {{-- ================= OVERLAY: APPROVE/REJECT ================= --}}
+    @if ($actionOverlayMode === 'approve' && $actionOverlayId)
+        <div class="fixed inset-0 bg-black/40 z-40" wire:click="closeActionOverlay"></div>
+
+        <div class="fixed inset-0 z-50 flex items-center justify-center px-6">
+            <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl relative">
+                <x-ui.sccr-button type="button" variant="icon" wire:click="closeActionOverlay"
+                    class="absolute top-4 right-4 text-gray-400 hover:text-red-500" title="Tutup">
+                    <span class="text-xl leading-none">&#x2715;</span>
+                </x-ui.sccr-button>
+
+                <div class="p-6">
+                    <h2 class="text-xl font-bold mb-4 text-green-700">Approve Vendor</h2>
+                    <p class="text-sm text-gray-600 mb-4">Yakin ingin meng-approve vendor ini?</p>
+
+                    <div class="flex gap-3">
+                        <button type="button" wire:click="approveVendor"
+                            class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+                            Approve
+                        </button>
+                        <button type="button" wire:click="closeActionOverlay"
+                            class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">
+                            Batal
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    @if ($actionOverlayMode === 'reject' && $actionOverlayId)
+        <div class="fixed inset-0 bg-black/40 z-40" wire:click="closeActionOverlay"></div>
+
+        <div class="fixed inset-0 z-50 flex items-center justify-center px-6">
+            <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl relative">
+                <x-ui.sccr-button type="button" variant="icon" wire:click="closeActionOverlay"
+                    class="absolute top-4 right-4 text-gray-400 hover:text-red-500" title="Tutup">
+                    <span class="text-xl leading-none">&#x2715;</span>
+                </x-ui.sccr-button>
+
+                <div class="p-6">
+                    <h2 class="text-xl font-bold mb-4 text-orange-700">Reject Vendor</h2>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Alasan Reject <span class="text-red-500">*</span></label>
+                        <textarea wire:model.defer="actionReason"
+                            class="w-full border-gray-300 rounded-md shadow-sm focus:border-orange-500 focus:ring-orange-500"
+                            rows="3" placeholder="Masukkan alasan penolakan..."></textarea>
+                        @error('actionReason')
+                            <span class="text-red-600 text-sm">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="flex gap-3">
+                        <button type="button" wire:click="rejectVendor"
+                            class="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700">
+                            Reject
+                        </button>
+                        <button type="button" wire:click="closeActionOverlay"
+                            class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">
+                            Batal
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

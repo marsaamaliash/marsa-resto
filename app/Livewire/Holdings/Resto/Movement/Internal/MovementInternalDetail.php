@@ -63,10 +63,9 @@ class MovementInternalDetail extends Component
 
         $this->breadcrumbs = [
             ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
-            ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
             ['label' => 'Resto', 'route' => 'dashboard.resto', 'color' => 'text-gray-800'],
             ['label' => 'Master Movement', 'route' => 'dashboard.resto.master-movement', 'color' => 'text-gray-900 font-semibold'],
-            ['label' => 'Movement Internal 2', 'route' => 'dashboard.resto.movement-internal-2', 'color' => 'text-gray-800'],
+            ['label' => 'Stock Movement', 'route' => 'dashboard.resto.movement-internal-2', 'color' => 'text-gray-800'],
             ['label' => 'Detail', 'color' => 'text-gray-900 font-semibold'],
         ];
 

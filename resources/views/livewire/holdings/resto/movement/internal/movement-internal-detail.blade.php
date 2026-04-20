@@ -4,7 +4,7 @@
     <div class="relative px-8 py-6 bg-blue-600/80 rounded-b-3xl shadow-lg overflow-hidden">
         <div class="flex justify-between items-start">
             <div>
-                <h1 class="text-3xl font-bold text-white">Movement Internal 2 - Detail</h1>
+                <h1 class="text-3xl font-bold text-white">Stock Movement - Detail</h1>
                 <p class="text-blue-100 text-sm">
                     Detail movement dengan Reference Number
                 </p>
@@ -25,7 +25,7 @@
                     <h3 class="font-bold text-lg text-gray-800 mb-3">Movement Information</h3>
                     <div class="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
                         <div>
-                            <div class="font-semibold text-gray-600 text-xs uppercase">Reference Number</div>
+                            <div class="font-semibold text-gray-600 text-xs uppercase">Request No.</div>
                             <div class="font-mono font-bold text-blue-700">{{ $detail['reference_number'] ?? '-' }}
                             </div>
                         </div>

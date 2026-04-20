@@ -18,6 +18,7 @@ class Rst_MasterSatuan extends Model
     protected $fillable = [
         'name',
         'symbols',
+        'type',
         'abbreviation',
         'is_active',
         'holding_id',

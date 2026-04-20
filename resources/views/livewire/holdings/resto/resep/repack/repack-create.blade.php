@@ -9,7 +9,7 @@
 
     <form wire:submit.prevent="store" class="space-y-4">
         <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Lokasi</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Lokasi <span class="text-red-500">*</span></label>
             <select wire:model.defer="location_id"
                 class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
                 <option value="">-- Pilih Lokasi --</option>
@@ -24,7 +24,7 @@
 
         <div class="grid grid-cols-2 gap-4">
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Item Sumber</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Item Sumber <span class="text-red-500">*</span></label>
                 <select wire:model.defer="source_item_id"
                     class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     <option value="">-- Pilih Item --</option>
@@ -38,7 +38,7 @@
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Item Target</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Item Target <span class="text-red-500">*</span></label>
                 <div class="flex items-center gap-2">
                     <select wire:model.defer="target_item_id"
                         class="flex-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
@@ -61,7 +61,7 @@
 
         <div class="grid grid-cols-2 gap-4">
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Qty Sumber</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Qty Sumber <span class="text-red-500">*</span></label>
                 <input type="number" step="0.01" min="0.01" wire:model.defer="qty_source_taken"
                     class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                     placeholder="Contoh: 1">
@@ -71,7 +71,7 @@
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Multiplier</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Multiplier <span class="text-red-500">*</span></label>
                 <input type="number" step="1" min="1" wire:model.defer="multiplier"
                     class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                     placeholder="Contoh: 24">
@@ -116,7 +116,7 @@
                     <h3 class="text-lg font-bold mb-4">Tambah Item Baru</h3>
                     <form wire:submit.prevent="saveNewItem" class="space-y-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Nama Item</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nama Item <span class="text-red-500">*</span></label>
                             <input type="text" wire:model.defer="newItemName"
                                 class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                 placeholder="Nama item">
@@ -125,7 +125,7 @@
                             @enderror
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">SKU / Barcode</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">SKU / Barcode <span class="text-red-500">*</span></label>
                             <input type="text" wire:model.defer="newItemSku"
                                 class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                 placeholder="SKU atau barcode">
@@ -140,7 +140,7 @@
                                 placeholder="Opsional..."></textarea>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Kategori <span class="text-red-500">*</span></label>
                             <select wire:model.defer="newItemCategoryId"
                                 class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                 <option value="">-- Pilih Kategori --</option>
@@ -160,7 +160,7 @@
                                     placeholder="0">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Tipe</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Tipe <span class="text-red-500">*</span></label>
                                 <select wire:model.defer="newItemType"
                                     class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                     <option value="raw">Raw</option>
@@ -169,7 +169,7 @@
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Satuan</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Satuan <span class="text-red-500">*</span></label>
                                 <select wire:model.defer="newItemUomId"
                                     class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                     <option value="">-- Pilih --</option>

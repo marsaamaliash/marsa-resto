@@ -37,6 +37,8 @@ class RecipeTable extends Component
 
     public string $sortDirection = 'desc';
 
+    public int $totalAll = 0;
+
     protected array $allowedSortFields = [
         'id',
         'recipe_code',
@@ -83,6 +85,8 @@ class RecipeTable extends Component
         ];
 
         $this->syncCaps();
+
+        $this->totalAll = Rst_Recipe::count();
     }
 
     public function hydrate(): void

@@ -8,6 +8,8 @@ use Illuminate\Support\Collection;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class KonversiSatuanTable extends Component
 {
@@ -31,17 +33,18 @@ class KonversiSatuanTable extends Component
 
     public string $filter2 = '';
 
+    public string $filterStatus = '';
+
     public int $perPage = 10;
 
     public string $sortField = 'id';
 
     public string $sortDirection = 'desc';
 
+    public int $totalAll = 0;
+
     protected array $allowedSortFields = [
         'id',
-        'name',
-        'symbols',
-        'is_active',
         'created_at',
     ];
 
@@ -57,6 +60,7 @@ class KonversiSatuanTable extends Component
         'search' => ['except' => ''],
         'filter1' => ['except' => ''],
         'filter2' => ['except' => ''],
+        'filterStatus' => ['except' => ''],
         'perPage' => ['except' => 10],
         'sortField' => ['except' => 'id'],
         'sortDirection' => ['except' => 'desc'],
@@ -77,13 +81,14 @@ class KonversiSatuanTable extends Component
     {
         $this->breadcrumbs = [
             ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
-            ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
             ['label' => 'Resto', 'route' => 'dashboard.resto', 'color' => 'text-gray-800'],
             ['label' => 'Konversi Satuan', 'route' => 'dashboard.resto.resep', 'color' => 'text-gray-900 font-semibold'],
             ['label' => 'Konversi Satuan', 'color' => 'text-gray-900 font-semibold'],
         ];
 
         $this->syncCaps();
+
+        $this->totalAll = Rst_KonversiSatuan::withTrashed()->count();
     }
 
     public function hydrate(): void
@@ -91,11 +96,43 @@ class KonversiSatuanTable extends Component
         $this->syncCaps();
     }
 
-    protected function dataQuery()
+    protected function dataQuery(): Collection
     {
-        return Rst_KonversiSatuan::query()
-            ->with(['item', 'fromUom', 'toUom'])
-            ->get();
+        $query = Rst_KonversiSatuan::withTrashed()
+            ->with(['item', 'fromUom', 'toUom']);
+
+        if ($this->filterStatus === 'active') {
+            $query->whereNull('deleted_at');
+        } elseif ($this->filterStatus === 'draft') {
+            $query->whereNull('deleted_at');
+        } elseif ($this->filterStatus === 'deleted') {
+            $query->onlyTrashed();
+        }
+
+        if ($this->search !== '') {
+            $search = $this->search;
+            $query->whereHas('item', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%");
+            })
+                ->orWhereHas('fromUom', function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%");
+                })
+                ->orWhereHas('toUom', function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%");
+                });
+        }
+
+        if ($this->filter1 !== '') {
+            $query->whereHas('item', function ($q) {
+                $q->where('type', $this->filter1);
+            });
+        }
+
+        if (in_array($this->sortField, $this->allowedSortFields, true)) {
+            $query->orderBy($this->sortField, $this->sortDirection);
+        }
+
+        return $query->get();
     }
 
     protected function paginateCollection(Collection $collection, int $perPage): LengthAwarePaginator
@@ -147,7 +184,7 @@ class KonversiSatuanTable extends Component
 
     public function clearFilters(): void
     {
-        $this->reset(['search', 'filter1', 'filter2']);
+        $this->reset(['search', 'filter1', 'filter2', 'filterStatus']);
         $this->applyFilter();
     }
 
@@ -193,34 +230,45 @@ class KonversiSatuanTable extends Component
         }
 
         $ids = array_values(array_unique(array_map('strval', $this->selectedItems)));
-        $data = $this->dataQuery()->whereIn('id', $ids);
+        $data = Rst_KonversiSatuan::withTrashed()
+            ->with(['item', 'fromUom', 'toUom'])
+            ->whereIn('id', $ids)
+            ->get();
 
         return $this->generateExcel($data, 'Selected');
     }
 
     private function generateExcel($data, string $type)
     {
-        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet;
+        $spreadsheet = new Spreadsheet;
         $ws = $spreadsheet->getActiveSheet();
 
-        $ws->fromArray([['ID', 'Nama', 'Simbol', 'Aktif', 'Dibuat']], null, 'A1');
+        $headers = ['ID', 'Item', 'Dari Satuan', 'Ke Satuan', 'Nilai Konversi', 'Status', 'Dibuat'];
+        $ws->fromArray([$headers], null, 'A1');
 
         $row = 2;
         foreach ($data as $item) {
+            $status = $item->deleted_at ? 'Deleted' : 'Active';
+
             $ws->fromArray([
-                $item['id'] ?? '',
-                $item['name'] ?? '',
-                $item['symbols'] ?? '',
-                $item['is_active'] ? 'Ya' : 'Tidak',
-                $item['created_at'] ?? '',
+                $item->id,
+                $item->item?->name ?? '-',
+                $item->fromUom?->name ?? '-',
+                $item->toUom?->name ?? '-',
+                $item->conversion_factor,
+                $status,
+                $item->created_at?->format('Y-m-d H:i:s') ?? '',
             ], null, 'A'.$row++);
         }
 
-        $filename = "Satuan_{$type}_".now()->format('Ymd_His').'.xlsx';
+        foreach (range('A', 'G') as $col) {
+            $ws->getColumnDimension($col)->setAutoSize(true);
+        }
 
-        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
-        $tmp = tempnam(sys_get_temp_dir(), 'satuan_');
-        $writer->save($tmp);
+        $filename = "KonversiSatuan_{$type}_".now()->format('Ymd_His').'.xlsx';
+
+        $tmp = tempnam(sys_get_temp_dir(), 'konversi_satuan_');
+        (new Xlsx($spreadsheet))->save($tmp);
 
         return response()->download($tmp, $filename)->deleteFileAfterSend(true);
     }
@@ -258,6 +306,48 @@ class KonversiSatuanTable extends Component
         $this->overlayId = $id;
     }
 
+    public function deleteItem(string $id): void
+    {
+        if (! $this->canDelete) {
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin delete.'];
+
+            return;
+        }
+
+        $item = Rst_KonversiSatuan::withTrashed()->find($id);
+
+        if (! $item) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data tidak ditemukan.'];
+
+            return;
+        }
+
+        $item->delete();
+
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data berhasil dihapus.'];
+    }
+
+    public function restoreItem(string $id): void
+    {
+        if (! $this->canDelete) {
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin restore.'];
+
+            return;
+        }
+
+        $item = Rst_KonversiSatuan::onlyTrashed()->find($id);
+
+        if (! $item) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data tidak ditemukan.'];
+
+            return;
+        }
+
+        $item->restore();
+
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data berhasil di-restore.'];
+    }
+
     public function closeOverlay(): void
     {
         $this->reset(['overlayMode', 'overlayId']);
@@ -292,9 +382,10 @@ class KonversiSatuanTable extends Component
     protected function filter1Options(): array
     {
         return [
-            '' => '-- Semua Status --',
-            '1' => 'Aktif',
-            '0' => 'Nonaktif',
+            '' => '-- Semua Tipe --',
+            'weight' => 'Weight',
+            'volume' => 'Volume',
+            'unit' => 'Unit',
         ];
     }
 
@@ -315,7 +406,6 @@ class KonversiSatuanTable extends Component
         $this->selectAll = count($visible) > 0 && empty(array_diff($visible, $this->selectedItems));
 
         return view('livewire.holdings.resto.resep.konversi-satuan.konversi-satuan-table', [
-
             'data' => $data,
             'breadcrumbs' => $this->breadcrumbs,
             'filter1Options' => $this->filter1Options(),

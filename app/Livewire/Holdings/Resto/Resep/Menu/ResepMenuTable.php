@@ -111,7 +111,6 @@ class ResepMenuTable extends Component
     {
         $this->breadcrumbs = [
             ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
-            ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
             ['label' => 'Resto', 'route' => 'dashboard.resto', 'color' => 'text-gray-800'],
             ['label' => 'Repack Stok', 'route' => 'dashboard.resto.resep', 'color' => 'text-gray-900 font-semibold'],
             ['label' => 'Repack Stok', 'color' => 'text-gray-900 font-semibold'],

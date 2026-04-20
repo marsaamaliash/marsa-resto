@@ -9,8 +9,6 @@ class KategoriCreate extends Component
 {
     public string $name = '';
 
-    public string $slug = '';
-
     public string $description = '';
 
     public bool $is_active = true;
@@ -21,13 +19,11 @@ class KategoriCreate extends Component
     {
         $this->validate([
             'name' => ['required', 'string', 'max:255'],
-            'slug' => ['required', 'string', 'max:50'],
-            'description' => ['nullable', 'string', 'max:50'],
+            'description' => ['nullable', 'string', 'max:65535'],
         ]);
 
         Rst_MasterKategori::create([
             'name' => $this->name,
-            'slug' => $this->slug,
             'description' => $this->description,
             'is_active' => $this->is_active,
         ]);
@@ -37,7 +33,30 @@ class KategoriCreate extends Component
         $this->dispatch('kategori-created');
         $this->dispatch('kategori-overlay-close');
 
-        $this->reset(['name', 'slug', 'description']);
+        $this->reset(['name', 'description']);
+
+        $this->is_active = true;
+    }
+
+    public function saveDraft(): void
+    {
+        $this->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string', 'max:65535'],
+        ]);
+
+        Rst_MasterKategori::create([
+            'name' => $this->name,
+            'description' => $this->description,
+            'is_active' => false,
+        ]);
+
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Draft kategori berhasil disimpan'];
+
+        $this->dispatch('kategori-created');
+        $this->dispatch('kategori-overlay-close');
+
+        $this->reset(['name', 'description']);
 
         $this->is_active = true;
     }

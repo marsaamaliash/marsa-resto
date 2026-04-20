@@ -88,7 +88,7 @@ class PurchaseRequestCreate extends Component
             } else {
                 $minStock = $item->item?->min_stock ?? 0;
                 $actualStock = $item->actual_stock ?? 0;
-                
+
                 $this->additionalItems[] = [
                     'id' => $item->item_id,
                     'name' => $item->item?->name ?? 'Unknown',
@@ -178,7 +178,7 @@ class PurchaseRequestCreate extends Component
         $items = Rst_MasterItem::whereNotIn('id', $criticalItemIds)
             ->orderBy('name')
             ->get();
-        
+
         $result = $items->map(function ($item) {
             $stokBalance = null;
             $qtyAvailable = 0;
@@ -188,7 +188,7 @@ class PurchaseRequestCreate extends Component
                 $stokBalance = Rst_StockBalance::where('item_id', $item->id)
                     ->where('location_id', $this->selectedLocationId)
                     ->first();
-                
+
                 $qtyAvailable = $stokBalance?->qty_available ?? 0;
             }
 
@@ -262,7 +262,7 @@ class PurchaseRequestCreate extends Component
                     $stokBalance = Rst_StockBalance::where('item_id', $itemId)
                         ->where('location_id', $this->selectedLocationId)
                         ->first();
-                    
+
                     $qtyAvailable = $stokBalance?->qty_available ?? 0;
                 }
 

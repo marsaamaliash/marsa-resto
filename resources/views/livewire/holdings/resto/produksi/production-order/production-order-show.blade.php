@@ -144,7 +144,7 @@
                                 <h4 class="text-sm font-semibold text-emerald-800 mb-3">Issue Material</h4>
                                 <form wire:submit.prevent="issueMaterial" class="grid grid-cols-4 gap-3">
                                     <div>
-                                        <label class="block text-xs text-gray-600 mb-1">Komponen (Plan Line)</label>
+                                        <label class="block text-xs text-gray-600 mb-1">Komponen (Plan Line) <span class="text-red-500">*</span></label>
                                         <select wire:model="issueForm.plan_line_id" class="w-full border-gray-300 rounded-md text-sm">
                                             <option value="">-- Pilih --</option>
                                             @foreach ($order->componentPlans as $plan)
@@ -154,7 +154,7 @@
                                         @error('issueForm.plan_line_id') <span class="text-red-600 text-xs">{{ $message }}</span> @enderror
                                     </div>
                                     <div>
-                                        <label class="block text-xs text-gray-600 mb-1">Qty Issue</label>
+                                        <label class="block text-xs text-gray-600 mb-1">Qty Issue <span class="text-red-500">*</span></label>
                                         <input type="number" step="0.000001" min="0" wire:model.defer="issueForm.qty_issued" class="w-full border-gray-300 rounded-md text-sm" placeholder="0">
                                         @error('issueForm.qty_issued') <span class="text-red-600 text-xs">{{ $message }}</span> @enderror
                                     </div>
@@ -218,7 +218,7 @@
                                 <h4 class="text-sm font-semibold text-blue-800 mb-3">Catat Output</h4>
                                 <form wire:submit.prevent="recordOutput" class="grid grid-cols-5 gap-3">
                                     <div>
-                                        <label class="block text-xs text-gray-600 mb-1">Item Output</label>
+                                        <label class="block text-xs text-gray-600 mb-1">Item Output <span class="text-red-500">*</span></label>
                                         <select wire:model="outputForm.output_item_id" class="w-full border-gray-300 rounded-md text-sm">
                                             <option value="">-- Pilih --</option>
                                             @foreach ($items as $item)
@@ -228,7 +228,7 @@
                                         @error('outputForm.output_item_id') <span class="text-red-600 text-xs">{{ $message }}</span> @enderror
                                     </div>
                                     <div>
-                                        <label class="block text-xs text-gray-600 mb-1">Qty Output</label>
+                                        <label class="block text-xs text-gray-600 mb-1">Qty Output <span class="text-red-500">*</span></label>
                                         <input type="number" step="0.000001" min="0" wire:model.defer="outputForm.qty_output" class="w-full border-gray-300 rounded-md text-sm" placeholder="0">
                                         @error('outputForm.qty_output') <span class="text-red-600 text-xs">{{ $message }}</span> @enderror
                                     </div>
@@ -241,7 +241,7 @@
                                         </select>
                                     </div>
                                     <div>
-                                        <label class="block text-xs text-gray-600 mb-1">Satuan</label>
+                                        <label class="block text-xs text-gray-600 mb-1">Satuan <span class="text-red-500">*</span></label>
                                         <select wire:model="outputForm.uom_id" class="w-full border-gray-300 rounded-md text-sm">
                                             <option value="">-- Pilih --</option>
                                             @foreach ($uoms as $uom)
@@ -327,7 +327,7 @@
                                 <h4 class="text-sm font-semibold text-red-800 mb-3">Catat Waste</h4>
                                 <form wire:submit.prevent="recordWaste" class="grid grid-cols-7 gap-3">
                                     <div>
-                                        <label class="block text-xs text-gray-600 mb-1">Item</label>
+                                        <label class="block text-xs text-gray-600 mb-1">Item <span class="text-red-500">*</span></label>
                                         <select wire:model="wasteForm.item_id" class="w-full border-gray-300 rounded-md text-sm">
                                             <option value="">-- Pilih --</option>
                                             @foreach ($items as $item)
@@ -337,7 +337,7 @@
                                         @error('wasteForm.item_id') <span class="text-red-600 text-xs">{{ $message }}</span> @enderror
                                     </div>
                                     <div>
-                                        <label class="block text-xs text-gray-600 mb-1">Qty Waste</label>
+                                        <label class="block text-xs text-gray-600 mb-1">Qty Waste <span class="text-red-500">*</span></label>
                                         <input type="number" step="0.000001" min="0" wire:model.defer="wasteForm.qty_waste" class="w-full border-gray-300 rounded-md text-sm" placeholder="0">
                                         @error('wasteForm.qty_waste') <span class="text-red-600 text-xs">{{ $message }}</span> @enderror
                                     </div>

@@ -8,6 +8,8 @@ use Illuminate\Support\Collection;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class SatuanTable extends Component
 {
@@ -31,16 +33,21 @@ class SatuanTable extends Component
 
     public string $filter2 = '';
 
+    public string $filterStatus = '';
+
     public int $perPage = 10;
 
     public string $sortField = 'id';
 
     public string $sortDirection = 'desc';
 
+    public int $totalAll = 0;
+
     protected array $allowedSortFields = [
         'id',
         'name',
         'symbols',
+        'type',
         'is_active',
         'created_at',
     ];
@@ -53,10 +60,26 @@ class SatuanTable extends Component
 
     public ?string $overlayId = null;
 
+    public bool $showColumnPicker = false;
+
+    public array $columnVisibility = [];
+
+    public array $availableColumns = [
+        ['key' => 'id', 'label' => 'ID', 'default' => true],
+        ['key' => 'name', 'label' => 'Nama', 'default' => true],
+        ['key' => 'symbols', 'label' => 'Simbol', 'default' => true],
+        ['key' => 'type', 'label' => 'Tipe', 'default' => true],
+        ['key' => 'is_active', 'label' => 'Aktif', 'default' => true],
+        ['key' => 'status', 'label' => 'Status', 'default' => true],
+        ['key' => 'created_at', 'label' => 'Dibuat', 'default' => false],
+        ['key' => 'updated_at', 'label' => 'Diubah', 'default' => false],
+    ];
+
     protected $queryString = [
         'search' => ['except' => ''],
         'filter1' => ['except' => ''],
         'filter2' => ['except' => ''],
+        'filterStatus' => ['except' => ''],
         'perPage' => ['except' => 10],
         'sortField' => ['except' => 'id'],
         'sortDirection' => ['except' => 'desc'],
@@ -77,13 +100,18 @@ class SatuanTable extends Component
     {
         $this->breadcrumbs = [
             ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
-            ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
             ['label' => 'Resto', 'route' => 'dashboard.resto', 'color' => 'text-gray-800'],
             ['label' => 'Master Data', 'route' => 'dashboard.resto.master', 'color' => 'text-gray-900 font-semibold'],
             ['label' => 'Satuan', 'color' => 'text-gray-900 font-semibold'],
         ];
 
         $this->syncCaps();
+
+        $this->totalAll = Rst_MasterSatuan::withTrashed()->count();
+
+        foreach ($this->availableColumns as $col) {
+            $this->columnVisibility[$col['key']] = $col['default'];
+        }
     }
 
     public function hydrate(): void
@@ -91,9 +119,29 @@ class SatuanTable extends Component
         $this->syncCaps();
     }
 
+    public function toggleColumnPicker(): void
+    {
+        $this->showColumnPicker = ! $this->showColumnPicker;
+    }
+
+    public function resetColumns(): void
+    {
+        foreach ($this->availableColumns as $col) {
+            $this->columnVisibility[$col['key']] = $col['default'];
+        }
+    }
+
     protected function dataQuery(): Collection
     {
-        $query = Rst_MasterSatuan::query();
+        $query = Rst_MasterSatuan::withTrashed();
+
+        if ($this->filterStatus === 'active') {
+            $query->whereNull('deleted_at')->where('is_active', true);
+        } elseif ($this->filterStatus === 'draft') {
+            $query->whereNull('deleted_at')->where('is_active', false);
+        } elseif ($this->filterStatus === 'deleted') {
+            $query->onlyTrashed();
+        }
 
         if ($this->search !== '') {
             $search = $this->search;
@@ -104,7 +152,7 @@ class SatuanTable extends Component
         }
 
         if ($this->filter1 !== '') {
-            $query->where('is_active', $this->filter1);
+            $query->where('type', $this->filter1);
         }
 
         if (in_array($this->sortField, $this->allowedSortFields, true)) {
@@ -163,7 +211,7 @@ class SatuanTable extends Component
 
     public function clearFilters(): void
     {
-        $this->reset(['search', 'filter1', 'filter2']);
+        $this->reset(['search', 'filter1', 'filter2', 'filterStatus']);
         $this->applyFilter();
     }
 
@@ -209,34 +257,48 @@ class SatuanTable extends Component
         }
 
         $ids = array_values(array_unique(array_map('strval', $this->selectedItems)));
-        $data = $this->dataQuery()->whereIn('id', $ids);
+        $data = Rst_MasterSatuan::withTrashed()->whereIn('id', $ids)->get();
 
         return $this->generateExcel($data, 'Selected');
     }
 
     private function generateExcel($data, string $type)
     {
-        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet;
+        $spreadsheet = new Spreadsheet;
         $ws = $spreadsheet->getActiveSheet();
 
-        $ws->fromArray([['ID', 'Nama', 'Simbol', 'Aktif', 'Dibuat']], null, 'A1');
+        $headers = ['ID', 'Nama', 'Simbol', 'Tipe', 'Aktif', 'Status', 'Dibuat'];
+        $ws->fromArray([$headers], null, 'A1');
+
+        $typeLabels = [
+            'weight' => 'Weight',
+            'volume' => 'Volume',
+            'unit' => 'Unit',
+        ];
 
         $row = 2;
         foreach ($data as $item) {
+            $status = $item->deleted_at ? 'Deleted' : ($item->is_active ? 'Active' : 'Draft');
+
             $ws->fromArray([
-                $item['id'] ?? '',
-                $item['name'] ?? '',
-                $item['symbols'] ?? '',
-                $item['is_active'] ? 'Ya' : 'Tidak',
-                $item['created_at'] ?? '',
+                $item->id,
+                $item->name,
+                $item->symbols ?? '',
+                $typeLabels[$item->type] ?? '-',
+                $item->is_active ? 'Ya' : 'Tidak',
+                $status,
+                $item->created_at?->format('Y-m-d H:i:s') ?? '',
             ], null, 'A'.$row++);
+        }
+
+        foreach (range('A', 'G') as $col) {
+            $ws->getColumnDimension($col)->setAutoSize(true);
         }
 
         $filename = "Satuan_{$type}_".now()->format('Ymd_His').'.xlsx';
 
-        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
         $tmp = tempnam(sys_get_temp_dir(), 'satuan_');
-        $writer->save($tmp);
+        (new Xlsx($spreadsheet))->save($tmp);
 
         return response()->download($tmp, $filename)->deleteFileAfterSend(true);
     }
@@ -274,6 +336,48 @@ class SatuanTable extends Component
         $this->overlayId = $id;
     }
 
+    public function deleteItem(string $id): void
+    {
+        if (! $this->canDelete) {
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin delete.'];
+
+            return;
+        }
+
+        $item = Rst_MasterSatuan::withTrashed()->find($id);
+
+        if (! $item) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data tidak ditemukan.'];
+
+            return;
+        }
+
+        $item->delete();
+
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data berhasil dihapus.'];
+    }
+
+    public function restoreItem(string $id): void
+    {
+        if (! $this->canDelete) {
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin restore.'];
+
+            return;
+        }
+
+        $item = Rst_MasterSatuan::onlyTrashed()->find($id);
+
+        if (! $item) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data tidak ditemukan.'];
+
+            return;
+        }
+
+        $item->restore();
+
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data berhasil di-restore.'];
+    }
+
     public function closeOverlay(): void
     {
         $this->reset(['overlayMode', 'overlayId']);
@@ -308,9 +412,10 @@ class SatuanTable extends Component
     protected function filter1Options(): array
     {
         return [
-            '' => '-- Semua Status --',
-            '1' => 'Aktif',
-            '0' => 'Nonaktif',
+            '' => '-- Semua Tipe --',
+            'weight' => 'Weight',
+            'volume' => 'Volume',
+            'unit' => 'Unit',
         ];
     }
 

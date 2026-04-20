@@ -29,11 +29,18 @@ class ItemCreate extends Component
 
     public bool $has_expiry = false;
 
+    public string $type = 'raw';
+
     public array $toast = ['show' => false, 'type' => 'success', 'message' => ''];
 
     public array $categories = [];
 
     public array $uoms = [];
+
+    public array $typeOptions = [
+        ['value' => 'raw', 'label' => 'Raw Material'],
+        ['value' => 'prep', 'label' => 'Semi Finished'],
+    ];
 
     public function mount(): void
     {
@@ -52,14 +59,20 @@ class ItemCreate extends Component
 
     public function store(): void
     {
-        $this->validate([
-            'name' => ['required', 'string', 'max:255'],
+        $rules = [
+            'name' => ['required', 'string', 'max:255', 'unique:sccr_resto.items,name'],
             'sku' => ['required', 'string', 'max:255', 'unique:sccr_resto.items,sku'],
             'description' => ['nullable', 'string', 'max:65535'],
             'category_id' => ['required', 'integer', 'exists:sccr_resto.categories,id'],
             'uom_id' => ['required', 'integer', 'exists:sccr_resto.uoms,id'],
-            'min_stock' => ['required', 'numeric', 'min:0'],
-        ]);
+            'type' => ['required', 'in:raw,prep'],
+        ];
+
+        if ($this->is_stockable) {
+            $rules['min_stock'] = ['required', 'numeric', 'min:0'];
+        }
+
+        $this->validate($rules);
 
         Rst_MasterItem::create([
             'name' => $this->name,
@@ -67,11 +80,12 @@ class ItemCreate extends Component
             'description' => $this->description,
             'category_id' => $this->category_id,
             'uom_id' => $this->uom_id,
-            'min_stock' => $this->min_stock,
+            'min_stock' => $this->is_stockable ? $this->min_stock : 0,
             'is_active' => $this->is_active,
             'is_stockable' => $this->is_stockable,
-            'has_batch' => $this->has_batch,
-            'has_expiry' => $this->has_expiry,
+            'has_batch' => $this->is_stockable ? $this->has_batch : false,
+            'has_expiry' => $this->is_stockable ? $this->has_expiry : false,
+            'type' => $this->type,
         ]);
 
         $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Item berhasil ditambahkan'];
@@ -79,16 +93,60 @@ class ItemCreate extends Component
         $this->dispatch('item-created');
         $this->dispatch('item-overlay-close');
 
-        $this->reset(['name', 'sku', 'description', 'category_id', 'uom_id', 'min_stock']);
-        $this->is_active = true;
-        $this->is_stockable = true;
-        $this->has_batch = false;
-        $this->has_expiry = false;
+        $this->resetForm();
+    }
+
+    public function saveDraft(): void
+    {
+        $rules = [
+            'name' => ['required', 'string', 'max:255', 'unique:sccr_resto.items,name'],
+            'sku' => ['required', 'string', 'max:255', 'unique:sccr_resto.items,sku'],
+            'category_id' => ['required', 'integer', 'exists:sccr_resto.categories,id'],
+            'uom_id' => ['required', 'integer', 'exists:sccr_resto.uoms,id'],
+            'type' => ['required', 'in:raw,prep'],
+        ];
+
+        if ($this->is_stockable) {
+            $rules['min_stock'] = ['required', 'numeric', 'min:0'];
+        }
+
+        $this->validate($rules);
+
+        Rst_MasterItem::create([
+            'name' => $this->name,
+            'sku' => $this->sku,
+            'description' => $this->description,
+            'category_id' => $this->category_id,
+            'uom_id' => $this->uom_id,
+            'min_stock' => $this->is_stockable ? $this->min_stock : 0,
+            'is_active' => false,
+            'is_stockable' => $this->is_stockable,
+            'has_batch' => $this->is_stockable ? $this->has_batch : false,
+            'has_expiry' => $this->is_stockable ? $this->has_expiry : false,
+            'type' => $this->type,
+        ]);
+
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Draft item berhasil disimpan'];
+
+        $this->dispatch('item-created');
+        $this->dispatch('item-overlay-close');
+
+        $this->resetForm();
     }
 
     public function cancel(): void
     {
         $this->dispatch('close-overlay');
+    }
+
+    protected function resetForm(): void
+    {
+        $this->reset(['name', 'sku', 'description', 'category_id', 'uom_id', 'min_stock']);
+        $this->is_active = true;
+        $this->is_stockable = true;
+        $this->has_batch = false;
+        $this->has_expiry = false;
+        $this->type = 'raw';
     }
 
     public function render()

@@ -300,7 +300,7 @@
                                     @foreach ($newVersionComponents as $index => $component)
                                         <div class="bg-gray-50 border border-gray-200 rounded-md p-3 flex gap-3 items-start">
                                             <div class="flex-1">
-                                                <label class="block text-xs font-medium text-gray-600 mb-1">Item Bahan</label>
+                                                <label class="block text-xs font-medium text-gray-600 mb-1">Item Bahan <span class="text-red-500">*</span></label>
                                                 <select wire:model="newVersionComponents.{{ $index }}.item_id"
                                                     class="w-full border-gray-300 rounded-md shadow-sm text-sm focus:border-blue-500 focus:ring-blue-500">
                                                     <option value="">-- Pilih Item --</option>
@@ -316,7 +316,7 @@
                                             </div>
 
                                             <div class="w-32">
-                                                <label class="block text-xs font-medium text-gray-600 mb-1">Qty</label>
+                                                <label class="block text-xs font-medium text-gray-600 mb-1">Qty <span class="text-red-500">*</span></label>
                                                 <input type="number" step="0.01" wire:model="newVersionComponents.{{ $index }}.qty"
                                                     class="w-full border-gray-300 rounded-md shadow-sm text-sm focus:border-blue-500 focus:ring-blue-500"
                                                     placeholder="0.00">
@@ -326,7 +326,7 @@
                                             </div>
 
                                             <div class="w-32">
-                                                <label class="block text-xs font-medium text-gray-600 mb-1">Satuan</label>
+                                                <label class="block text-xs font-medium text-gray-600 mb-1">Satuan <span class="text-red-500">*</span></label>
                                                 <input type="text" wire:model="newVersionComponents.{{ $index }}.uom_name" readonly
                                                     class="w-full border-gray-300 rounded-md shadow-sm text-sm bg-gray-100">
                                                 <input type="hidden" wire:model="newVersionComponents.{{ $index }}.uom_id">

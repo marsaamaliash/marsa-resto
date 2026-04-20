@@ -48,6 +48,8 @@ class PurchaseRequestTable extends Component
 
     public string $sortDirection = 'desc';
 
+    public int $totalAll = 0;
+
     protected array $allowedSortFields = [
         'id',
         'pr_number',
@@ -110,6 +112,8 @@ class PurchaseRequestTable extends Component
         ];
 
         $this->syncCaps();
+
+        $this->totalAll = Rst_PurchaseRequest::count();
     }
 
     public function hydrate(): void

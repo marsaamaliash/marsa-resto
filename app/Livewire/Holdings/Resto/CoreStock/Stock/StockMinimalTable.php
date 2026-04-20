@@ -3,6 +3,7 @@
 namespace App\Livewire\Holdings\Resto\CoreStock\Stock;
 
 use App\Models\Holdings\Resto\CoreStock\Rst_StockBalance;
+use App\Models\Holdings\Resto\Master\Rst_MasterItem;
 use App\Models\Holdings\Resto\Master\Rst_MasterKategori;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
@@ -26,6 +27,8 @@ class StockMinimalTable extends Component
     public string $sortField = 'selisih';
 
     public string $sortDirection = 'desc';
+
+    public int $totalAll = 0;
 
     protected array $allowedSortFields = [
         'item_name',
@@ -54,6 +57,8 @@ class StockMinimalTable extends Component
             ['label' => 'Core Stock', 'route' => 'dashboard.resto.core-stock', 'color' => 'text-gray-800'],
             ['label' => 'Stock Kritis', 'color' => 'text-gray-900 font-semibold'],
         ];
+
+        $this->totalAll = Rst_MasterItem::where('min_stock', '>', 0)->count();
     }
 
     protected function dataQuery(): Collection

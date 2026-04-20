@@ -45,8 +45,7 @@ class Rst_RecipeComponent extends Model
         return $this->belongsTo(Rst_RecipeVersion::class, 'recipe_version_id');
     }
 
-
-        public function item()
+    public function item()
     {
         return $this->belongsTo(Rst_MasterItem::class, 'recipe_version_id');
     }

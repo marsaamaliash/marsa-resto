@@ -123,10 +123,9 @@ class MovementInternalTable extends Component
     {
         $this->breadcrumbs = [
             ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
-            ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
             ['label' => 'Resto', 'route' => 'dashboard.resto', 'color' => 'text-gray-800'],
             ['label' => 'Master Movement', 'route' => 'dashboard.resto.master-movement', 'color' => 'text-gray-900 font-semibold'],
-            ['label' => 'Movement Internal', 'color' => 'text-gray-900 font-semibold'],
+            ['label' => 'Stock Movement', 'color' => 'text-gray-900 font-semibold'],
         ];
 
         $this->syncCaps();

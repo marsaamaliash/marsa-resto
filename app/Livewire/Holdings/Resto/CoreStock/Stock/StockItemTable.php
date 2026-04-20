@@ -3,6 +3,7 @@
 namespace App\Livewire\Holdings\Resto\CoreStock\Stock;
 
 use App\Models\Holdings\Resto\CoreStock\Rst_StockBalance;
+use App\Models\Holdings\Resto\Master\Rst_MasterItem;
 use App\Models\Holdings\Resto\Master\Rst_MasterKategori;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
@@ -26,6 +27,8 @@ class StockItemTable extends Component
     public string $sortField = 'item_name';
 
     public string $sortDirection = 'asc';
+
+    public int $totalAll = 0;
 
     protected array $allowedSortFields = [
         'item_name',
@@ -56,6 +59,8 @@ class StockItemTable extends Component
             ['label' => 'Core Stock', 'route' => 'dashboard.resto.core-stock', 'color' => 'text-gray-800'],
             ['label' => 'Stock Item', 'color' => 'text-gray-900 font-semibold'],
         ];
+
+        $this->totalAll = Rst_MasterItem::count();
     }
 
     protected function dataQuery(): Collection

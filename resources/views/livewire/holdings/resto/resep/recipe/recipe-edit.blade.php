@@ -36,7 +36,7 @@
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Issue Method</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Issue Method <span class="text-red-500">*</span></label>
                 <select wire:model.defer="issue_method"
                     class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     <option value="batch_actual">Batch Actual</option>
@@ -77,7 +77,7 @@
         </div>
 
         <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Yield Tracking</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Yield Tracking <span class="text-red-500">*</span></label>
             <select wire:model.defer="yield_tracking_mode"
                 class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
                 <option value="strict">Strict</option>

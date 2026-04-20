@@ -1,4 +1,4 @@
-<x-ui.sccr-card transparent wire:key="satuan" class="h-full min-h-0 flex flex-col">
+<x-ui.sccr-card transparent wire:key="konversi-satuan" class="h-full min-h-0 flex flex-col">
 
     {{-- ================= HEADER ================= --}}
     <div class="relative px-8 py-6 bg-blue-600/80 rounded-b-3xl shadow-lg overflow-hidden">
@@ -14,7 +14,7 @@
         <div class="mt-4 flex justify-between items-center text-sm">
             <x-ui.sccr-breadcrumb :items="$breadcrumbs" />
             <div class="text-white">
-                Menampilkan <span class="font-bold text-black">{{ $data->total() }}</span> data
+                Menampilkan <span class="font-bold text-black">{{ $data->total() }}</span> dari <span class="font-bold text-black">{{ $totalAll }}</span> data
             </div>
         </div>
     </div>
@@ -28,25 +28,21 @@
                 {{-- SEARCH INPUT --}}
                 <div class="relative top-1">
                     <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">
-                        Nama Satuan
+                        Cari
                     </span>
-                    <x-ui.sccr-input name="search" wire:model="search" placeholder="Ketik lalu enter..."
+                    <x-ui.sccr-input name="search" wire:model="search" placeholder="Item / Satuan..."
                         class="w-64" />
                 </div>
 
-                {{-- FILTER 1 --}}
-                {{-- <div class="relative top-1">
-                    <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">{{FILTER1_LABEL}}</span>
-                    <x-ui.sccr-select name="filter1" wire:model.live="filter1" :options="$filter1Options"
-                        class="w-40" />
-                </div> --}}
-
-                {{-- FILTER 2 --}}
-                {{-- <div class="relative top-1">
-                    <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">{{FILTER2_LABEL}}</span>
-                    <x-ui.sccr-select name="filter2" wire:model.live="filter2" :options="$filter2Options"
-                        class="w-40" />
-                </div> --}}
+                {{-- FILTER STATUS --}}
+                <div class="relative top-1">
+                    <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">Status</span>
+                    <select wire:model.live="filterStatus" class="border-gray-300 rounded-md text-sm w-32">
+                        <option value="">Semua</option>
+                        <option value="active">Active</option>
+                        <option value="deleted">Deleted</option>
+                    </select>
+                </div>
 
                 {{-- ACTION BUTTONS --}}
                 <div class="flex flex-wrap items-center gap-1">
@@ -65,7 +61,7 @@
                     <x-ui.sccr-button type="button" wire:click="exportFiltered" variant="success"
                         class="bg-gray-600 text-gray-100 hover:bg-gray-400">
                         <x-ui.sccr-icon name="exportfiltered" :size="20" />
-                        Export Filtered
+                        Export Excel
                     </x-ui.sccr-button>
 
                     <x-ui.sccr-button type="button" wire:click="exportSelected" variant="info"
@@ -107,25 +103,29 @@
                                 <input type="checkbox" wire:model.live="selectAll" class="rounded border-gray-300">
                             </th>
 
-                            {{-- COLUMNS: duplicate this block for each column --}}
                             <th wire:click="sortBy('id')"
                                 class="px-4 py-3 text-left text-xs font-bold cursor-pointer">
                                 ID {!! $sortField === 'id' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                             </th>
 
-                            <th wire:click="sortBy('name')"
-                                class="px-4 py-3 text-left text-xs font-bold cursor-pointer">
-                                Item {!! $sortField === 'name' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                            <th class="px-4 py-3 text-left text-xs font-bold">
+                                Item
                             </th>
 
-                            <th wire:click="sortBy('symbols')"
-                                class="px-4 py-3 text-left text-xs font-bold cursor-pointer">
-                                Dari Satuan {!! $sortField === 'symbols' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                            <th class="px-4 py-3 text-left text-xs font-bold">
+                                Dari Satuan
                             </th>
 
-                            <th wire:click="sortBy('symbols')"
-                                class="px-4 py-3 text-left text-xs font-bold cursor-pointer">
-                                Ke Satuan {!! $sortField === 'symbols' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                            <th class="px-4 py-3 text-left text-xs font-bold">
+                                Ke Satuan
+                            </th>
+
+                            <th class="px-4 py-3 text-left text-xs font-bold">
+                                Nilai Konversi
+                            </th>
+
+                            <th class="px-4 py-3 text-center text-xs font-bold">
+                                Status
                             </th>
 
                             {{-- ACTIONS HEADER --}}
@@ -147,28 +147,39 @@
 
                     <tbody class="divide-y divide-gray-100 bg-gray-100">
                         @forelse ($data as $item)
-                            <tr class="hover:bg-gray-200 transition">
+                            <tr class="hover:bg-gray-200 transition {{ $item->deleted_at ? 'bg-red-50' : '' }}">
                                 {{-- ROW CHECKBOX --}}
                                 <td class="px-4 py-2 text-center">
                                     <input type="checkbox" value="{{ $item['id'] }}"
                                         wire:model.live="selectedItems" class="rounded border-gray-300">
                                 </td>
 
-                                {{-- ROW CELLS: match columns above --}}
                                 <td class="px-4 py-2 font-mono text-sm font-semibold">
                                     {{ $item['id'] }}
                                 </td>
 
                                 <td class="px-4 py-2 text-sm">
-                                    {{ $item->item?->name }}
+                                    {{ $item->item?->name ?? '-' }}
                                 </td>
 
                                 <td class="px-4 py-2 text-sm">
-                                    {{ $item->fromUom?->name }}
+                                    {{ $item->fromUom?->name ?? '-' }}
                                 </td>
 
                                 <td class="px-4 py-2 text-sm">
-                                    {{ $item->toUom?->name }}
+                                    {{ $item->toUom?->name ?? '-' }}
+                                </td>
+
+                                <td class="px-4 py-2 text-sm font-mono">
+                                    {{ $item->conversion_factor }}
+                                </td>
+
+                                <td class="px-4 py-2 text-center text-sm">
+                                    @if ($item->deleted_at)
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">Deleted</span>
+                                    @else
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Active</span>
+                                    @endif
                                 </td>
 
                                 {{-- ROW ACTIONS --}}
@@ -180,11 +191,29 @@
                                             <x-ui.sccr-icon name="eye" :size="20" />
                                         </x-ui.sccr-button>
 
-                                        @if ($canUpdate)
+                                        @if ($canUpdate && ! $item->deleted_at)
                                             <x-ui.sccr-button type="button" variant="icon"
                                                 wire:click="openEdit('{{ $item['id'] }}')"
                                                 class="text-blue-600 hover:scale-125" title="Edit">
                                                 <x-ui.sccr-icon name="edit" :size="20" />
+                                            </x-ui.sccr-button>
+                                        @endif
+
+                                        @if ($canDelete && ! $item->deleted_at)
+                                            <x-ui.sccr-button type="button" variant="icon"
+                                                wire:click="deleteItem('{{ $item['id'] }}')"
+                                                class="text-red-600 hover:scale-125" title="Hapus"
+                                                wire:confirm="Yakin ingin menghapus data ini?">
+                                                <x-ui.sccr-icon name="trash" :size="20" />
+                                            </x-ui.sccr-button>
+                                        @endif
+
+                                        @if ($canDelete && $item->deleted_at)
+                                            <x-ui.sccr-button type="button" variant="icon"
+                                                wire:click="restoreItem('{{ $item['id'] }}')"
+                                                class="text-green-600 hover:scale-125" title="Restore"
+                                                wire:confirm="Yakin ingin me-restore data ini?">
+                                                <x-ui.sccr-icon name="refresh" :size="20" />
                                             </x-ui.sccr-button>
                                         @endif
                                     </div>
@@ -192,7 +221,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="py-10 text-center text-gray-400 italic">
+                                <td colspan="8" class="py-10 text-center text-gray-400 italic">
                                     Data tidak ditemukan
                                 </td>
                             </tr>
@@ -227,7 +256,7 @@
             <div class="w-full max-w-xl bg-white rounded-2xl shadow-2xl relative">
                 <x-ui.sccr-button type="button" variant="icon" wire:click="closeOverlay"
                     class="absolute top-4 right-4 text-gray-400 hover:text-red-500" title="Tutup">
-                    <span class="text-xl leading-none">✕</span>
+                    <span class="text-xl leading-none">&#x2715;</span>
                 </x-ui.sccr-button>
 
                 @livewire('holdings.resto.resep.konversi-satuan.konversi-satuan-create')
@@ -240,17 +269,13 @@
         <div class="fixed inset-0 bg-black/40 z-40" wire:click="closeOverlay"></div>
 
         <div class="fixed inset-0 z-50 flex items-center justify-center px-6">
-            <div class="w-full max-w-6xl bg-white rounded-2xl shadow-2xl relative">
+            <div class="w-full max-w-3xl bg-white rounded-2xl shadow-2xl relative max-h-[90vh] overflow-y-auto">
                 <x-ui.sccr-button type="button" variant="icon" wire:click="closeOverlay"
-                    class="absolute top-4 right-4 text-gray-400 hover:text-red-500" title="Tutup">
-                    <span class="text-xl leading-none">✕</span>
+                    class="absolute top-4 right-4 text-gray-400 hover:text-red-500 z-10" title="Tutup">
+                    <span class="text-xl leading-none">&#x2715;</span>
                 </x-ui.sccr-button>
 
-                {{-- Replace with actual show component --}}
-                <div class="p-6 text-center text-gray-500">
-                    <p class="text-lg font-semibold">Detail Data</p>
-                    <p class="text-sm">ID: {{ $overlayId }}</p>
-                </div>
+                @livewire('holdings.resto.resep.konversi-satuan.konversi-satuan-show', ['id' => $overlayId], key($overlayId))
             </div>
         </div>
     @endif
@@ -260,17 +285,13 @@
         <div class="fixed inset-0 bg-black/40 z-40" wire:click="closeOverlay"></div>
 
         <div class="fixed inset-0 z-50 flex items-center justify-center px-6">
-            <div class="w-full max-w-6xl bg-white rounded-2xl shadow-2xl relative">
+            <div class="w-full max-w-xl bg-white rounded-2xl shadow-2xl relative max-h-[90vh] overflow-y-auto">
                 <x-ui.sccr-button type="button" variant="icon" wire:click="closeOverlay"
-                    class="absolute top-4 right-4 text-gray-400 hover:text-red-500" title="Tutup">
-                    <span class="text-xl leading-none">✕</span>
+                    class="absolute top-4 right-4 text-gray-400 hover:text-red-500 z-10" title="Tutup">
+                    <span class="text-xl leading-none">&#x2715;</span>
                 </x-ui.sccr-button>
 
-                {{-- Replace with actual edit component --}}
-                <div class="p-6 text-center text-gray-500">
-                    <p class="text-lg font-semibold">Form Edit</p>
-                    <p class="text-sm">ID: {{ $overlayId }}</p>
-                </div>
+                @livewire('holdings.resto.resep.konversi-satuan.konversi-satuan-edit', ['id' => $overlayId], key($overlayId))
             </div>
         </div>
     @endif

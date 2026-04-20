@@ -36,6 +36,8 @@ class ProductionOrderTable extends Component
 
     public string $sortDirection = 'desc';
 
+    public int $totalAll = 0;
+
     protected array $allowedSortFields = [
         'id',
         'prod_no',
@@ -80,6 +82,8 @@ class ProductionOrderTable extends Component
         ];
 
         $this->syncCaps();
+
+        $this->totalAll = Rst_ProductionOrder::count();
     }
 
     public function hydrate(): void

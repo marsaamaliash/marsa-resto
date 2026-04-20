@@ -31,6 +31,8 @@ class StockLocationTable extends Component
 
     public string $sortDirection = 'asc';
 
+    public int $totalAll = 0;
+
     protected array $allowedSortFields = [
         'location_name',
         'total_available',
@@ -50,8 +52,6 @@ class StockLocationTable extends Component
 
     public array $detailData = [];
 
-    public array $expandedLocations = [];
-
     protected $queryString = [
         'search' => ['except' => ''],
         'filter1' => ['except' => ''],
@@ -59,7 +59,6 @@ class StockLocationTable extends Component
         'perPage' => ['except' => 10],
         'sortField' => ['except' => 'location_name'],
         'sortDirection' => ['except' => 'asc'],
-        'expandedLocations' => ['except' => []],
     ];
 
     public function mount(): void
@@ -70,6 +69,8 @@ class StockLocationTable extends Component
             ['label' => 'Core Stock', 'route' => 'dashboard.resto.core-stock', 'color' => 'text-gray-800'],
             ['label' => 'Stok per Lokasi', 'color' => 'text-gray-900 font-semibold'],
         ];
+
+        $this->totalAll = Rst_MasterLokasi::count();
     }
 
     protected function dataQuery(): Collection
@@ -106,31 +107,19 @@ class StockLocationTable extends Component
             $locationName = $location?->name ?? '-';
             $locationIdStr = (string) $locationId;
 
-            $itemRows = $items->map(function ($item) use ($locationId, $locationName) {
-                return (object) [
-                    'location_id' => $locationId,
-                    'location_id_str' => (string) $locationId,
-                    'location_name' => $locationName,
-                    'item_id' => $item->item_id,
-                    'item_id_str' => (string) $item->item_id,
-                    'item_name' => $item->item?->name ?? '-',
-                    'item_sku' => $item->item?->sku ?? '-',
-                    'category_name' => $item->item?->category?->name ?? '-',
-                    'qty_available' => $item->qty_available,
-                    'qty_reserved' => $item->qty_reserved,
-                    'qty_in_transit' => $item->qty_in_transit,
-                    'qty_waste' => $item->qty_waste,
-                ];
-            });
-
             return (object) [
                 'location_id' => $locationId,
                 'location_id_str' => $locationIdStr,
                 'location_name' => $locationName,
                 'location' => $location,
-                'items' => $itemRows,
-                'total_items' => $itemRows->count(),
-                'is_expanded' => in_array($locationIdStr, $this->expandedLocations, true),
+                'items' => $items,
+                'total_items' => $items->count(),
+                'total_stock' => $items->sum('qty_available'),
+                'total_critical' => $items->filter(function ($item) {
+                    $minStock = $item->item?->min_stock ?? 0;
+
+                    return $item->qty_available <= $minStock;
+                })->count(),
             ];
         })->values();
 
@@ -157,30 +146,9 @@ class StockLocationTable extends Component
                 'location_id_str' => $locationGroup->location_id_str,
                 'location_name' => $locationGroup->location_name,
                 'total_items' => $locationGroup->total_items,
-                'is_expanded' => $locationGroup->is_expanded,
+                'total_stock' => $locationGroup->total_stock,
+                'total_critical' => $locationGroup->total_critical,
             ]);
-
-            if ($locationGroup->is_expanded) {
-                $itemsSorted = $locationGroup->items->sortBy('item_name', SORT_REGULAR, $this->sortDirection === 'desc');
-
-                foreach ($itemsSorted as $item) {
-                    $flattened->push((object) [
-                        'row_type' => 'item',
-                        'location_id' => $item->location_id,
-                        'location_id_str' => $item->location_id_str,
-                        'location_name' => $item->location_name,
-                        'item_id' => $item->item_id,
-                        'item_id_str' => $item->item_id_str,
-                        'item_name' => $item->item_name,
-                        'item_sku' => $item->item_sku,
-                        'category_name' => $item->category_name,
-                        'qty_available' => $item->qty_available,
-                        'qty_reserved' => $item->qty_reserved,
-                        'qty_in_transit' => $item->qty_in_transit,
-                        'qty_waste' => $item->qty_waste,
-                    ]);
-                }
-            }
         }
 
         return $flattened;
@@ -345,21 +313,6 @@ class StockLocationTable extends Component
     public function closeOverlay(): void
     {
         $this->reset(['overlayMode', 'overlayId', 'detailData']);
-    }
-
-    public function toggleExpand(string|int $locationId): void
-    {
-        $id = (string) $locationId;
-        if (in_array($id, $this->expandedLocations, true)) {
-            $this->expandedLocations = array_values(array_diff($this->expandedLocations, [$id]));
-        } else {
-            $this->expandedLocations[] = $id;
-        }
-    }
-
-    public function isExpanded(string|int $locationId): bool
-    {
-        return in_array((string) $locationId, $this->expandedLocations, true);
     }
 
     public function toggleLocationSelect(string $locationId): void

@@ -8,6 +8,8 @@ use Illuminate\Support\Collection;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class LokasiTable extends Component
 {
@@ -31,11 +33,15 @@ class LokasiTable extends Component
 
     public string $filter2 = '';
 
+    public string $filterStatus = '';
+
     public int $perPage = 10;
 
     public string $sortField = 'id';
 
     public string $sortDirection = 'desc';
+
+    public int $totalAll = 0;
 
     protected array $allowedSortFields = [
         'id',
@@ -55,10 +61,27 @@ class LokasiTable extends Component
 
     public ?string $overlayId = null;
 
+    public bool $showColumnPicker = false;
+
+    public array $columnVisibility = [];
+
+    public array $availableColumns = [
+        ['key' => 'id', 'label' => 'ID', 'default' => true],
+        ['key' => 'code', 'label' => 'Kode', 'default' => true],
+        ['key' => 'name', 'label' => 'Nama', 'default' => true],
+        ['key' => 'type', 'label' => 'Tipe', 'default' => true],
+        ['key' => 'pic_name', 'label' => 'PIC', 'default' => true],
+        ['key' => 'notes', 'label' => 'Catatan', 'default' => false],
+        ['key' => 'is_active', 'label' => 'Aktif', 'default' => true],
+        ['key' => 'created_at', 'label' => 'Dibuat', 'default' => false],
+        ['key' => 'updated_at', 'label' => 'Diubah', 'default' => false],
+    ];
+
     protected $queryString = [
         'search' => ['except' => ''],
         'filter1' => ['except' => ''],
         'filter2' => ['except' => ''],
+        'filterStatus' => ['except' => ''],
         'perPage' => ['except' => 10],
         'sortField' => ['except' => 'id'],
         'sortDirection' => ['except' => 'desc'],
@@ -79,13 +102,18 @@ class LokasiTable extends Component
     {
         $this->breadcrumbs = [
             ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
-            ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
             ['label' => 'Resto', 'route' => 'dashboard.resto', 'color' => 'text-gray-800'],
             ['label' => 'Master Data', 'route' => 'dashboard.resto.master', 'color' => 'text-gray-900 font-semibold'],
             ['label' => 'Lokasi', 'color' => 'text-gray-900 font-semibold'],
         ];
 
         $this->syncCaps();
+
+        $this->totalAll = Rst_MasterLokasi::withTrashed()->count();
+
+        foreach ($this->availableColumns as $col) {
+            $this->columnVisibility[$col['key']] = $col['default'];
+        }
     }
 
     public function hydrate(): void
@@ -93,9 +121,25 @@ class LokasiTable extends Component
         $this->syncCaps();
     }
 
+    public function toggleColumnPicker(): void
+    {
+        $this->showColumnPicker = ! $this->showColumnPicker;
+    }
+
+    public function resetColumns(): void
+    {
+        foreach ($this->availableColumns as $col) {
+            $this->columnVisibility[$col['key']] = $col['default'];
+        }
+    }
+
     protected function dataQuery(): Collection
     {
-        $query = Rst_MasterLokasi::query();
+        $query = Rst_MasterLokasi::withTrashed();
+
+        if ($this->filterStatus === 'deleted') {
+            $query->onlyTrashed();
+        }
 
         if ($this->search !== '') {
             $search = $this->search;
@@ -170,7 +214,7 @@ class LokasiTable extends Component
 
     public function clearFilters(): void
     {
-        $this->reset(['search', 'filter1', 'filter2']);
+        $this->reset(['search', 'filter1', 'filter2', 'filterStatus']);
         $this->applyFilter();
     }
 
@@ -216,37 +260,49 @@ class LokasiTable extends Component
         }
 
         $ids = array_values(array_unique(array_map('strval', $this->selectedItems)));
-        $data = $this->dataQuery()->whereIn('id', $ids);
+        $data = Rst_MasterLokasi::withTrashed()->whereIn('id', $ids)->get();
 
         return $this->generateExcel($data, 'Selected');
     }
 
-    private function generateExcel($data, string $type)
+    private function generateExcel(Collection $data, string $type)
     {
-        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet;
+        $spreadsheet = new Spreadsheet;
         $ws = $spreadsheet->getActiveSheet();
 
-        $ws->fromArray([['ID', 'Nama', 'Kode', 'Tipe', 'PIC', 'Alamat', 'Aktif', 'Dibuat']], null, 'A1');
+        $headers = ['ID', 'Kode', 'Nama', 'Tipe', 'PIC', 'Catatan', 'Aktif', 'Status', 'Dibuat'];
+        $ws->fromArray([$headers], null, 'A1');
+
+        $typeLabels = [
+            'warehouse' => 'Warehouse',
+            'kitchen' => 'Kitchen',
+            'outlet' => 'Outlet',
+            'transit' => 'Transit',
+        ];
 
         $row = 2;
         foreach ($data as $item) {
             $ws->fromArray([
-                $item['id'] ?? '',
-                $item['name'] ?? '',
-                $item['code'] ?? '',
-                $item['type'] ?? '',
-                $item['pic_name'] ?? '',
-                $item['address'] ?? '',
-                $item['is_active'] ? 'Ya' : 'Tidak',
-                $item['created_at'] ?? '',
+                $item->id,
+                $item->code ?? '',
+                $item->name,
+                $typeLabels[$item->type] ?? $item->type,
+                $item->pic_name ?? '-',
+                $item->notes ?? '-',
+                $item->is_active ? 'Ya' : 'Tidak',
+                $item->deleted_at ? 'Deleted' : 'Active',
+                $item->created_at?->format('Y-m-d H:i:s') ?? '',
             ], null, 'A'.$row++);
+        }
+
+        foreach (range('A', 'I') as $col) {
+            $ws->getColumnDimension($col)->setAutoSize(true);
         }
 
         $filename = "Lokasi_{$type}_".now()->format('Ymd_His').'.xlsx';
 
-        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
         $tmp = tempnam(sys_get_temp_dir(), 'lokasi_');
-        $writer->save($tmp);
+        (new Xlsx($spreadsheet))->save($tmp);
 
         return response()->download($tmp, $filename)->deleteFileAfterSend(true);
     }
@@ -282,6 +338,44 @@ class LokasiTable extends Component
 
         $this->overlayMode = 'edit';
         $this->overlayId = $id;
+    }
+
+    public function deleteItem(string $id): void
+    {
+        if (! $this->canDelete) {
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin delete.'];
+
+            return;
+        }
+
+        $item = Rst_MasterLokasi::withTrashed()->find($id);
+
+        if (! $item) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data tidak ditemukan.'];
+
+            return;
+        }
+
+        $item->delete();
+    }
+
+    public function restoreItem(string $id): void
+    {
+        if (! $this->canDelete) {
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin restore.'];
+
+            return;
+        }
+
+        $item = Rst_MasterLokasi::onlyTrashed()->find($id);
+
+        if (! $item) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data tidak ditemukan.'];
+
+            return;
+        }
+
+        $item->restore();
     }
 
     public function closeOverlay(): void

@@ -20,7 +20,6 @@ class Rst_MasterLokasi extends Model
         'code',
         'type',
         'pic_name',
-        'address',
         'holding_id',
         'branch_id',
         'outlet_id',

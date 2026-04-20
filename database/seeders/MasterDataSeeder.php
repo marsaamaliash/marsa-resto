@@ -14,9 +14,9 @@ class MasterDataSeeder extends Seeder
 
             // 1. SEED CATEGORIES
             $categories = [
-                ['name' => 'Bahan Baku', 'slug' => 'bahan-baku', 'description' => 'Raw materials untuk dapur'],
-                ['name' => 'Packaging', 'slug' => 'packaging', 'description' => 'Kardus, plastik, dll'],
-                ['name' => 'Minuman', 'slug' => 'minuman', 'description' => 'Ready to drink atau bahan minuman'],
+                ['name' => 'Bahan Baku', 'description' => 'Raw materials untuk dapur'],
+                ['name' => 'Packaging', 'description' => 'Kardus, plastik, dll'],
+                ['name' => 'Minuman', 'description' => 'Ready to drink atau bahan minuman'],
             ];
             foreach ($categories as $cat) {
                 DB::connection('sccr_resto')->table('categories')->insert(array_merge($cat, [

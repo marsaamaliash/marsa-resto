@@ -15,7 +15,7 @@ class LokasiCreate extends Component
 
     public string $pic_name = '';
 
-    public string $address = '';
+    public ?string $notes = null;
 
     public bool $is_active = true;
 
@@ -25,11 +25,10 @@ class LokasiCreate extends Component
     {
         $this->validate([
             'name' => ['required', 'string', 'max:255'],
-            'code' => ['unique:sccr_resto.locations,code', 'string', 'max:50'],
+            'code' => ['nullable', 'string', 'max:50', 'unique:sccr_resto.locations,code'],
             'type' => ['required', 'string', 'max:50'],
-            'pic_name' => ['required', 'string', 'max:50'],
-            'address' => ['required', 'string', 'max:50'],
-
+            'pic_name' => ['required', 'string', 'max:255'],
+            'notes' => ['nullable', 'string', 'max:65535'],
         ]);
 
         Rst_MasterLokasi::create([
@@ -37,16 +36,14 @@ class LokasiCreate extends Component
             'code' => $this->code,
             'type' => $this->type,
             'pic_name' => $this->pic_name,
-            'address' => $this->address,
+            'notes' => $this->notes,
             'is_active' => $this->is_active,
         ]);
-
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Lokasi berhasil ditambahkan'];
 
         $this->dispatch('lokasi-created');
         $this->dispatch('lokasi-overlay-close');
 
-        $this->reset(['name', 'code', 'type',  'pic_name', 'address']);
+        $this->reset(['name', 'code', 'type', 'pic_name', 'notes']);
         $this->is_active = true;
     }
 

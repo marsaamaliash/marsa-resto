@@ -4,7 +4,7 @@
     <div class="relative px-8 py-6 bg-blue-600/80 rounded-b-3xl shadow-lg overflow-hidden">
         <div class="flex justify-between items-start">
             <div>
-                <h1 class="text-3xl font-bold text-white">Movement Internal</h1>
+                <h1 class="text-3xl font-bold text-white">Stock Movement</h1>
                 <p class="text-blue-100 text-sm">
                     Transfer barang antar lokasi internal (dengan Reference Number)
                 </p>

@@ -3,30 +3,20 @@
 
     <form wire:submit.prevent="store" class="space-y-4">
         <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Nama Kategori</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Nama Kategori <span class="text-red-500">*</span></label>
             <input type="text" wire:model.defer="name"
                 class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                placeholder="Contoh: Kilogram">
+                placeholder="Contoh: Bahan Baku Utama">
             @error('name')
                 <span class="text-red-600 text-sm">{{ $message }}</span>
             @enderror
         </div>
 
         <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Slug</label>
-            <input type="text" wire:model.defer="slug"
-                class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                placeholder="Contoh: kg">
-            @error('slug')
-                <span class="text-red-600 text-sm">{{ $message }}</span>
-            @enderror
-        </div>
-
-         <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
             <textarea wire:model.defer="description"
                 class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                placeholder="Contoh: kg" rows="3"></textarea>
+                placeholder="Contoh: Kategori untuk bahan baku utama produksi" rows="3"></textarea>
             @error('description')
                 <span class="text-red-600 text-sm">{{ $message }}</span>
             @enderror
@@ -43,10 +33,20 @@
                 class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
                 Simpan
             </button>
+            <button type="button" wire:click="saveDraft"
+                class="px-4 py-2 bg-amber-500 text-white rounded-md hover:bg-amber-600">
+                Save as Draft
+            </button>
             <button type="button" wire:click="cancel"
                 class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">
                 Batal
             </button>
         </div>
     </form>
+
+    @if ($toast['show'])
+        <div class="mt-4 p-3 rounded {{ $toast['type'] === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+            {{ $toast['message'] }}
+        </div>
+    @endif
 </div>

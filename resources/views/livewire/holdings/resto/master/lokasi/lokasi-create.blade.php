@@ -2,62 +2,63 @@
     <h2 class="text-xl font-bold mb-4">Tambah Lokasi</h2>
 
     <form wire:submit.prevent="store" class="space-y-4">
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Nama Lokasi</label>
-            <input type="text" wire:model.defer="name"
-                class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                placeholder="Contoh: Kilogram">
-            @error('name')
-                <span class="text-red-600 text-sm">{{ $message }}</span>
-            @enderror
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nama Lokasi <span class="text-red-500">*</span></label>
+                <input type="text" wire:model.defer="name"
+                    class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    placeholder="Contoh: Gudang Utama">
+                @error('name')
+                    <span class="text-red-600 text-sm">{{ $message }}</span>
+                @enderror
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Kode</label>
+                <input type="text" wire:model.defer="code"
+                    class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    placeholder="Contoh: WH-01">
+                @error('code')
+                    <span class="text-red-600 text-sm">{{ $message }}</span>
+                @enderror
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Tipe <span class="text-red-500">*</span></label>
+                <select wire:model.defer="type" class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <option value="">-- Pilih --</option>
+                    <option value="warehouse">Warehouse</option>
+                    <option value="kitchen">Kitchen</option>
+                    <option value="outlet">Outlet</option>
+                    <option value="transit">Transit</option>
+                </select>
+                @error('type')
+                    <span class="text-red-600 text-sm">{{ $message }}</span>
+                @enderror
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nama PIC <span class="text-red-500">*</span></label>
+                <input type="text" wire:model.defer="pic_name"
+                    class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    placeholder="Contoh: Budi Santoso">
+                @error('pic_name')
+                    <span class="text-red-600 text-sm">{{ $message }}</span>
+                @enderror
+            </div>
         </div>
 
         <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Kode</label>
-            <input type="text" wire:model.defer="code"
+            <label class="block text-sm font-medium text-gray-700 mb-1">Catatan</label>
+            <textarea wire:model.defer="notes"
                 class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                placeholder="Contoh: kg">
-            @error('code')
+                placeholder="Catatan tambahan (opsional)" rows="2"></textarea>
+            @error('notes')
                 <span class="text-red-600 text-sm">{{ $message }}</span>
             @enderror
         </div>
-
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Nama PIC</label>
-            <input type="text" wire:model.defer="pic_name"
-                class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                placeholder="Contoh: kg">
-            @error('pic_name')
-                <span class="text-red-600 text-sm">{{ $message }}</span>
-            @enderror
-        </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Alamat</label>
-            <textarea wire:model.defer="address"
-                class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                placeholder="Contoh: kg"></textarea>
-            @error('address')
-                <span class="text-red-600 text-sm">{{ $message }}</span>
-            @enderror
-        </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Tipe</label>
-            <select wire:model.defer="type" class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                <option value="">-- Pilih --</option>
-                <option value="warehouse">Warehouse</option>
-                <option value="kitchen">Kitchen</option>
-                <option value="outlet">Outlet</option>
-                <option value="transit">Transit</option>
-            </select>
-            @error('type')
-                <span class="text-red-600 text-sm">{{ $message }}</span>
-            @enderror
-        </div>
-
-
 
         <div class="flex items-center gap-2">
             <input type="checkbox" wire:model.defer="is_active" id="is_active"

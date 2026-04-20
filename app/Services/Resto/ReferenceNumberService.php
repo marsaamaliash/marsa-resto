@@ -10,7 +10,7 @@ class ReferenceNumberService
     public static function generateMovementNumber(): string
     {
         $today = now()->format('dmY');
-        $prefix = "MOVE-{$today}-";
+        $prefix = "SM-{$today}-";
 
         $lastMovement = Rst_Movement::where('reference_number', 'like', "{$prefix}%")
             ->orderBy('reference_number', 'desc')
