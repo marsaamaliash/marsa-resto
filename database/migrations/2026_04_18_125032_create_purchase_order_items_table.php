@@ -21,13 +21,13 @@ return new class extends Migration
             $table->decimal('total_price', 15, 2)->nullable();
             $table->text('notes')->nullable();
             $table->timestamps();
-            
+
             // PERBAIKAN: Hapus prefix database dari method on()
             $table->foreign('purchase_order_id')
                 ->references('id')
                 ->on('purchase_orders')
                 ->onDelete('cascade');
-                
+
             $table->foreign('item_id')->references('id')->on('items');
             $table->foreign('uom_id')->references('id')->on('uoms');
         });

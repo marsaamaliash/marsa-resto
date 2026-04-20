@@ -6,26 +6,22 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::connection('sccr_resto')->dropIfExists('purchase_order_items');
-        Schema::connection('sccr_resto')->dropIfExists('purchase_orders');
+        Schema::connection('sccr_resto')->dropIfExists('direct_order_items');
+        Schema::connection('sccr_resto')->dropIfExists('direct_orders');
 
-        Schema::connection('sccr_resto')->create('purchase_orders', function (Blueprint $table) {
+        Schema::connection('sccr_resto')->create('direct_orders', function (Blueprint $table) {
             $table->id();
-            $table->string('po_number')->unique();
-            $table->unsignedBigInteger('purchase_request_id');
-            $table->unsignedBigInteger('vendor_id')->nullable();
-            $table->string('vendor_name');
+            $table->string('do_number')->unique();
             $table->unsignedBigInteger('location_id');
-            $table->enum('payment_by', ['holding', 'resto'])->default('holding');
-            $table->string('quotation_path')->nullable();
-            $table->text('vendor_notes')->nullable();
+            $table->string('purchaser_name');
+            $table->date('purchase_date');
+            $table->string('payment_by')->default('holding');
+            $table->string('proof_path')->nullable();
+            $table->text('notes')->nullable();
             $table->decimal('total_amount', 15, 2)->nullable();
-            $table->enum('status', ['draft', 'pending_rm', 'pending_spv', 'approved', 'rejected', 'revised'])->default('draft');
+            $table->string('status')->default('draft');
             $table->unsignedTinyInteger('approval_level')->default(0);
             $table->unsignedBigInteger('rm_approved_by')->nullable();
             $table->dateTime('rm_approved_at')->nullable();
@@ -46,18 +42,12 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            // PERBAIKAN: Hapus "sccr_resto." dari method on()
-            $table->foreign('purchase_request_id')->references('id')->on('purchase_requests')->onDelete('cascade');
-            $table->foreign('vendor_id')->references('id')->on('vendors')->onDelete('cascade');
             $table->foreign('location_id')->references('id')->on('locations')->onDelete('cascade');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::connection('sccr_resto')->dropIfExists('purchase_orders');
+        Schema::connection('sccr_resto')->dropIfExists('direct_orders');
     }
 };

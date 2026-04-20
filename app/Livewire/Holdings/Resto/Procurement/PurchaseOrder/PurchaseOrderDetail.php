@@ -201,6 +201,7 @@ class PurchaseOrderDetail extends Component
     {
         if (! $this->po->canBeEdited()) {
             $this->toast = ['show' => true, 'type' => 'error', 'message' => 'PO tidak dapat diedit pada status ini'];
+
             return;
         }
 
@@ -209,6 +210,7 @@ class PurchaseOrderDetail extends Component
                 $price = (float) ($price ?? 0);
                 if ($price <= 0) {
                     $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Semua harga item harus lebih dari 0'];
+
                     return;
                 }
             }
@@ -228,6 +230,7 @@ class PurchaseOrderDetail extends Component
     {
         if (! $this->po->canBeEdited()) {
             $this->toast = ['show' => true, 'type' => 'error', 'message' => 'PO tidak dapat diedit pada status ini'];
+
             return;
         }
 

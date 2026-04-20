@@ -92,9 +92,7 @@ class PurchaseOrderCreate extends Component
         $this->vendors = PurchaseOrderService::getActiveVendors();
     }
 
-    public function updatedItemPrices(): void
-    {
-    }
+    public function updatedItemPrices(): void {}
 
     public function submitPO(): void
     {
@@ -110,6 +108,7 @@ class PurchaseOrderCreate extends Component
         foreach ($this->itemPrices as $price) {
             if ($price <= 0) {
                 $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Semua harga item harus diisi'];
+
                 return;
             }
         }
