@@ -45,9 +45,11 @@ return new class extends Migration
             $table->unsignedBigInteger('updated_by')->nullable();
             $table->timestamps();
             $table->softDeletes();
-            $table->foreign('purchase_request_id')->references('id')->on('sccr_resto.purchase_requests');
-            $table->foreign('vendor_id')->references('id')->on('sccr_resto.vendors');
-            $table->foreign('location_id')->references('id')->on('sccr_resto.locations');
+            
+            // PERBAIKAN: Hapus "sccr_resto." dari method on()
+            $table->foreign('purchase_request_id')->references('id')->on('purchase_requests')->onDelete('cascade');
+            $table->foreign('vendor_id')->references('id')->on('vendors')->onDelete('cascade');
+            $table->foreign('location_id')->references('id')->on('locations')->onDelete('cascade');
         });
     }
 
