@@ -1,145 +1,322 @@
 <x-ui.sccr-card transparent wire:key="direct-order-table" class="h-full min-h-0 flex flex-col">
 
     {{-- ================= HEADER ================= --}}
-    <div class="relative px-8 py-6 bg-gradient-to-r from-teal-600 to-cyan-700 rounded-b-3xl shadow-lg">
+    <div class="relative px-8 py-6 bg-blue-600/80 rounded-b-3xl shadow-lg overflow-hidden">
         <div class="flex justify-between items-start">
             <div>
-                <h1 class="text-3xl font-bold text-white">Daftar Direct Order</h1>
-                <p class="text-teal-100 text-sm mt-1">Kelola Direct Order untuk kebutuhan mendadak</p>
+                <h1 class="text-3xl font-bold text-white">Direct Order</h1>
+                <p class="text-blue-100 text-sm">
+                    Kelola Direct Order untuk kebutuhan mendadak
+                </p>
             </div>
         </div>
 
         <div class="mt-4 flex justify-between items-center text-sm">
             <x-ui.sccr-breadcrumb :items="$breadcrumbs" />
-            <div class="text-white">Total: <span class="font-bold text-black">{{ $dos->total() ?? 0 }}</span></div>
+            <div class="text-white">
+                Menampilkan <span class="font-bold text-black">{{ $data->total() }}</span> data
+            </div>
         </div>
     </div>
 
-    {{-- ================= FILTERS & SEARCH ================= --}}
+    {{-- ================= FILTERS & ACTIONS ================= --}}
     <div class="px-4 pt-3 pb-1">
-        <div class="flex flex-wrap items-center justify-between gap-2">
+        <div class="flex flex-wrap items-center justify-between gap-1">
 
-            {{-- SEARCH & FILTERS --}}
-            <div class="flex flex-wrap items-center gap-2 flex-grow">
+            <form wire:submit.prevent="applyFilter" class="flex flex-wrap items-center gap-1 flex-grow">
 
                 {{-- SEARCH INPUT --}}
-                <div class="relative">
-                    <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">Cari</span>
-                    <input type="text" wire:model.live="search"
-                        placeholder="DO Number, Pembeli..."
-                        class="pl-3 pr-3 py-2 border border-gray-300 rounded-lg text-sm w-64 focus:ring-2 focus:ring-teal-500">
+                <div class="relative top-1">
+                    <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">
+                        Cari
+                    </span>
+                    <x-ui.sccr-input name="search" wire:model="search"
+                        placeholder="DO Number, Pembeli, Lokasi..." class="w-72" />
                 </div>
 
-                {{-- STATUS FILTER --}}
-                <div class="relative">
-                    <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">Status</span>
-                    <select wire:model.live="statusFilter"
-                        class="pl-3 pr-3 py-2 border border-gray-300 rounded-lg text-sm w-48 focus:ring-2 focus:ring-teal-500">
-                        <option value="">-- Semua Status --</option>
-                        @foreach ($statuses as $key => $label)
-                            <option value="{{ $key }}">{{ $label }}</option>
-                        @endforeach
+                {{-- FILTER 1: Status --}}
+                <div class="relative top-1">
+                    <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">
+                        Status
+                    </span>
+                    <x-ui.sccr-select name="filterStatus" wire:model.live="filterStatus" :options="$this->filterStatusOptions" class="w-40" />
+                </div>
+
+                {{-- FILTER 2: Location --}}
+                <div class="relative top-1">
+                    <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">
+                        Lokasi
+                    </span>
+                    <x-ui.sccr-select name="filterLocation" wire:model.live="filterLocation" :options="$this->filterLocationOptions" class="w-48" />
+                </div>
+
+                {{-- ACTION BUTTONS --}}
+                <div class="flex flex-wrap items-center gap-1">
+                    <x-ui.sccr-button type="submit" variant="primary"
+                        class="bg-gray-900 text-gray-100 hover:bg-gray-400">
+                        <x-ui.sccr-icon name="cari" :size="20" />
+                        Cari
+                    </x-ui.sccr-button>
+
+                    <x-ui.sccr-button type="button" wire:click="clearFilters"
+                        class="bg-gray-800 text-gray-100 hover:bg-gray-400">
+                        <x-ui.sccr-icon name="clear" :size="20" />
+                        Clear
+                    </x-ui.sccr-button>
+                </div>
+            </form>
+
+            {{-- Right: perpage & export --}}
+            <div class="flex items-end gap-1 ml-auto">
+                @if ($canExport)
+                    <x-ui.sccr-button type="button" wire:click="exportExcel"
+                        class="bg-green-600 text-white hover:bg-green-700">
+                        <x-ui.sccr-icon name="file-excel" :size="18" />
+                        Export Excel
+                    </x-ui.sccr-button>
+                @endif
+
+                <div class="relative top-0">
+                    <span class="absolute -top-4 left-1 text-[10px] font-bold text-black uppercase">
+                        Show
+                    </span>
+                    <select wire:model.live="perPage" class="border-gray-300 rounded-md text-sm">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
                     </select>
                 </div>
-
-                {{-- LOCATION FILTER --}}
-                <div class="relative">
-                    <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">Lokasi</span>
-                    <select wire:model.live="selectedLocationId"
-                        class="pl-3 pr-3 py-2 border border-gray-300 rounded-lg text-sm w-48 focus:ring-2 focus:ring-teal-500">
-                        @foreach ($locations as $locId => $locName)
-                            <option value="{{ $locId }}">{{ $locName }}</option>
-                        @endforeach
-                    </select>
-                </div>
-
-            </div>
-
-            {{-- CREATE BUTTON --}}
-            <div class="flex gap-2">
-                <a href="{{ route('dashboard.resto.direct-order.create') }}"
-                    class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-semibold flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                    </svg>
-                    Buat DO
-                </a>
             </div>
 
         </div>
     </div>
 
-    {{-- ================= TABLE ================= --}}
-    <div class="flex-1 min-h-0 px-4 pb-2 overflow-hidden flex flex-col">
-        <div class="flex-1 min-h-0 rounded-xl shadow border bg-white overflow-hidden flex flex-col">
+    {{-- ================= TABLE (SCROLL AREA) ================= --}}
+    <div class="flex-1 min-h-0 px-4 pb-2">
+        <div class="h-full min-h-0 rounded-xl shadow border bg-white overflow-hidden flex flex-col">
 
             {{-- TABLE SCROLLER --}}
             <div class="flex-1 min-h-0 overflow-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-100 sticky top-0 z-10">
+                <table class="min-w-full divide-y divide-gray-900">
+                    <thead class="bg-gray-700/80 text-white sticky top-0 z-10">
                         <tr>
-                            <th class="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase">DO Number</th>
-                            <th class="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase">Pembeli</th>
-                            <th class="px-4 py-3 text-center text-xs font-bold text-gray-700 uppercase">Tanggal</th>
-                            <th class="px-4 py-3 text-center text-xs font-bold text-gray-700 uppercase">Status</th>
-                            <th class="px-4 py-3 text-right text-xs font-bold text-gray-700 uppercase">Total Amount</th>
-                            <th class="px-4 py-3 text-center text-xs font-bold text-gray-700 uppercase">Payment By</th>
-                            <th class="px-4 py-3 text-center text-xs font-bold text-gray-700 uppercase">Created</th>
-                            <th class="px-4 py-3 text-center text-xs font-bold text-gray-700 uppercase">Actions</th>
+                            {{-- SELECT ALL CHECKBOX --}}
+                            <th class="px-2 py-3 text-center w-10">
+                                <input type="checkbox" wire:model.live="selectAll" class="rounded border-gray-300">
+                            </th>
+
+                            {{-- DO Number --}}
+                            <th wire:click="sortBy('do_number')"
+                                class="px-3 py-3 text-left text-xs font-bold cursor-pointer">
+                                DO Number {!! $sortField === 'do_number' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                            </th>
+
+                            {{-- Purchase Date --}}
+                            <th wire:click="sortBy('purchase_date')"
+                                class="px-3 py-3 text-left text-xs font-bold cursor-pointer">
+                                Tanggal {!! $sortField === 'purchase_date' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                            </th>
+
+                            {{-- Location --}}
+                            <th wire:click="sortBy('location_id')"
+                                class="px-3 py-3 text-left text-xs font-bold cursor-pointer">
+                                Lokasi {!! $sortField === 'location_id' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                            </th>
+
+                            {{-- Purchaser --}}
+                            <th wire:click="sortBy('purchaser_name')"
+                                class="px-3 py-3 text-left text-xs font-bold cursor-pointer">
+                                Pembeli {!! $sortField === 'purchaser_name' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                            </th>
+
+                            {{-- Status --}}
+                            <th wire:click="sortBy('status')"
+                                class="px-3 py-3 text-center text-xs font-bold cursor-pointer">
+                                Status {!! $sortField === 'status' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                            </th>
+
+                            {{-- Total Amount --}}
+                            <th wire:click="sortBy('total_amount')"
+                                class="px-3 py-3 text-right text-xs font-bold cursor-pointer">
+                                Total {!! $sortField === 'total_amount' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                            </th>
+
+                            {{-- Payment By --}}
+                            <th wire:click="sortBy('payment_by')"
+                                class="px-3 py-3 text-center text-xs font-bold cursor-pointer">
+                                Payment {!! $sortField === 'payment_by' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                            </th>
+
+                            {{-- Actions --}}
+                            <th class="px-4 py-3 text-center text-xs font-bold">
+                                <div class="flex items-center justify-center gap-2">
+                                    <span>Aksi</span>
+
+                                    @if ($canCreate)
+                                        <x-ui.sccr-button type="button" variant="icon-circle" wire:click="openCreateFromCritical"
+                                            class="w-8 h-8 hover:scale-105" title="Buat DO Baru">
+                                            <x-ui.sccr-icon name="plus" :size="18" />
+                                        </x-ui.sccr-button>
+                                    @endif
+                                </div>
+                            </th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-200 bg-white">
-                        @forelse ($dos as $do)
-                            <tr class="hover:bg-gray-50">
-                                <td class="px-4 py-3 text-sm font-semibold text-gray-900">{{ $do->do_number }}</td>
-                                <td class="px-4 py-3 text-sm text-gray-700">{{ $do->purchaser_name }}</td>
-                                <td class="px-4 py-3 text-center text-sm text-gray-700">{{ $do->purchase_date?->format('d/m/Y') ?? '-' }}</td>
-                                <td class="px-4 py-3 text-center">
-                                    <span class="px-2 py-1 rounded text-white text-xs font-bold
-                                        {{ $do->status === 'draft' ? 'bg-gray-500' : '' }}
-                                        {{ $do->status === 'pending_rm' ? 'bg-yellow-500' : '' }}
-                                        {{ $do->status === 'pending_spv' ? 'bg-blue-500' : '' }}
-                                        {{ $do->status === 'approved' ? 'bg-green-500' : '' }}
-                                        {{ $do->status === 'rejected' ? 'bg-red-500' : '' }}
-                                        {{ $do->status === 'revised' ? 'bg-orange-500' : '' }}">
-                                        {{ $statuses[$do->status] ?? ucfirst($do->status) }}
+
+                    <tbody class="divide-y divide-gray-100 bg-gray-100">
+                        @forelse ($data as $item)
+                            <tr class="hover:bg-gray-200 transition">
+                                {{-- ROW CHECKBOX --}}
+                                <td class="px-2 py-2 text-center">
+                                    <input type="checkbox" value="{{ $item['id'] }}" wire:model.live="selectedItems"
+                                        class="rounded border-gray-300">
+                                </td>
+
+                                {{-- DO Number --}}
+                                <td class="px-3 py-2 font-mono text-sm font-semibold text-blue-700">
+                                    {{ $item['do_number'] ?? '-' }}
+                                </td>
+
+                                {{-- Purchase Date --}}
+                                <td class="px-3 py-2 text-sm">
+                                    {{ $item['purchase_date'] ? \Carbon\Carbon::parse($item['purchase_date'])->format('d/m/Y') : '-' }}
+                                </td>
+
+                                {{-- Location --}}
+                                <td class="px-3 py-2 text-sm">
+                                    {{ $item->location?->name ?? '-' }}
+                                </td>
+
+                                {{-- Purchaser --}}
+                                <td class="px-3 py-2 text-sm">
+                                    {{ $item['purchaser_name'] ?? '-' }}
+                                </td>
+
+                                {{-- Status --}}
+                                <td class="px-3 py-2 text-center">
+                                    @php
+                                        $statusColor = match($item['status']) {
+                                            'draft' => 'bg-gray-100 text-gray-800',
+                                            'pending_rm' => 'bg-yellow-100 text-yellow-800',
+                                            'pending_spv' => 'bg-blue-100 text-blue-800',
+                                            'approved' => 'bg-green-100 text-green-800',
+                                            'rejected' => 'bg-red-100 text-red-800',
+                                            'revised' => 'bg-orange-100 text-orange-800',
+                                            default => 'bg-gray-100 text-gray-800',
+                                        };
+                                        $statusLabel = match($item['status']) {
+                                            'draft' => 'Draft',
+                                            'pending_rm' => 'Pending RM',
+                                            'pending_spv' => 'Pending SPV',
+                                            'approved' => 'Approved',
+                                            'rejected' => 'Rejected',
+                                            'revised' => 'Revised',
+                                            default => ucfirst($item['status']),
+                                        };
+                                    @endphp
+                                    <span class="px-2 py-0.5 rounded text-xs {{ $statusColor }}">
+                                        {{ $statusLabel }}
                                     </span>
                                 </td>
-                                <td class="px-4 py-3 text-sm text-right text-gray-700">
-                                    Rp {{ number_format($do->total_amount ?? 0, 2, ',', '.') }}
+
+                                {{-- Total Amount --}}
+                                <td class="px-3 py-2 text-right text-sm font-semibold">
+                                    Rp {{ number_format($item['total_amount'] ?? 0, 2, ',', '.') }}
                                 </td>
-                                <td class="px-4 py-3 text-center text-sm text-gray-700">
-                                    <span class="px-2 py-1 rounded text-xs font-semibold
-                                        {{ $do->payment_by === 'holding' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800' }}">
-                                        {{ ucfirst($do->payment_by) }}
+
+                                {{-- Payment By --}}
+                                <td class="px-3 py-2 text-center">
+                                    <span class="px-2 py-0.5 rounded text-xs font-semibold
+                                        {{ $item['payment_by'] === 'holding' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800' }}">
+                                        {{ ucfirst($item['payment_by'] ?? '-') }}
                                     </span>
                                 </td>
-                                <td class="px-4 py-3 text-center text-sm text-gray-600">
-                                    {{ $do->created_at?->format('d/m/Y') ?? '-' }}
-                                </td>
-                                <td class="px-4 py-3 text-center">
+
+                                {{-- ROW ACTIONS --}}
+                                <td class="px-3 py-2 text-center">
                                     <div class="flex justify-center gap-2">
-                                        <a href="{{ route('dashboard.resto.direct-order.detail', ['id' => $do->id]) }}"
-                                            class="px-3 py-1 bg-teal-600 text-white rounded text-xs hover:bg-teal-700">
-                                            Detail
+                                        {{-- View Detail --}}
+                                        <a href="{{ route('dashboard.resto.direct-order.detail', $item['id']) }}"
+                                            class="text-gray-700 hover:scale-125" title="Detail">
+                                            <x-ui.sccr-icon name="eye" :size="18" />
                                         </a>
-                                        @if ($do->canBeEdited())
-                                            <button wire:click="deleteDO({{ $do->id }})"
-                                                class="px-3 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700">
-                                                Hapus
-                                            </button>
+
+                                        {{-- Edit --}}
+                                        @if ($item->canBeEdited() && ($canCreate || $canUpdate))
+                                            <a href="{{ route('dashboard.resto.direct-order.detail', $item['id']) }}?mode=edit"
+                                                class="text-blue-600 hover:scale-125" title="Edit">
+                                                <x-ui.sccr-icon name="edit" :size="18" />
+                                            </a>
+                                        @endif
+
+                                        {{-- Submit to RM --}}
+                                        @if ($item->canBeEdited() && $canCreate)
+                                            <x-ui.sccr-button type="button" variant="icon"
+                                                wire:click="submitDraftDOToRM({{ $item['id'] }})"
+                                                class="text-orange-600 hover:scale-125" title="Submit to RM">
+                                                <x-ui.sccr-icon name="send" :size="18" />
+                                            </x-ui.sccr-button>
+                                        @endif
+
+                                        {{-- RM Approve --}}
+                                        @if ($item['status'] === 'pending_rm' && $canApproveRM)
+                                            <x-ui.sccr-button type="button" variant="icon"
+                                                wire:click="directApproveByRM({{ $item['id'] }})"
+                                                class="text-green-600 hover:scale-125" title="Approve (RM)">
+                                                <x-ui.sccr-icon name="approve" :size="18" />
+                                            </x-ui.sccr-button>
+                                        @endif
+
+                                        {{-- SPV Approve --}}
+                                        @if ($item['status'] === 'pending_spv' && $canApproveSPV)
+                                            <x-ui.sccr-button type="button" variant="icon"
+                                                wire:click="directApproveBySPV({{ $item['id'] }})"
+                                                class="text-green-600 hover:scale-125" title="Approve (SPV)">
+                                                <x-ui.sccr-icon name="approve" :size="18" />
+                                            </x-ui.sccr-button>
+                                        @endif
+
+                                        {{-- Reject --}}
+                                        @if (in_array($item['status'], ['pending_rm', 'pending_spv']) && ($canApproveRM || $canApproveSPV))
+                                            @php
+                                                $rejectLevel = $item['status'] === 'pending_rm' ? 1 : 2;
+                                            @endphp
+                                            <x-ui.sccr-button type="button" variant="icon"
+                                                wire:click="openActionOverlay('reject', '{{ $item['id'] }}', {{ $rejectLevel }})"
+                                                class="text-red-600 hover:scale-125" title="Reject">
+                                                <x-ui.sccr-icon name="no" :size="18" />
+                                            </x-ui.sccr-button>
+                                        @endif
+
+                                        {{-- Request Revise --}}
+                                        @if (in_array($item['status'], ['pending_rm', 'pending_spv']) && ($canApproveRM || $canApproveSPV))
+                                            @php
+                                                $reviseLevel = $item['status'] === 'pending_rm' ? 1 : 2;
+                                            @endphp
+                                            <x-ui.sccr-button type="button" variant="icon"
+                                                wire:click="openActionOverlay('revise', '{{ $item['id'] }}', {{ $reviseLevel }})"
+                                                class="text-orange-600 hover:scale-125" title="Request Revise">
+                                                <x-ui.sccr-icon name="refresh" :size="18" />
+                                            </x-ui.sccr-button>
+                                        @endif
+
+                                        {{-- Delete --}}
+                                        @if ($item->canBeEdited() && $canDelete)
+                                            <x-ui.sccr-button type="button" variant="icon"
+                                                wire:click="deleteDO('{{ $item['id'] }}')"
+                                                class="text-red-600 hover:scale-125"
+                                                wire:confirm="Yakin ingin menghapus DO {{ $item['do_number'] }}?"
+                                                title="Hapus">
+                                                <x-ui.sccr-icon name="trash" :size="18" />
+                                            </x-ui.sccr-button>
                                         @endif
                                     </div>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="px-4 py-8 text-center text-gray-500">
-                                    <svg class="w-12 h-12 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
-                                    </svg>
-                                    <p class="font-medium">Tidak ada Direct Order</p>
-                                    <p class="text-xs mt-1">Mulai dengan membuat Direct Order baru</p>
+                                <td colspan="9" class="py-10 text-center text-gray-400 italic">
+                                    Data tidak ditemukan
                                 </td>
                             </tr>
                         @endforelse
@@ -147,12 +324,96 @@
                 </table>
             </div>
 
-            {{-- PAGINATION --}}
-            <div class="bg-gray-50 border-t px-4 py-3">
-                {{ $dos->links() }}
+            {{-- MODULE FOOTER (pagination) --}}
+            <div
+                class="flex-none px-6 py-3 border-t bg-white flex flex-col md:flex-row justify-between items-center gap-3">
+                <div class="text-sm text-gray-600 flex items-center">
+                    <span class="font-bold text-gray-800 mr-1">{{ count($selectedItems) }}</span> item dipilih
+                </div>
+
+                <div>
+                    {{ $data->links() }}
+                </div>
             </div>
 
         </div>
     </div>
+
+    {{-- ================= TOAST ================= --}}
+    <x-ui.sccr-toast :show="$toast['show']" :type="$toast['type']" :message="$toast['message']" wire:key="toast-{{ microtime() }}" />
+
+    {{-- ================= ACTION MODALS ================= --}}
+    @if ($actionOverlayMode)
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" wire:click="closeActionOverlay">
+            <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden" wire:click.stop>
+                @php
+                    $modalTitle = match($actionOverlayMode) {
+                        'approve_rm' => 'Approve DO (Restaurant Manager)',
+                        'approve_spv' => 'Approve DO (Supervisor)',
+                        'reject' => 'Reject DO',
+                        'revise' => 'Request Revise DO',
+                        default => 'Action',
+                    };
+                    $modalColor = match($actionOverlayMode) {
+                        'approve_rm', 'approve_spv' => 'bg-green-600',
+                        'reject' => 'bg-red-600',
+                        'revise' => 'bg-orange-600',
+                        default => 'bg-gray-600',
+                    };
+                @endphp
+
+                <div class="px-6 py-4 border-b {{ $modalColor }} flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-white">{{ $modalTitle }}</h3>
+                    <button wire:click="closeActionOverlay" class="text-white hover:text-gray-200 text-2xl">&times;</button>
+                </div>
+
+                <div class="p-6">
+                    <div class="mb-4">
+                        <label class="block text-sm font-bold text-gray-700 mb-1">
+                            @if ($actionOverlayMode === 'reject')
+                                Alasan Reject <span class="text-red-500">*</span>
+                            @elseif ($actionOverlayMode === 'revise')
+                                Alasan Revise <span class="text-red-500">*</span>
+                            @else
+                                Catatan (Opsional)
+                            @endif
+                        </label>
+                        <textarea wire:model="actionNotes" rows="3"
+                            class="w-full border-gray-300 rounded-md text-sm"
+                            placeholder="@if ($actionOverlayMode === 'reject') Alasan reject wajib diisi... @elseif ($actionOverlayMode === 'revise') Alasan revise wajib diisi... @else Tambahkan catatan... @endif"></textarea>
+                    </div>
+                </div>
+
+                <div class="px-6 py-4 border-t bg-gray-50 flex justify-end gap-2">
+                    <x-ui.sccr-button type="button" wire:click="closeActionOverlay"
+                        class="bg-gray-500 text-white hover:bg-gray-600">
+                        Batal
+                    </x-ui.sccr-button>
+
+                    @if ($actionOverlayMode === 'approve_rm')
+                        <x-ui.sccr-button type="button" wire:click="approveByRM"
+                            class="bg-green-600 text-white hover:bg-green-700">
+                            Approve
+                        </x-ui.sccr-button>
+                    @elseif ($actionOverlayMode === 'approve_spv')
+                        <x-ui.sccr-button type="button" wire:click="approveBySPV"
+                            class="bg-green-600 text-white hover:bg-green-700">
+                            Approve
+                        </x-ui.sccr-button>
+                    @elseif ($actionOverlayMode === 'reject')
+                        <x-ui.sccr-button type="button" wire:click="rejectDO"
+                            class="bg-red-600 text-white hover:bg-red-700">
+                            Reject
+                        </x-ui.sccr-button>
+                    @elseif ($actionOverlayMode === 'revise')
+                        <x-ui.sccr-button type="button" wire:click="requestRevise"
+                            class="bg-orange-600 text-white hover:bg-orange-700">
+                            Request Revise
+                        </x-ui.sccr-button>
+                    @endif
+                </div>
+            </div>
+        </div>
+    @endif
 
 </x-ui.sccr-card>
