@@ -103,6 +103,19 @@ class PurchaseRequestDetail extends Component
         }
     }
 
+    public function directApproveByRM(): void
+    {
+        try {
+            $user = auth()->user()?->username ?? 'SYSTEM';
+            PurchaseRequestService::approveByRM($this->pr->id, null, $user);
+
+            $this->loadPR($this->pr->id);
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Purchase Request berhasil diapprove oleh RM.'];
+        } catch (\Exception $e) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
+        }
+    }
+
     public function approveBySPV(): void
     {
         try {
@@ -117,11 +130,24 @@ class PurchaseRequestDetail extends Component
         }
     }
 
+    public function directApproveBySPV(): void
+    {
+        try {
+            $user = auth()->user()?->username ?? 'SYSTEM';
+            PurchaseRequestService::approveBySPV($this->pr->id, null, $user);
+
+            $this->loadPR($this->pr->id);
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Purchase Request berhasil diapprove oleh Supervisor.'];
+        } catch (\Exception $e) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
+        }
+    }
+
     public function rejectPR(): void
     {
         try {
             if (empty($this->rejectReason)) {
-                throw new \Exception('Reject reason is required.');
+                throw new \Exception('Alasan reject wajib diisi.');
             }
 
             $level = $this->pr->status === 'pending_rm' ? 1 : 2;
@@ -131,7 +157,7 @@ class PurchaseRequestDetail extends Component
 
             $this->loadPR($this->pr->id);
             $this->closeActionModal();
-            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Purchase Request rejected.'];
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Purchase Request berhasil direject.'];
         } catch (\Exception $e) {
             $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
         }
@@ -141,7 +167,7 @@ class PurchaseRequestDetail extends Component
     {
         try {
             if (empty($this->reviseReason)) {
-                throw new \Exception('Revise reason is required.');
+                throw new \Exception('Alasan revise wajib diisi.');
             }
 
             $level = $this->pr->status === 'pending_rm' ? 1 : 2;
@@ -151,7 +177,7 @@ class PurchaseRequestDetail extends Component
 
             $this->loadPR($this->pr->id);
             $this->closeActionModal();
-            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Revise request sent to Store Keeper.'];
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Request revise berhasil dikirim ke Store Keeper.'];
         } catch (\Exception $e) {
             $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
         }

@@ -27,7 +27,7 @@ class EmployeeLunchReport extends Component
         $this->breadcrumbs = [
             ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
             ['label' => 'Resto', 'route' => 'dashboard.resto', 'color' => 'text-gray-800'],
-            ['label' => 'Lunch History', 'color' => 'text-gray-900 font-semibold'],
+            ['label' => 'Riwayat Makan Siang', 'color' => 'text-gray-900 font-semibold'],
         ];
     }
 

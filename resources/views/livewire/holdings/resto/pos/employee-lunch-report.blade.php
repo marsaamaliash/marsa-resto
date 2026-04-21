@@ -1,4 +1,4 @@
-﻿<div>
+<div>
     <div class="relative px-8 py-6 bg-yellow-500/60 rounded-b-3xl shadow-lg overflow-hidden">
         <div class="flex justify-between items-start">
             <div>
@@ -41,14 +41,14 @@
                     <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                     </svg>
-                    <input wire:model.live.debounce.300ms="search" type="text" placeholder="Search nomor induk karyawan..."
+                    <input wire:model.live.debounce.300ms="search" type="text" placeholder="Cari nomor induk karyawan..."
                         class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 bg-white/80">
                 </div>
                 <input wire:model.live="dateFilter" type="date"
                     class="px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 bg-white/80">
                 <select wire:model.live="paymentFilter"
                     class="px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 bg-white/80">
-                    <option value="">All Metode</option>
+                    <option value="">Semua Metode</option>
                     <option value="allowance">Jatah Harian</option>
                     <option value="salary_deduction">Potong Gaji</option>
                     <option value="QRIS">QRIS</option>
@@ -64,7 +64,7 @@
                     <svg class="mx-auto w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                     </svg>
-                    <p class="text-gray-500 text-lg">Not Yet transaksi</p>
+                    <p class="text-gray-500 text-lg">Belum ada transaksi</p>
                 </div>
             @else
                 <div class="overflow-x-auto">
@@ -78,7 +78,7 @@
                                 <th class="text-right py-3 px-4 font-semibold text-gray-600">Jatah</th>
                                 <th class="text-right py-3 px-4 font-semibold text-gray-600">Kelebihan</th>
                                 <th class="text-center py-3 px-4 font-semibold text-gray-600">Metode</th>
-                                <th class="text-center py-3 px-4 font-semibold text-gray-600">Actions</th>
+                                <th class="text-center py-3 px-4 font-semibold text-gray-600">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -139,9 +139,9 @@
 
     @if ($showDetailModal && $selectedTransactionId)
         @php
-            $Detail = \App\Models\Holdings\Resto\Pos\Rst_EmployeeLunchTransaction::find($selectedTransactionId);
+            $detail = \App\Models\Holdings\Resto\Pos\Rst_EmployeeLunchTransaction::find($selectedTransactionId);
         @endphp
-        @if ($Detail)
+        @if ($detail)
             <div wire:click="showDetailModal = false" class="fixed inset-0 z-50 flex items-center justify-center p-4">
                 <div class="absolute inset-0 bg-black/50" wire:click="showDetailModal = false"></div>
                 <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6" wire:click.stop>
@@ -158,22 +158,22 @@
                     <div class="space-y-3 mb-4">
                         <div class="flex justify-between text-sm">
                             <span class="text-gray-500">Nomor Induk</span>
-                            <span class="font-medium text-gray-800">{{ $Detail->employee_number }}</span>
+                            <span class="font-medium text-gray-800">{{ $detail->employee_number }}</span>
                         </div>
                         <div class="flex justify-between text-sm">
                             <span class="text-gray-500">Waktu</span>
-                            <span class="font-medium text-gray-800">{{ $Detail->paid_at?->format('d M Y, H:i') }}</span>
+                            <span class="font-medium text-gray-800">{{ $detail->paid_at?->format('d M Y, H:i') }}</span>
                         </div>
                         <div class="flex justify-between text-sm">
                             <span class="text-gray-500">Metode Pembayaran</span>
-                            <span class="font-medium text-gray-800">{{ $Detail->payment_method }}</span>
+                            <span class="font-medium text-gray-800">{{ $detail->payment_method }}</span>
                         </div>
                     </div>
 
                     <div class="border-t border-gray-200 pt-3 mb-3">
                         <p class="text-sm font-semibold text-gray-700 mb-2">Item Pesanan</p>
                         <div class="space-y-2">
-                            @foreach ($Detail->items ?? [] as $item)
+                            @foreach ($detail->items ?? [] as $item)
                                 <div class="flex justify-between text-sm bg-gray-50 rounded-lg px-3 py-2">
                                     <div>
                                         <span class="text-gray-800 font-medium">{{ $item['name'] ?? '-' }}</span>
@@ -191,16 +191,16 @@
                     <div class="border-t border-gray-200 pt-3 space-y-2">
                         <div class="flex justify-between text-sm">
                             <span class="text-gray-500">Total</span>
-                            <span class="font-bold text-gray-800">Rp {{ number_format($Detail->total_amount, 0, ',', '.') }}</span>
+                            <span class="font-bold text-gray-800">Rp {{ number_format($detail->total_amount, 0, ',', '.') }}</span>
                         </div>
                         <div class="flex justify-between text-sm">
                             <span class="text-gray-500">Jatah Digunakan</span>
-                            <span class="font-medium text-green-600">Rp {{ number_format($Detail->allowance_used, 0, ',', '.') }}</span>
+                            <span class="font-medium text-green-600">Rp {{ number_format($detail->allowance_used, 0, ',', '.') }}</span>
                         </div>
-                        @if ($Detail->excess_amount > 0)
+                        @if ($detail->excess_amount > 0)
                             <div class="flex justify-between text-sm">
                                 <span class="text-gray-500">Kelebihan</span>
-                                <span class="font-medium text-orange-600">Rp {{ number_format($Detail->excess_amount, 0, ',', '.') }}</span>
+                                <span class="font-medium text-orange-600">Rp {{ number_format($detail->excess_amount, 0, ',', '.') }}</span>
                             </div>
                         @endif
                     </div>

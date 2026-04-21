@@ -1,4 +1,4 @@
-﻿<x-ui.sccr-card transparent wire:key="purchase-request-create" class="h-full min-h-0 flex flex-col">
+<x-ui.sccr-card transparent wire:key="purchase-request-create" class="h-full min-h-0 flex flex-col">
 
     {{-- ================= HEADER ================= --}}
     <div class="relative px-8 py-6 bg-gradient-to-r from-blue-600 to-blue-700 rounded-b-3xl shadow-lg">
@@ -41,13 +41,13 @@
                         <select wire:model.live="selectedLocationId"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             {{ $isEditMode ? 'disabled' : '' }}>
-                            <option value="0">-- Select Location --</option>
+                            <option value="0">-- Pilih Lokasi --</option>
                             @foreach ($this->locations as $loc)
                                 <option value="{{ $loc['id'] }}">{{ $loc['name'] }}</option>
                             @endforeach
                         </select>
                         @if ($isEditMode)
-                            <p class="text-xs text-gray-500 mt-1">Location No dapat Updated saat revisi.</p>
+                            <p class="text-xs text-gray-500 mt-1">Lokasi tidak dapat diubah saat revisi.</p>
                         @endif
                     </div>
 
@@ -89,7 +89,7 @@
                             class="px-6 py-3 text-sm font-bold {{ !$showCriticalTab ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-50' }}">
                             <span class="flex items-center gap-2">
                                 <x-ui.sccr-icon name="plus-circle" :size="16" />
-                                Add Item Lain
+                                Tambah Item Lain
                                 @if (count($additionalItems) > 0)
                                     <span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full">
                                         {{ count($additionalItems) }}
@@ -110,8 +110,8 @@
                             @if (count($criticalItems) === 0)
                                 <div class="text-center py-10 bg-gray-50 rounded-lg">
                                     <x-ui.sccr-icon name="check-circle" :size="48" class="text-green-500 mx-auto mb-3" />
-                                    <p class="text-gray-600 font-medium">No critical stock at this location</p>
-                                    <p class="text-sm text-gray-500 mt-1">All item memiliki stok di atas minimum</p>
+                                    <p class="text-gray-600 font-medium">Tidak ada stok kritis di lokasi ini</p>
+                                    <p class="text-sm text-gray-500 mt-1">Semua item memiliki stok di atas minimum</p>
                                 </div>
                             @else
                                 <div class="overflow-x-auto">
@@ -225,8 +225,8 @@
                             @if (count($this->availableItems) === 0)
                                 <div class="text-center py-10 bg-gray-50 rounded-lg">
                                     <x-ui.sccr-icon name="inbox" :size="48" class="text-gray-400 mx-auto mb-3" />
-                                    <p class="text-gray-600 font-medium">No items available</p>
-                                    <p class="text-sm text-gray-500 mt-1">All items may already be selected or no data available</p>
+                                    <p class="text-gray-600 font-medium">Tidak ada item tersedia</p>
+                                    <p class="text-sm text-gray-500 mt-1">Semua item mungkin sudah dipilih atau tidak ada data</p>
                                 </div>
                             @else
                                 <div class="overflow-x-auto">
@@ -350,8 +350,8 @@
                 {{-- NO LOCATION SELECTED --}}
                 <div class="bg-yellow-50 rounded-xl shadow border border-yellow-200 p-8 text-center">
                     <x-ui.sccr-icon name="map-pin" :size="48" class="text-yellow-500 mx-auto mb-3" />
-                    <h3 class="text-lg font-bold text-gray-800 mb-2">Select Location Terlebih Dahulu</h3>
-                    <p class="text-gray-600">Silakan Select Location untuk melihat daftar stok kritis</p>
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">Pilih Lokasi Terlebih Dahulu</h3>
+                    <p class="text-gray-600">Silakan pilih lokasi untuk melihat daftar stok kritis</p>
                 </div>
             @endif
 

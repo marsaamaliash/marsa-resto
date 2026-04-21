@@ -1,4 +1,4 @@
-﻿<div x-data wire:poll.5s.keep="poll">
+<div x-data wire:poll.5s.keep="poll">
     <div x-show="$wire.isPolling" x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
         class="fixed top-20 left-1/2 -translate-x-1/2 z-50">
         <div class="flex items-center gap-2 bg-white/90 backdrop-blur px-3 py-1.5 rounded-full shadow text-xs text-gray-500">
@@ -29,13 +29,13 @@
                 <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                 </svg>
-                <input wire:model.live.debounce.300ms="search" type="text" placeholder="Search Menu..."
+                <input wire:model.live.debounce.300ms="search" type="text" placeholder="Cari menu..."
                     class="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-300 focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 bg-white/80 backdrop-blur-sm">
             </div>
 
             <select wire:model.live="mejaFilter"
                 class="px-4 py-2 rounded-xl border border-gray-300 focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 bg-white/80 backdrop-blur-sm min-w-[200px]">
-                <option value="">All Meja</option>
+                <option value="">Semua Meja</option>
                 @foreach ($availableOrders as $order)
                     <option value="{{ $order->id }}">Meja {{ $order->table_number }} - {{ $order->customer_name }}</option>
                 @endforeach
@@ -44,13 +44,13 @@
             <select wire:model.live="statusFilter"
                 class="px-4 py-2 rounded-xl border border-gray-300 focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 bg-white/80 backdrop-blur-sm min-w-[160px]">
                 @foreach ($statusFilters as $filter)
-                    <option value="{{ $filter }}">{{ $filter === 'all' ? 'All Status' : ucfirst($filter) }}</option>
+                    <option value="{{ $filter }}">{{ $filter === 'all' ? 'Semua Status' : ucfirst($filter) }}</option>
                 @endforeach
             </select>
 
             <button wire:click="openTambahModal"
                 class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-xl transition shadow-sm whitespace-nowrap">
-                + Add Order
+                + Tambah Order
             </button>
 
             <button wire:click="openEditModal"
@@ -64,7 +64,7 @@
                 <svg class="mx-auto w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                 </svg>
-                <p class="text-gray-500 text-lg">Not Yet item order</p>
+                <p class="text-gray-500 text-lg">Belum ada item order</p>
             </div>
         @else
             <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg overflow-hidden">
@@ -76,7 +76,7 @@
                             <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Menu</th>
                             <th class="px-4 py-3 text-center text-sm font-semibold text-gray-700">Qty</th>
                             <th class="px-4 py-3 text-center text-sm font-semibold text-gray-700">Status</th>
-                            <th class="px-4 py-3 text-center text-sm font-semibold text-gray-700">Actions</th>
+                            <th class="px-4 py-3 text-center text-sm font-semibold text-gray-700">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200">
@@ -89,7 +89,7 @@
                                     <div class="text-sm text-gray-700">{{ $item->order->customer_name }}</div>
                                 </td>
                                 <td class="px-4 py-3">
-                                    <div class="text-sm font-medium text-gray-800">{{ $item->Menu->name }}</div>
+                                    <div class="text-sm font-medium text-gray-800">{{ $item->menu->name }}</div>
                                     @if ($item->notes)
                                         <div class="text-xs text-yellow-600 italic mt-0.5">{{ $item->notes }}</div>
                                     @endif
@@ -135,12 +135,12 @@
         class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display: none;">
         <div class="absolute inset-0 bg-black/50" x-on:click="$wire.showTambahModal = false"></div>
         <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 z-10">
-            <h3 class="text-lg font-bold text-gray-800 mb-2">Add Item ke Order</h3>
-            <p class="text-sm text-gray-500 mb-4">Select order yang ingin ditambahkan item</p>
+            <h3 class="text-lg font-bold text-gray-800 mb-2">Tambah Item ke Order</h3>
+            <p class="text-sm text-gray-500 mb-4">Pilih order yang ingin ditambahkan item</p>
 
             @if ($availableOrders->isEmpty())
                 <div class="text-center py-8 text-gray-400">
-                    <p class="text-sm">No active orders</p>
+                    <p class="text-sm">Tidak ada order aktif</p>
                 </div>
             @else
                 <div class="space-y-2 max-h-80 overflow-y-auto pr-1 mb-4">
@@ -165,11 +165,11 @@
             <div class="flex gap-3">
                 <button type="button" wire:click="submitTambahOrder"
                     class="flex-1 py-2.5 bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-xl transition-colors">
-                    Select & Lanjut
+                    Pilih & Lanjut
                 </button>
                 <button type="button" x-on:click="$wire.showTambahModal = false"
                     class="flex-1 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-xl transition-colors">
-                    Cancel
+                    Batal
                 </button>
             </div>
         </div>
@@ -180,11 +180,11 @@
         <div class="absolute inset-0 bg-black/50" x-on:click="$wire.showEditModal = false"></div>
         <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 z-10">
             <h3 class="text-lg font-bold text-gray-800 mb-2">Edit Info Order</h3>
-            <p class="text-sm text-gray-500 mb-4">Select order yang ingin diedit informasinya</p>
+            <p class="text-sm text-gray-500 mb-4">Pilih order yang ingin diedit informasinya</p>
 
             @if ($availableOrders->isEmpty())
                 <div class="text-center py-8 text-gray-400">
-                    <p class="text-sm">No active orders</p>
+                    <p class="text-sm">Tidak ada order aktif</p>
                 </div>
             @else
                 <div class="space-y-2 max-h-80 overflow-y-auto pr-1 mb-4">
@@ -212,7 +212,7 @@
                                     class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-400">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Table No.</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">No. Meja</label>
                                 <input wire:model.live="editTableNumber" type="number" placeholder="Nomor meja..."
                                     class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-400">
                             </div>
@@ -225,16 +225,16 @@
                 @if ($selectEditOrderId)
                     <button type="button" wire:click="submitEditOrder"
                         class="flex-1 py-2.5 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-xl transition-colors">
-                        Save
+                        Simpan
                     </button>
                     <button type="button" wire:click="$set('selectEditOrderId', null)"
                         class="flex-1 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-xl transition-colors">
-                        Back
+                        Kembali
                     </button>
                 @else
                     <button type="button" x-on:click="$wire.showEditModal = false"
                         class="flex-1 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-xl transition-colors">
-                        Cancel
+                        Batal
                     </button>
                 @endif
             </div>

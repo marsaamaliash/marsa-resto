@@ -48,8 +48,6 @@ class PurchaseRequestTable extends Component
 
     public string $sortDirection = 'desc';
 
-    public int $totalAll = 0;
-
     protected array $allowedSortFields = [
         'id',
         'pr_number',
@@ -113,8 +111,6 @@ class PurchaseRequestTable extends Component
         ];
 
         $this->syncCaps();
-
-        $this->totalAll = Rst_PurchaseRequest::count();
     }
 
     public function hydrate(): void
@@ -244,7 +240,7 @@ class PurchaseRequestTable extends Component
             $user = auth()->user()?->username ?? 'SYSTEM';
             PurchaseRequestService::approveByRM((int) $this->actionOverlayId, null, $user);
 
-            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Purchase Request approved by RM.'];
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Purchase Request berhasil diapprove oleh RM.'];
             $this->closeActionOverlay();
         } catch (\Exception $e) {
             $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
@@ -269,7 +265,7 @@ class PurchaseRequestTable extends Component
             $user = auth()->user()?->username ?? 'SYSTEM';
             PurchaseRequestService::approveBySPV((int) $this->actionOverlayId, null, $user);
 
-            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Purchase Request approved by Supervisor.'];
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Purchase Request berhasil diapprove oleh Supervisor.'];
             $this->closeActionOverlay();
         } catch (\Exception $e) {
             $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
@@ -292,13 +288,13 @@ class PurchaseRequestTable extends Component
     {
         try {
             if (empty($this->actionNotes)) {
-                throw new \Exception('Reject reason is required.');
+                throw new \Exception('Alasan reject wajib diisi.');
             }
 
             $user = auth()->user()?->username ?? 'SYSTEM';
             PurchaseRequestService::reject((int) $this->actionOverlayId, $this->actionNotes, $this->actionTargetLevel, $user);
 
-            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Purchase Request rejected.'];
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Purchase Request berhasil direject.'];
             $this->closeActionOverlay();
         } catch (\Exception $e) {
             $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
@@ -309,13 +305,13 @@ class PurchaseRequestTable extends Component
     {
         try {
             if (empty($this->actionNotes)) {
-                throw new \Exception('Revise reason is required.');
+                throw new \Exception('Alasan revise wajib diisi.');
             }
 
             $user = auth()->user()?->username ?? 'SYSTEM';
             PurchaseRequestService::requestRevise((int) $this->actionOverlayId, $this->actionNotes, $this->actionTargetLevel, $user);
 
-            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Revise request sent to Store Keeper.'];
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Request revise berhasil dikirim ke Store Keeper.'];
             $this->closeActionOverlay();
         } catch (\Exception $e) {
             $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
@@ -337,7 +333,7 @@ class PurchaseRequestTable extends Component
     {
         try {
             PurchaseRequestService::deletePR((int) $id);
-            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Purchase Request deleted.'];
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Purchase Request berhasil dihapus.'];
         } catch (\Exception $e) {
             $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
         }
@@ -360,8 +356,8 @@ class PurchaseRequestTable extends Component
 
             fputcsv($file, [
                 'PR Number',
-                'Request Date',
-                'Location',
+                'Tanggal Request',
+                'Lokasi',
                 'Requester',
                 'Status',
                 'Level',

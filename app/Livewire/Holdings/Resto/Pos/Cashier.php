@@ -43,7 +43,7 @@ class Cashier extends Component
         $this->breadcrumbs = [
             ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
             ['label' => 'Resto', 'route' => 'dashboard.resto', 'color' => 'text-gray-800'],
-            ['label' => 'Cashier', 'color' => 'text-gray-900 font-semibold'],
+            ['label' => 'Kasir', 'color' => 'text-gray-900 font-semibold'],
         ];
     }
 
@@ -129,7 +129,7 @@ class Cashier extends Component
         $this->showPaymentModal = false;
         $this->toastShow = true;
         $this->toastType = 'success';
-        $this->toastMessage = 'Payment successful';
+        $this->toastMessage = 'Pembayaran berhasil';
     }
 
     public function openReceipt(int $orderId): void

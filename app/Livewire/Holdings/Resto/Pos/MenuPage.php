@@ -39,7 +39,7 @@ class MenuPage extends Component
         $this->breadcrumbs = [
             ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
             ['label' => 'Resto', 'route' => 'dashboard.resto', 'color' => 'text-gray-800'],
-            ['label' => 'Menu List', 'color' => 'text-gray-900 font-semibold'],
+            ['label' => 'Daftar Menu', 'color' => 'text-gray-900 font-semibold'],
         ];
 
         $orderId = request()->query('order_id');
@@ -63,7 +63,7 @@ class MenuPage extends Component
         if (empty($cartData)) {
             $this->toastShow = true;
             $this->toastType = 'error';
-            $this->toastMessage = 'Cart is empty';
+            $this->toastMessage = 'Keranjang kosong';
 
             return;
         }
@@ -88,7 +88,7 @@ class MenuPage extends Component
 
             $this->toastShow = true;
             $this->toastType = 'success';
-            $this->toastMessage = 'Item added to order '.$this->editOrder->order_number;
+            $this->toastMessage = 'Item ditambahkan ke order '.$this->editOrder->order_number;
 
             $this->redirect(route('dashboard.resto.orders'));
 
@@ -123,7 +123,7 @@ class MenuPage extends Component
 
         $this->toastShow = true;
         $this->toastType = 'success';
-        $this->toastMessage = "Order {$orderNumber} sent to kitchen";
+        $this->toastMessage = "Order {$orderNumber} dikirim ke kitchen";
     }
 
     public function hideToast(): void

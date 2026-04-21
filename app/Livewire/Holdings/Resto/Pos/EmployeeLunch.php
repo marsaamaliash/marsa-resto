@@ -25,7 +25,7 @@ class EmployeeLunch extends Component
         $this->breadcrumbs = [
             ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
             ['label' => 'Resto', 'route' => 'dashboard.resto', 'color' => 'text-gray-800'],
-            ['label' => 'Employee Lunch', 'color' => 'text-gray-900 font-semibold'],
+            ['label' => 'Makan Siang Karyawan', 'color' => 'text-gray-900 font-semibold'],
         ];
     }
 
@@ -34,7 +34,7 @@ class EmployeeLunch extends Component
         if (empty($this->employeeNumber)) {
             $this->dispatch('employee-search-result',
                 found: false,
-                message: 'Employee number is required'
+                message: 'Nomor induk karyawan wajib diisi'
             );
 
             return;
@@ -47,7 +47,7 @@ class EmployeeLunch extends Component
         if (! $employee) {
             $this->dispatch('employee-search-result',
                 found: false,
-                message: 'Employee not found or inactive'
+                message: 'Karyawan tidak ditemukan atau tidak aktif'
             );
 
             return;
@@ -55,7 +55,7 @@ class EmployeeLunch extends Component
 
         $this->dispatch('employee-search-result',
             found: true,
-            message: 'Employee found: '.$employee->name,
+            message: 'Karyawan ditemukan: '.$employee->name,
             employee: [
                 'employee_number' => $employee->employee_number,
                 'name' => $employee->name,
@@ -92,7 +92,7 @@ class EmployeeLunch extends Component
         if (empty($cartItems) || empty($employeeNumber)) {
             return [
                 'success' => false,
-                'message' => 'Incomplete data',
+                'message' => 'Data tidak lengkap',
             ];
         }
 
@@ -103,7 +103,7 @@ class EmployeeLunch extends Component
         if (! $employee) {
             return [
                 'success' => false,
-                'message' => 'Employee not found',
+                'message' => 'Karyawan tidak ditemukan',
             ];
         }
 
@@ -143,13 +143,13 @@ class EmployeeLunch extends Component
 
         $newRemaining = (float) $employee->daily_allowance - $employee->getTodayUsage();
 
-        $message = 'Transaction successful';
+        $message = 'Transaksi berhasil';
         if ($excessAmount > 0 && $resolvedPaymentMethod === 'salary_deduction') {
-            $message = 'Transaction successful - salary deduction Rp '.number_format($excessAmount, 0, ',', '.');
+            $message = 'Transaksi berhasil - potong gaji Rp '.number_format($excessAmount, 0, ',', '.');
         } elseif ($excessAmount > 0) {
-            $message = 'Transaction successful - QRIS Rp '.number_format($excessAmount, 0, ',', '.');
+            $message = 'Transaksi berhasil - QRIS Rp '.number_format($excessAmount, 0, ',', '.');
         } else {
-            $message = 'Transaction successful - using daily allowance Rp '.number_format($allowanceUsed, 0, ',', '.');
+            $message = 'Transaksi berhasil - menggunakan jatah harian Rp '.number_format($allowanceUsed, 0, ',', '.');
         }
 
         return [

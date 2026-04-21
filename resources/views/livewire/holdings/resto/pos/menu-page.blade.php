@@ -1,4 +1,4 @@
-﻿<div x-data="{
+<div x-data="{
     cart: {},
     customerName: @js($editOrder?->customer_name ?? ''),
     tableNumber: @js($editOrder?->table_number ?? ''),
@@ -97,7 +97,7 @@
             <div>
                 <h1 class="text-3xl md:text-4xl font-bold mb-2">
                     @if ($editOrderId)
-                        Add ke Order {{ $editOrder->order_number }}
+                        Tambah ke Order {{ $editOrder->order_number }}
                     @else
                         Daftar Menu
                     @endif
@@ -106,13 +106,13 @@
                     @if ($editOrderId)
                         Menambahkan item ke order
                     @else
-                        Select Menu untuk menambahkan order pelanggan
+                        Pilih menu untuk menambahkan order pelanggan
                     @endif
                 </p>
             </div>
             @if ($editOrderId)
                 <a href="{{ route('dashboard.resto.orders') }}" class="px-4 py-2 bg-white/50 hover:bg-white/70 text-gray-800 rounded-xl font-medium transition">
-                    ← Back
+                    ← Kembali
                 </a>
             @endif
         </div>
@@ -134,12 +134,12 @@
                         <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                         </svg>
-                        <input wire:model.live.debounce.300ms="search" type="text" placeholder="Search Menu..."
+                        <input wire:model.live.debounce.300ms="search" type="text" placeholder="Cari menu..."
                             class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 bg-white/80 backdrop-blur-sm">
                     </div>
                     <select wire:model.live="categoryFilter"
                         class="px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 bg-white/80 backdrop-blur-sm">
-                        <option value="">All Category</option>
+                        <option value="">Semua Kategori</option>
                         @foreach ($categories as $cat)
                             <option value="{{ $cat }}">{{ $cat }}</option>
                         @endforeach
@@ -151,15 +151,15 @@
                         <svg class="mx-auto w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                         </svg>
-                        <p class="text-gray-500 text-lg">Not Yet Menu Available</p>
+                        <p class="text-gray-500 text-lg">Belum ada menu tersedia</p>
                     </div>
                 @else
                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                        @foreach ($menus as $Menu)
+                        @foreach ($menus as $menu)
                             <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden group">
                                 <div class="aspect-square bg-gray-100 relative overflow-hidden">
-                                    @if ($Menu->image)
-                                        <img src="{{ asset('storage/' . $Menu->image) }}" alt="{{ $Menu->name }}"
+                                    @if ($menu->image)
+                                        <img src="{{ asset('storage/' . $menu->image) }}" alt="{{ $menu->name }}"
                                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                                     @else
                                         <div class="w-full h-full flex items-center justify-center text-gray-300">
@@ -168,36 +168,36 @@
                                             </svg>
                                         </div>
                                     @endif
-                                    @if ($Menu->discount > 0)
+                                    @if ($menu->discount > 0)
                                         <span class="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-lg">
-                                            -{{ number_format($Menu->discount, 0) }}%
+                                            -{{ number_format($menu->discount, 0) }}%
                                         </span>
                                     @endif
                                 </div>
                                 <div class="p-3">
-                                    @if ($Menu->category)
-                                        <span class="text-xs text-yellow-700 bg-yellow-100 px-2 py-0.5 rounded-full font-medium">{{ $Menu->category }}</span>
+                                    @if ($menu->category)
+                                        <span class="text-xs text-yellow-700 bg-yellow-100 px-2 py-0.5 rounded-full font-medium">{{ $menu->category }}</span>
                                     @endif
-                                    <h3 class="font-semibold text-gray-800 mt-1 text-sm leading-tight truncate">{{ $Menu->name }}</h3>
-                                    <p class="text-yellow-600 font-bold text-sm mt-1">Rp {{ number_format($Menu->price, 0, ',', '.') }}</p>
+                                    <h3 class="font-semibold text-gray-800 mt-1 text-sm leading-tight truncate">{{ $menu->name }}</h3>
+                                    <p class="text-yellow-600 font-bold text-sm mt-1">Rp {{ number_format($menu->price, 0, ',', '.') }}</p>
 
-                                    <template x-if="cart[{{ $Menu->id }}]">
+                                    <template x-if="cart[{{ $menu->id }}]">
                                         <div class="mt-2 flex items-center justify-between bg-yellow-50 rounded-xl px-2 py-1">
-                                            <button @click="removeFromCart({{ $Menu->id }})"
+                                            <button @click="removeFromCart({{ $menu->id }})"
                                                 class="w-7 h-7 rounded-lg bg-red-100 hover:bg-red-200 text-red-600 flex items-center justify-center font-bold transition">
                                                 -
                                             </button>
-                                            <span class="font-semibold text-gray-800 text-sm" x-text="cart[{{ $Menu->id }}]?.qty"></span>
-                                            <button @click="addToCart({{ $Menu->id }}, '{{ addslashes($Menu->name) }}', '{{ $Menu->price }}')"
+                                            <span class="font-semibold text-gray-800 text-sm" x-text="cart[{{ $menu->id }}]?.qty"></span>
+                                            <button @click="addToCart({{ $menu->id }}, '{{ addslashes($menu->name) }}', '{{ $menu->price }}')"
                                                 class="w-7 h-7 rounded-lg bg-green-100 hover:bg-green-200 text-green-600 flex items-center justify-center font-bold transition">
                                                 +
                                             </button>
                                         </div>
                                     </template>
-                                    <template x-if="!cart[{{ $Menu->id }}]">
-                                        <button @click="addToCart({{ $Menu->id }}, '{{ addslashes($Menu->name) }}', '{{ $Menu->price }}')"
+                                    <template x-if="!cart[{{ $menu->id }}]">
+                                        <button @click="addToCart({{ $menu->id }}, '{{ addslashes($menu->name) }}', '{{ $menu->price }}')"
                                             class="mt-2 w-full py-1.5 bg-yellow-500 hover:bg-yellow-600 text-white rounded-xl text-sm font-semibold transition-colors duration-200">
-                                            + Add
+                                            + Tambah
                                         </button>
                                     </template>
                                 </div>
@@ -218,7 +218,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/>
                         </svg>
                         @if ($editOrderId)
-                            Add Order
+                            Tambah Order
                         @else
                             Order
                         @endif
@@ -241,7 +241,7 @@
                                 :class="isEditMode ? 'border-gray-200 bg-gray-50 text-gray-500' : 'border-gray-300 focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400'">
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1">Table No.</label>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">No. Meja</label>
                             <input x-model="tableNumber" type="number" placeholder="Nomor meja..."
                                 x-bind:readonly="isEditMode"
                                 class="w-full px-3 py-2 rounded-lg border text-sm"
@@ -254,7 +254,7 @@
                             <svg class="mx-auto w-10 h-10 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/>
                             </svg>
-                            <p class="text-sm">Not Yet item</p>
+                            <p class="text-sm">Belum ada item</p>
                         </div>
                     </template>
 
@@ -269,11 +269,11 @@
                                                 <span x-text="item.qty"></span> x Rp <span x-text="formatRupiah(item.price)"></span>
                                             </p>
                                             <template x-if="item.note">
-                                                <p class="text-xs text-yellow-600 italic mt-1" x-text="'Notes: ' + item.note"></p>
+                                                <p class="text-xs text-yellow-600 italic mt-1" x-text="'Catatan: ' + item.note"></p>
                                             </template>
                                         </div>
                                         <div class="flex items-center gap-1 ml-2">
-                                            <button @click="openNoteModal(item.id)" class="text-yellow-500 hover:text-yellow-600" title="Add Notes">
+                                            <button @click="openNoteModal(item.id)" class="text-yellow-500 hover:text-yellow-600" title="Tambah catatan">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                                 </svg>
@@ -298,7 +298,7 @@
                                     @click="confirmOrder()"
                                     class="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl transition-colors">
                                     @if ($editOrderId)
-                                        Add ke Order
+                                        Tambah ke Order
                                     @else
                                         Submit
                                     @endif
@@ -330,7 +330,7 @@
                                             <span class="font-medium text-gray-800">Rp <span x-text="formatRupiah(item.price * item.qty)"></span></span>
                                         </div>
                                         <template x-if="item.note">
-                                            <p class="text-xs text-yellow-600 italic mt-1" x-text="'Notes: ' + item.note"></p>
+                                            <p class="text-xs text-yellow-600 italic mt-1" x-text="'Catatan: ' + item.note"></p>
                                         </template>
                                     </div>
                                 </template>
@@ -356,9 +356,9 @@
         class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display: none;">
         <div class="absolute inset-0 bg-black/50" @click="showNoteModal = false"></div>
         <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
-            <h3 class="text-lg font-bold text-gray-800 mb-2">Notes Menu</h3>
+            <h3 class="text-lg font-bold text-gray-800 mb-2">Catatan Menu</h3>
             <p class="text-sm text-gray-500 mb-4" x-text="cart[noteItemId]?.name"></p>
-            <textarea x-model="noteText" rows="3" placeholder="Tambahkan Notes khusus untuk Menu ini..."
+            <textarea x-model="noteText" rows="3" placeholder="Tambahkan catatan khusus untuk menu ini..."
                 class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 mb-4"></textarea>
             <div class="flex gap-3">
                 <button type="button" @click="showNoteModal = false"

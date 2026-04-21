@@ -165,7 +165,7 @@ class ChefKitchen extends Component
         if (! $this->rejectReason) {
             $this->toastShow = true;
             $this->toastType = 'error';
-            $this->toastMessage = 'Rejection reason is required';
+            $this->toastMessage = 'Alasan penolakan wajib diisi';
 
             return;
         }
@@ -179,7 +179,7 @@ class ChefKitchen extends Component
         $this->showRejectModal = false;
         $this->toastShow = true;
         $this->toastType = 'success';
-        $this->toastMessage = 'Item rejected';
+        $this->toastMessage = 'Item ditolak';
     }
 
     public function openFailedModal(int $itemId): void
@@ -195,7 +195,7 @@ class ChefKitchen extends Component
         if (! $this->failedReason) {
             $this->toastShow = true;
             $this->toastType = 'error';
-            $this->toastMessage = 'Failure reason is required';
+            $this->toastMessage = 'Alasan gagal wajib diisi';
 
             return;
         }
@@ -205,7 +205,7 @@ class ChefKitchen extends Component
         if ($this->failedQty < 1) {
             $this->toastShow = true;
             $this->toastType = 'error';
-            $this->toastMessage = 'Failed qty must be at least 1';
+            $this->toastMessage = 'Qty gagal minimal 1';
 
             return;
         }
@@ -224,7 +224,7 @@ class ChefKitchen extends Component
         $this->showFailedModal = false;
         $this->toastShow = true;
         $this->toastType = 'success';
-        $this->toastMessage = 'Failed cook item saved';
+        $this->toastMessage = 'Item gagal masak disimpan';
     }
 
     private function recalculateOrderStatus($order): void {}
@@ -234,7 +234,7 @@ class ChefKitchen extends Component
         if (! $this->rejectReason) {
             $this->toastShow = true;
             $this->toastType = 'error';
-            $this->toastMessage = 'Rejection reason is required';
+            $this->toastMessage = 'Alasan penolakan wajib diisi';
 
             return;
         }
@@ -257,7 +257,7 @@ class ChefKitchen extends Component
         $this->showRejectOrderModal = false;
         $this->toastShow = true;
         $this->toastType = 'success';
-        $this->toastMessage = 'Order rejected';
+        $this->toastMessage = 'Order ditolak';
     }
 
     public function hideToast(): void

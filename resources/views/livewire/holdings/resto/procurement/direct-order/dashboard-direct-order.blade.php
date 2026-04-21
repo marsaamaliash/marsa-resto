@@ -3,7 +3,7 @@
         <div class="flex justify-between items-start">
             <div>
                 <h1 class="text-3xl md:text-4xl font-bold mb-2">Direct Order</h1>
-                <p class="text-lg text-gray-800">Direct Order Page</p>
+                <p class="text-lg text-gray-800">Halaman Direct Order</p>
             </div>
         </div>
 

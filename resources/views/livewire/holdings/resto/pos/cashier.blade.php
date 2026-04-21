@@ -1,4 +1,4 @@
-﻿<div x-data wire:poll.5s.keep="poll">
+<div x-data wire:poll.5s.keep="poll">
     <div x-show="$wire.isPolling" x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
         class="fixed top-20 left-1/2 -translate-x-1/2 z-50">
         <div class="flex items-center gap-2 bg-white/90 backdrop-blur px-3 py-1.5 rounded-full shadow text-xs text-gray-500">
@@ -29,13 +29,13 @@
                 <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                 </svg>
-                <input wire:model.live.debounce.300ms="search" type="text" placeholder="Search order atau pelanggan..."
+                <input wire:model.live.debounce.300ms="search" type="text" placeholder="Cari order atau pelanggan..."
                     class="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 bg-white/80 backdrop-blur-sm">
             </div>
 
             <select wire:model.live="tableFilter"
                 class="px-4 py-2 rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 bg-white/80 backdrop-blur-sm min-w-[180px]">
-                <option value="">All Meja</option>
+                <option value="">Semua Meja</option>
                 @foreach ($tables as $table)
                     <option value="{{ $table->table_number }}">Meja {{ $table->table_number }}</option>
                 @endforeach
@@ -43,7 +43,7 @@
 
             <div class="flex gap-2 overflow-x-auto">
                 <button wire:click="setFilter('unpaid')" class="px-4 py-2 rounded-xl font-medium transition {{ $statusFilter === 'unpaid' ? 'bg-emerald-600 text-white shadow' : 'bg-white text-gray-700 hover:bg-gray-50' }}">
-                    Not Yet Bayar
+                    Belum Bayar
                 </button>
                 <button wire:click="setFilter('paid')" class="px-4 py-2 rounded-xl font-medium transition {{ $statusFilter === 'paid' ? 'bg-emerald-600 text-white shadow' : 'bg-white text-gray-700 hover:bg-gray-50' }}">
                     Selesai
@@ -56,7 +56,7 @@
                 <svg class="mx-auto w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m6 9l2 2 4-4"/>
                 </svg>
-                <p class="text-gray-500 text-lg">Not Yet order</p>
+                <p class="text-gray-500 text-lg">Belum ada order</p>
             </div>
         @else
             <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg overflow-hidden">
@@ -69,7 +69,7 @@
                             <th class="px-4 py-3 text-center text-sm font-semibold text-gray-700">Items</th>
                             <th class="px-4 py-3 text-right text-sm font-semibold text-gray-700">Subtotal</th>
                             <th class="px-4 py-3 text-center text-sm font-semibold text-gray-700">Status</th>
-                            <th class="px-4 py-3 text-center text-sm font-semibold text-gray-700">Actions</th>
+                            <th class="px-4 py-3 text-center text-sm font-semibold text-gray-700">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200">
@@ -134,7 +134,7 @@
         <div class="absolute inset-0 bg-black/50" x-on:click="$wire.showOrderModal = false"></div>
         @if ($selectedOrderId)
             @php
-                $detailOrder = \App\Models\Holdings\Resto\Pos\Rst_Order::with('items.Menu')->find($selectedOrderId);
+                $detailOrder = \App\Models\Holdings\Resto\Pos\Rst_Order::with('items.menu')->find($selectedOrderId);
                 $detailTotals = $detailOrder ? $this->getOrderTotals($selectedOrderId) : null;
             @endphp
             @if ($detailOrder && $detailTotals)
@@ -146,7 +146,7 @@
                         @foreach ($detailOrder->items->filter(fn($i) => $i->status !== 'reject') as $item)
                             <div class="flex justify-between items-center text-sm border-b border-gray-100 pb-2">
                                 <div>
-                                    <span class="font-medium text-gray-800">{{ $item->Menu->name ?? 'Menu' }}</span>
+                                    <span class="font-medium text-gray-800">{{ $item->menu->name ?? 'Menu' }}</span>
                                     <span class="text-gray-400 ml-1">x{{ $item->quantity }}</span>
                                     @if ($item->notes)
                                         <div class="text-xs text-yellow-600 italic">{{ $item->notes }}</div>
@@ -183,7 +183,7 @@
                         </button>
                         <button type="button" x-on:click="$wire.showOrderModal = false"
                             class="flex-1 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-xl transition-colors">
-                            Cancel
+                            Batal
                         </button>
                     </div>
                 </div>
@@ -227,7 +227,7 @@
                     </button>
                     <button type="button" x-on:click="$wire.showPaymentModal = false"
                         class="flex-1 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-xl transition-colors">
-                        Cancel
+                        Batal
                     </button>
                 </div>
             </div>
@@ -256,7 +256,7 @@
                     <div class="space-y-1">
                         @foreach ($rOrder->items->filter(fn($i) => $i->status !== 'reject') as $item)
                             <div class="flex justify-between text-xs">
-                                <span>{{ $item->Menu->name ?? 'Menu' }} x{{ $item->quantity }}</span>
+                                <span>{{ $item->menu->name ?? 'Menu' }} x{{ $item->quantity }}</span>
                                 <span>Rp {{ number_format($item->quantity * $item->unit_price, 0, ',', '.') }}</span>
                             </div>
                         @endforeach
@@ -294,7 +294,7 @@
                 </button>
                 <button type="button" x-on:click="$wire.showReceiptModal = false"
                     class="flex-1 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-xl transition-colors">
-                    Close
+                    Tutup
                 </button>
             </div>
         </div>

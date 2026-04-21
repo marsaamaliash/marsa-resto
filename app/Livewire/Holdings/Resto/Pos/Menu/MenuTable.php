@@ -36,8 +36,6 @@ class MenuTable extends Component
 
     public string $sortDirection = 'desc';
 
-    public int $totalAll = 0;
-
     protected array $allowedSortFields = [
         'id',
         'name',
@@ -80,8 +78,6 @@ class MenuTable extends Component
         ];
 
         $this->syncCaps();
-
-        $this->totalAll = Rst_Menu::count();
     }
 
     public function hydrate(): void
@@ -213,7 +209,7 @@ class MenuTable extends Component
     {
         $categories = Rst_Menu::distinct()->pluck('category')->filter()->toArray();
 
-        $options = ['' => '-- All Categories --'];
+        $options = ['' => '-- Semua Kategori --'];
         foreach ($categories as $category) {
             $options[$category] = $category;
         }
@@ -224,11 +220,11 @@ class MenuTable extends Component
     protected function filter2Options(): array
     {
         return [
-            '' => '-- All Status --',
-            'active' => 'Active',
-            'inactive' => 'Inactive',
-            'has_recipe' => 'Has Recipe',
-            'no_recipe' => 'No Recipe Yet',
+            '' => '-- Semua Status --',
+            'active' => 'Aktif',
+            'inactive' => 'Nonaktif',
+            'has_recipe' => 'Punya Resep',
+            'no_recipe' => 'Belum Punya Resep',
         ];
     }
 
