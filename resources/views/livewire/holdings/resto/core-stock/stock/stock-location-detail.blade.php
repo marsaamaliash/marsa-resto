@@ -1,4 +1,4 @@
-﻿<x-ui.sccr-card transparent wire:key="stock-location-Detail" class="h-full min-h-0 flex flex-col">
+<x-ui.sccr-card transparent wire:key="stock-location-Detail" class="h-full min-h-0 flex flex-col">
 
     {{-- ================= HEADER ================= --}}
     <div class="relative px-8 py-6 bg-blue-600/80 rounded-b-3xl shadow-lg overflow-hidden">
@@ -125,9 +125,9 @@
                                 Qty In Transit {!! $sortField === 'qty_in_transit' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                             </th>
 
-                            <th wire:click="sortBy('qty_Waste')"
+                            <th wire:click="sortBy('qty_waste')"
                                 class="px-3 py-3 text-right text-xs font-bold cursor-pointer">
-                                Waste Qty {!! $sortField === 'qty_Waste' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                                Waste Qty {!! $sortField === 'qty_waste' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                             </th>
 
                             <th wire:click="sortBy('category_name')"
@@ -178,7 +178,7 @@
                                 </td>
 
                                 <td class="px-3 py-2 text-right text-sm font-mono">
-                                    {{ number_format($item->qty_Waste, 2) }}
+                                    {{ number_format($item->qty_waste, 2) }}
                                 </td>
 
                                 <td class="px-3 py-2 text-center text-xs text-gray-500">
@@ -223,7 +223,7 @@
     <x-ui.sccr-toast :show="$toast['show']" :type="$toast['type']" :message="$toast['message']" wire:key="toast-{{ microtime() }}" />
 
     {{-- ================= OVERLAY: Detail ================= --}}
-    @if ($overlayMode === 'Detail' && $overlayId && $detailData['balance'])
+    @if ($overlayMode === 'detail' && $overlayId && $detailData['balance'])
         <div class="fixed inset-0 bg-black/40 z-40" wire:click="closeOverlay"></div>
 
         <div class="fixed inset-0 z-50 flex items-center justify-center px-6">
@@ -289,6 +289,7 @@
                                     <tr>
                                         <th class="px-4 py-2 text-left text-xs">Tanggal</th>
                                         <th class="px-4 py-2 text-left text-xs">Type</th>
+                                        <th class="px-4 py-2 text-left text-xs">Reference</th>
                                         <th class="px-4 py-2 text-right text-xs">Qty</th>
                                         <th class="px-4 py-2 text-right text-xs">Before</th>
                                         <th class="px-4 py-2 text-right text-xs">After</th>
@@ -305,19 +306,27 @@
                                                     $typeColors = [
                                                         'in' => 'text-green-600',
                                                         'out' => 'text-red-600',
+                                                        'transfer' => 'text-blue-600',
                                                         'transfer_in' => 'text-blue-600',
                                                         'transfer_out' => 'text-orange-600',
                                                         'clear_transit' => 'text-indigo-600',
                                                         'adjustment' => 'text-purple-600',
                                                         'reserve' => 'text-yellow-600',
+                                                        'reservation' => 'text-yellow-600',
                                                         'unreserve' => 'text-gray-600',
+                                                        'unreserved' => 'text-gray-600',
                                                         'consume' => 'text-pink-600',
-                                                        'Waste' => 'text-red-800'
+                                                        'waste' => 'text-red-800',
+                                                        'repack_out' => 'text-orange-700',
+                                                        'repack_in' => 'text-green-700',
                                                     ];
                                                 @endphp
                                                 <span class="{{ $typeColors[$mutation->type] ?? 'text-gray-800' }} font-medium">
                                                     {{ $mutation->type }}
                                                 </span>
+                                            </td>
+                                            <td class="px-4 py-2 text-sm font-mono text-gray-700">
+                                                {{ $mutation->reference_number ?? '-' }}
                                             </td>
                                             <td class="px-4 py-2 text-right font-mono">
                                                 {{ number_format($mutation->qty, 2) }}

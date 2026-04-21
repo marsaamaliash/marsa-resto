@@ -1,4 +1,4 @@
-﻿<x-ui.sccr-card transparent wire:key="movement-internal-2-Detail" class="h-full min-h-0 flex flex-col">
+<x-ui.sccr-card transparent wire:key="movement-internal-2-Detail" class="h-full min-h-0 flex flex-col">
 
     {{-- ================= HEADER ================= --}}
     <div class="relative px-8 py-6 bg-blue-600/80 rounded-b-3xl shadow-lg overflow-hidden">
@@ -18,7 +18,7 @@
 
     {{-- ================= CONTENT ================= --}}
     <div class="flex-1 min-h-0 px-4 pb-2 overflow-y-auto">
-        @if ($Detail)
+        @if ($detail)
             <div class="py-4">
                 {{-- Movement Info --}}
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
@@ -26,64 +26,81 @@
                     <div class="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
                         <div>
                             <div class="font-semibold text-gray-600 text-xs uppercase">Request No.</div>
-                            <div class="font-mono font-bold text-blue-700">{{ $Detail['reference_number'] ?? '-' }}
+                            <div class="font-mono font-bold text-blue-700">{{ $detail->request_number ?? '-' }}
                             </div>
                         </div>
 
                         <div>
+                            <div class="font-semibold text-gray-600 text-xs uppercase">Reference No.</div>
+                            <div class="font-mono font-bold text-blue-700">{{ $detail->reference_number ?? '-' }}
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="font-semibold text-gray-600 text-xs uppercase">Request Date</div>
+                            <div>{{ $detail->request_date ? $detail->request_date->format('Y-m-d') : '-' }}</div>
+                        </div>
+
+                        <div>
                             <div class="font-semibold text-gray-600 text-xs uppercase">Movement ID</div>
-                            <div class="font-mono font-bold text-gray-700">#{{ $Detail['id'] }}</div>
+                            <div class="font-mono font-bold text-gray-700">#{{ $detail->id }}</div>
                         </div>
 
                         <div>
                             <div class="font-semibold text-gray-600 text-xs uppercase">From Location</div>
-                            <div>{{ $Detail->fromLocation?->name ?? '-' }}</div>
+                            <div>{{ $detail->fromLocation?->name ?? '-' }}</div>
                         </div>
 
                         <div>
                             <div class="font-semibold text-gray-600 text-xs uppercase">To Location</div>
-                            <div>{{ $Detail->toLocation?->name ?? '-' }}</div>
+                            <div>{{ $detail->toLocation?->name ?? '-' }}</div>
                         </div>
 
                         <div>
                             <div class="font-semibold text-gray-600 text-xs uppercase">Status</div>
                             <div>
-                                @if ($Detail['status'] === 'requested')
+                                @if ($detail->status === 'requested')
+                                    @php
+                                        $level = $detail->approval_level ?? 0;
+                                        $levelNames = [0 => '', 1 => '> EC', 2 => '> RM', 3 => '> SPV'];
+                                    @endphp
                                     <span
-                                        class="px-2 py-0.5 rounded bg-yellow-100 text-yellow-800 text-xs">Requested</span>
-                                @elseif($Detail['status'] === 'approved')
+                                        class="px-2 py-0.5 rounded bg-yellow-100 text-yellow-800 text-xs">Requested{{ $levelNames[$level] ?? '' }}</span>
+                                @elseif($detail->status === 'approved')
                                     <span
                                         class="px-2 py-0.5 rounded bg-green-100 text-green-800 text-xs">Approved</span>
-                                @elseif($Detail['status'] === 'in_transit')
+                                @elseif($detail->status === 'in_transit')
                                     <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 text-xs">In
                                         Transit</span>
-                                @elseif($Detail['status'] === 'completed')
+                                @elseif($detail->status === 'completed')
                                     <span class="px-2 py-0.5 rounded bg-gray-100 text-gray-800 text-xs">Completed</span>
+                                @elseif($detail->status === 'rejected')
+                                    <span class="px-2 py-0.5 rounded bg-red-100 text-red-800 text-xs">Rejected</span>
                                 @else
-                                    {{ $Detail['status'] }}
+                                    {{ $detail->status }}
                                 @endif
                             </div>
                         </div>
 
                         <div>
                             <div class="font-semibold text-gray-600 text-xs uppercase">PIC</div>
-                            <div>{{ $Detail['pic_name'] ?? '-' }}</div>
+                            <div>{{ $detail->pic_name ?? '-' }}</div>
                         </div>
 
                         <div>
                             <div class="font-semibold text-gray-600 text-xs uppercase">Remark</div>
-                            <div>{{ $Detail['remark'] ?? '-' }}</div>
+                            <div>{{ $detail->remark ?? '-' }}</div>
                         </div>
 
                         <div>
                             <div class="font-semibold text-gray-600 text-xs uppercase">Created</div>
-                            <div>{{ $Detail['created_at'] }}</div>
+                            <div>{{ $detail->created_at ? $detail->created_at->format('Y-m-d H:i') : '-' }}</div>
                         </div>
                     </div>
                 </div>
 
                 {{-- Movement Items --}}
-                @if ($Detail->items->count() > 0)
+                @if ($detail->items->count() > 0)
                     <div class="mb-4">
                         <h3 class="font-bold text-lg text-gray-800 mb-3">Items</h3>
                         <div class="bg-white border rounded-lg overflow-hidden">
@@ -101,7 +118,7 @@
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-200">
-                                    @foreach ($Detail->items as $movementItem)
+                                    @foreach ($detail->items as $movementItem)
                                         <tr>
                                             <td class="px-4 py-3">{{ $movementItem->item?->name ?? '-' }}</td>
                                             <td class="px-4 py-3 text-right font-mono">
@@ -122,7 +139,7 @@
                         <h3 class="font-bold text-lg text-gray-800 mb-3">
                             Stock Mutations
                             <span class="text-sm font-normal text-gray-500">(Reference:
-                                {{ $Detail['reference_number'] ?? '-' }})</span>
+                                {{ $detail->reference_number ?? '-' }})</span>
                         </h3>
                         <div class="bg-white border rounded-lg overflow-hidden">
                             <table class="min-w-full divide-y divide-gray-200 text-sm">
@@ -257,24 +274,24 @@
                 @endif
 
                 {{-- Actions --}}
-                @if (in_array($Detail['status'], ['requested', 'approved']))
+                @if (in_array($detail->status, ['requested', 'approved']))
                     <div class="bg-gray-50 border rounded-lg p-4 mt-6">
                         <h3 class="font-bold text-lg text-gray-800 mb-3">Actions</h3>
                         <div class="flex flex-wrap gap-2">
-                            @if ($Detail['status'] === 'requested')
+                            @if ($detail->status === 'requested')
                                 @php
-                                    $ApprovalLevel = $Detail['Approval_level'] ?? 0;
+                                    $ApprovalLevel = $detail->approval_level ?? 0;
                                 @endphp
                                 @if ($ApprovalLevel == 0 && ($canApproveExcChef || $canApprove))
                                     <x-ui.sccr-button type="button"
-                                        wire:click="excChefCanApprove('{{ $Detail['id'] }}')"
+                                        wire:click="excChefCanApprove('{{ $detail->id }}')"
                                         class="bg-green-600 text-white hover:bg-green-700">
                                         <x-ui.sccr-icon name="approve" :size="18" />
                                         Approve (Exc Chef)
                                     </x-ui.sccr-button>
                                 @endif
                                 @if ($ApprovalLevel == 1 && ($canApproveRM || $canApprove))
-                                    <x-ui.sccr-button type="button" wire:click="rmCanApprove('{{ $Detail['id'] }}')"
+                                    <x-ui.sccr-button type="button" wire:click="rmCanApprove('{{ $detail->id }}')"
                                         class="bg-green-600 text-white hover:bg-green-700">
                                         <x-ui.sccr-icon name="approve" :size="18" />
                                         Approve (RM)
@@ -282,14 +299,14 @@
                                 @endif
                                 @if ($ApprovalLevel == 2 && ($canApproveSPV || $canApprove))
                                     <x-ui.sccr-button type="button"
-                                        wire:click="spvCanApprove('{{ $Detail['id'] }}')"
+                                        wire:click="spvCanApprove('{{ $detail->id }}')"
                                         class="bg-green-600 text-white hover:bg-green-700">
                                         <x-ui.sccr-icon name="approve" :size="18" />
                                         Approve (SPV)
                                     </x-ui.sccr-button>
                                 @endif
                             @endif
-                            <x-ui.sccr-button type="button" wire:click="openRejectOverlay('{{ $Detail['id'] }}')"
+                            <x-ui.sccr-button type="button" wire:click="openRejectOverlay('{{ $detail->id }}')"
                                 class="bg-red-100 text-red-700 hover:bg-red-200 border border-red-300">
                                 <x-ui.sccr-icon name="no" :size="18" />
                                 Tolak
@@ -321,20 +338,20 @@
                     <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
                         <div class="grid grid-cols-2 gap-3 text-sm">
                             <div class="font-semibold text-gray-600">No. Movement:</div>
-                            <div class="font-mono font-bold text-red-700">#{{ $Detail['id'] }}</div>
+                            <div class="font-mono font-bold text-red-700">#{{ $detail->id }}</div>
 
                             <div class="font-semibold text-gray-600">Reference:</div>
-                            <div>{{ $Detail['reference_number'] ?? '-' }}</div>
+                            <div>{{ $detail->reference_number ?? '-' }}</div>
 
                             <div class="font-semibold text-gray-600">Dari:</div>
-                            <div>{{ $Detail->fromLocation?->name ?? '-' }}</div>
+                            <div>{{ $detail->fromLocation?->name ?? '-' }}</div>
 
                             <div class="font-semibold text-gray-600">Ke:</div>
-                            <div>{{ $Detail->toLocation?->name ?? '-' }}</div>
+                            <div>{{ $detail->toLocation?->name ?? '-' }}</div>
 
                             <div class="font-semibold text-gray-600">Status:</div>
                             <div><span
-                                    class="px-2 py-0.5 rounded bg-yellow-100 text-yellow-800 text-xs">{{ $Detail['status'] }}</span>
+                                    class="px-2 py-0.5 rounded bg-yellow-100 text-yellow-800 text-xs">{{ $detail->status }}</span>
                             </div>
                         </div>
                     </div>

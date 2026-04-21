@@ -1,4 +1,4 @@
-﻿<x-ui.sccr-card transparent wire:key="stock-minimal" class="h-full min-h-0 flex flex-col">
+<x-ui.sccr-card transparent wire:key="stock-minimal" class="h-full min-h-0 flex flex-col">
 
     {{-- ================= HEADER ================= --}}
     <div class="relative px-8 py-6 bg-red-600/80 rounded-b-3xl shadow-lg overflow-hidden">
@@ -43,6 +43,18 @@
 
                 {{-- ACTION BUTTONS --}}
                 <div class="flex flex-wrap items-center gap-1">
+                    <a href="{{ route('dashboard.resto.purchase-request.create') }}"
+                        class="inline-flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition">
+                        <x-ui.sccr-icon name="plus" :size="16" />
+                        Create PR (Gudang)
+                    </a>
+
+                    <a href="{{ route('dashboard.resto.movement-internal') }}"
+                        class="inline-flex items-center gap-2 px-3 py-2 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700 transition">
+                        <x-ui.sccr-icon name="arrow-right" :size="16" />
+                        Stock Movement (Kitchen)
+                    </a>
+
                     <x-ui.sccr-button type="submit" variant="primary"
                         class="bg-gray-900 text-gray-100 hover:bg-gray-400">
                         <x-ui.sccr-icon name="Search" :size="20" />
@@ -172,7 +184,7 @@
                                     {{ number_format($item->min_stock, 2) }}
                                 </td>
 
-                                <td class="px-4 py-2 text-right text-sm font-mono @if($item->selisih > 0) text-red-600 font-semibold @else text-gray-500 @endif">
+                                <td class="px-4 py-2 text-right text-sm font-mono @if($isCritical) text-red-600 font-semibold @elseif($isWarning) text-yellow-600 font-semibold @else text-gray-500 @endif">
                                     {{ number_format($item->selisih, 2) }}
                                 </td>
 

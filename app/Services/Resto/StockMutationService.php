@@ -19,6 +19,7 @@ class StockMutationService
         $uomId,
         $qty,
         $type, // in, out, transfer, consume, adjustment, waste
+        $referenceNumber = null,
         $notes = null,
         $fromLocationId = null,
         $toLocationId = null,
@@ -28,7 +29,7 @@ class StockMutationService
 
         return DB::transaction(function () use (
             $itemId, $locationId, $uomId, $qty, $type,
-            $notes, $fromLocationId, $toLocationId, $userId
+            $referenceNumber, $notes, $fromLocationId, $toLocationId, $userId
         ) {
             // 1. Ambil saldo dengan Lock (Pencegahan Race Condition)
             // Menggunakan lockForUpdate agar row ini tidak bisa diubah transaksi lain sampai selesai
@@ -100,8 +101,8 @@ class StockMutationService
                 throw new \Exception('Transaksi ditolak: Perubahan ini akan menyebabkan saldo stok menjadi negatif.');
             }
 
-            // 4. Hitung qty_total untuk audit ledger
-            $qtyAfter = $balance->qty_available + $balance->qty_reserved + $balance->qty_in_transit;
+            // 4. Hitung qty_after untuk audit ledger
+            $qtyAfter = $balance->qty_available;
 
             // 5. Catat ke StockMutation (Ledger)
             Rst_StockMutation::create([
@@ -109,6 +110,7 @@ class StockMutationService
                 'location_id' => $locationId,
                 'uom_id' => $uomId,
                 'type' => $type,
+                'reference_number' => $referenceNumber,
                 'qty' => $qty,
                 'qty_before' => $qtyBefore,
                 'qty_after' => $qtyAfter,

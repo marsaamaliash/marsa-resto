@@ -255,6 +255,7 @@ class StockLocationDetail extends Component
         }
 
         $mutations = Rst_StockMutation::where('item_id', $itemId)
+            ->where('location_id', $this->locationId)
             ->orderBy('created_at', 'desc')
             ->limit(20)
             ->get();
