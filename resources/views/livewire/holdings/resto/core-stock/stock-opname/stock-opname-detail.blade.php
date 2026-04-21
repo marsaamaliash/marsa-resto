@@ -94,11 +94,13 @@
                     <div class="mb-4">
                         <div class="flex items-center justify-between mb-3">
                             <h3 class="font-bold text-lg text-gray-800">Items</h3>
+                            @if ($detail->items->some(fn ($i) => $i['status'] !== 'match') && ! $adjustmentLocked)
                                 <x-ui.sccr-button type="button" wire:click="toggleAdjustmentForm"
                                     class="bg-amber-500 text-white hover:bg-amber-600">
                                     <x-ui.sccr-icon name="edit" :size="18" />
                                     Adjustment ({{ $detail->items->filter(fn ($i) => $i['status'] !== 'match')->count() }} selisih)
                                 </x-ui.sccr-button>
+                            @endif
                         </div>
                         <div class="bg-white border rounded-lg overflow-hidden">
                             <table class="min-w-full divide-y divide-gray-200 text-sm">
