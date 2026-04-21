@@ -1,4 +1,4 @@
-﻿<x-ui.sccr-card transparent wire:key="stock-location" class="h-full min-h-0 flex flex-col">
+<x-ui.sccr-card transparent wire:key="stock-location" class="h-full min-h-0 flex flex-col">
 
     {{-- ================= HEADER ================= --}}
     <div class="relative px-8 py-6 bg-blue-600/80 rounded-b-3xl shadow-lg overflow-hidden">
@@ -163,7 +163,7 @@
                                 </td>
 
                                 <td class="px-3 py-3 text-center">
-                                    <a href="{{ route('dashboard.resto.stock-location.Detail', $item->location_id) }}"
+                                    <a href="{{ route('dashboard.resto.stock-location.detail', $item->location_id) }}"
                                         class="text-blue-600 hover:text-blue-800 inline-flex items-center justify-center w-8 h-8 rounded hover:bg-blue-50" 
                                         title="Detail">
                                         <x-ui.sccr-icon name="eye" :size="16" />
