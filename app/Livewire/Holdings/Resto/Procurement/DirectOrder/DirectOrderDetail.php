@@ -242,7 +242,7 @@ class DirectOrderDetail extends Component
 
     public function isCreator(): bool
     {
-        return $this->do?->created_by === auth()->user()?->id;
+        return $this->do?->created_by === auth()->user()?->username;
     }
 
     public function render()

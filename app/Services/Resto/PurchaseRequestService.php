@@ -95,7 +95,7 @@ class PurchaseRequestService
                 'requested_by' => $requesterName,
                 'requested_at' => now(),
                 'required_date' => $requiredDate,
-                'created_by' => auth()->user()?->id,
+                'created_by' => auth()->user()?->username,
             ]);
 
             $totalCost = 0;
@@ -258,8 +258,8 @@ class PurchaseRequestService
                 'notes' => $notes ?? $pr->notes,
                 'requested_by' => $requesterName ?? $pr->requested_by,
                 'requested_at' => now(),
-                // 3. Gunakan $requiredDate dari inputan, kalau kosong baru pakai dari database/default
                 'required_date' => $requiredDate ?? $pr->required_date ?? now()->addDays(7),
+                'updated_by' => auth()->user()?->username,
             ]);
             $pr->save();
 
@@ -288,6 +288,7 @@ class PurchaseRequestService
                 'rm_approved_by' => $approverName,
                 'rm_approved_at' => now(),
                 'rm_notes' => $notes,
+                'updated_by' => auth()->user()?->username,
             ]);
             $pr->save();
 
@@ -316,6 +317,7 @@ class PurchaseRequestService
                 'spv_approved_by' => $approverName,
                 'spv_approved_at' => now(),
                 'spv_notes' => $notes,
+                'updated_by' => auth()->user()?->username,
             ]);
             $pr->save();
 
@@ -351,6 +353,7 @@ class PurchaseRequestService
                 'rejected_at' => now(),
                 'reject_reason' => $reason,
                 'rejected_at_level' => $atLevel,
+                'updated_by' => auth()->user()?->username,
             ]);
             $pr->save();
 
@@ -385,6 +388,7 @@ class PurchaseRequestService
                 'revise_requested_at' => now(),
                 'revise_reason' => $reason,
                 'revise_requested_at_level' => $atLevel,
+                'updated_by' => auth()->user()?->username,
             ]);
             $pr->save();
 

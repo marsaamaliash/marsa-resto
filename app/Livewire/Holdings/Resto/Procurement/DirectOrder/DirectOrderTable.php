@@ -58,6 +58,7 @@ class DirectOrderTable extends Component
         'total_amount',
         'payment_by',
         'created_at',
+        'updated_at',
     ];
 
     public array $selectedItems = [];

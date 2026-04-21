@@ -56,7 +56,7 @@ class PurchaseOrderService
                 'notes' => $vendorNotes,
                 'status' => 'draft',
                 'approval_level' => 0,
-                'created_by' => auth()->user()?->id,
+                'created_by' => auth()->user()?->username,
             ]);
 
             // Copy items from PR to PO with user-input prices
@@ -139,7 +139,7 @@ class PurchaseOrderService
             $po->vendor_name = $vendor->name;
             $po->payment_by = $paymentBy;
             $po->notes = $notes;
-            $po->updated_by = auth()->user()?->id;
+            $po->updated_by = auth()->user()?->username;
             $po->save();
 
             return $po;
@@ -223,7 +223,7 @@ class PurchaseOrderService
 
             $po->status = 'pending_rm';
             $po->approval_level = 1;
-            $po->updated_by = auth()->user()?->id;
+            $po->updated_by = auth()->user()?->username;
             $po->save();
 
             return $po;
@@ -247,7 +247,7 @@ class PurchaseOrderService
             $po->rm_approved_by = auth()->user()?->id;
             $po->rm_approved_at = now();
             $po->rm_notes = $notes;
-            $po->updated_by = auth()->user()?->id;
+            $po->updated_by = auth()->user()?->username;
             $po->save();
 
             return $po;
@@ -271,7 +271,7 @@ class PurchaseOrderService
             $po->spv_approved_by = auth()->user()?->id;
             $po->spv_approved_at = now();
             $po->spv_notes = $notes;
-            $po->updated_by = auth()->user()?->id;
+            $po->updated_by = auth()->user()?->username;
             $po->save();
 
             return $po;
@@ -291,7 +291,7 @@ class PurchaseOrderService
             $po->rejected_at = now();
             $po->reject_reason = $reason;
             $po->rejected_at_level = $po->approval_level;
-            $po->updated_by = auth()->user()?->id;
+            $po->updated_by = auth()->user()?->username;
             $po->save();
 
             return $po;
@@ -313,7 +313,7 @@ class PurchaseOrderService
             $po->revise_requested_at = now();
             $po->revise_reason = $reason;
             $po->revise_requested_at_level = $currentLevel;
-            $po->updated_by = auth()->user()?->id;
+            $po->updated_by = auth()->user()?->username;
             $po->save();
 
             return $po;

@@ -19,8 +19,6 @@ class DirectOrderCreate extends Component
 
     public int $selectedLocationId = 0;
 
-    public string $purchaserName = '';
-
     public string $purchaseDate = '';
 
     public string $paymentBy = 'holding';
@@ -89,7 +87,6 @@ class DirectOrderCreate extends Component
     {
         $this->validate([
             'selectedLocationId' => 'required|integer|min:1',
-            'purchaserName' => 'required|string|max:255',
             'purchaseDate' => 'required|date',
             'paymentBy' => 'required|string',
             'proofFile' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
@@ -111,7 +108,7 @@ class DirectOrderCreate extends Component
         try {
             $do = DirectOrderService::createFromInput(
                 $this->selectedLocationId,
-                $this->purchaserName,
+                auth()->user()?->username ?? 'SYSTEM',
                 $this->purchaseDate,
                 $this->paymentBy,
                 $this->proofFile,

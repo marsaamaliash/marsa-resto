@@ -58,6 +58,7 @@ class PurchaseRequestTable extends Component
         'requested_at',
         'total_estimated_cost',
         'created_at',
+        'updated_at',
     ];
 
     public array $selectedItems = [];

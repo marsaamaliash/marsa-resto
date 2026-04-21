@@ -55,7 +55,7 @@ class DirectOrderService
                 'notes' => $notes,
                 'status' => 'draft',
                 'approval_level' => 0,
-                'created_by' => auth()->user()?->id,
+                'created_by' => auth()->user()?->username,
             ]);
 
             $totalAmount = 0;
@@ -100,7 +100,7 @@ class DirectOrderService
 
             $do->status = 'pending_rm';
             $do->approval_level = 1;
-            $do->updated_by = auth()->user()?->id;
+            $do->updated_by = auth()->user()?->username;
             $do->save();
 
             return $do;
@@ -121,7 +121,7 @@ class DirectOrderService
             $do->rm_approved_by = auth()->user()?->id;
             $do->rm_approved_at = now();
             $do->rm_notes = $notes;
-            $do->updated_by = auth()->user()?->id;
+            $do->updated_by = auth()->user()?->username;
             $do->save();
 
             return $do;
@@ -142,7 +142,7 @@ class DirectOrderService
             $do->spv_approved_by = auth()->user()?->id;
             $do->spv_approved_at = now();
             $do->spv_notes = $notes;
-            $do->updated_by = auth()->user()?->id;
+            $do->updated_by = auth()->user()?->username;
             $do->save();
 
             return $do;
@@ -159,7 +159,7 @@ class DirectOrderService
             $do->rejected_at = now();
             $do->reject_reason = $reason;
             $do->rejected_at_level = $do->approval_level;
-            $do->updated_by = auth()->user()?->id;
+            $do->updated_by = auth()->user()?->username;
             $do->save();
 
             return $do;
@@ -178,7 +178,7 @@ class DirectOrderService
             $do->revise_requested_at = now();
             $do->revise_reason = $reason;
             $do->revise_requested_at_level = $currentLevel;
-            $do->updated_by = auth()->user()?->id;
+            $do->updated_by = auth()->user()?->username;
             $do->save();
 
             return $do;
@@ -250,7 +250,7 @@ class DirectOrderService
 
             $do->payment_by = $paymentBy;
             $do->notes = $notes;
-            $do->updated_by = auth()->user()?->id;
+            $do->updated_by = auth()->user()?->username;
             $do->save();
 
             return $do;

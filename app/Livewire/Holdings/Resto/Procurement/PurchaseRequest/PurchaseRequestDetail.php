@@ -22,9 +22,13 @@ class PurchaseRequestDetail extends Component
 
     public bool $canEdit = false;
 
-    public ?string $actionModal = null;
+    public bool $showRejectModal = false;
 
-    public string $actionNotes = '';
+    public bool $showReviseModal = false;
+
+    public string $rejectReason = '';
+
+    public string $reviseReason = '';
 
     public function mount(int $id): void
     {
@@ -68,13 +72,21 @@ class PurchaseRequestDetail extends Component
 
     public function openActionModal(string $action): void
     {
-        $this->actionModal = $action;
-        $this->actionNotes = '';
+        if ($action === 'reject') {
+            $this->showRejectModal = true;
+            $this->rejectReason = '';
+        } elseif ($action === 'revise') {
+            $this->showReviseModal = true;
+            $this->reviseReason = '';
+        }
     }
 
     public function closeActionModal(): void
     {
-        $this->reset('actionModal', 'actionNotes');
+        $this->showRejectModal = false;
+        $this->showReviseModal = false;
+        $this->rejectReason = '';
+        $this->reviseReason = '';
     }
 
     public function approveByRM(): void
@@ -134,14 +146,14 @@ class PurchaseRequestDetail extends Component
     public function rejectPR(): void
     {
         try {
-            if (empty($this->actionNotes)) {
+            if (empty($this->rejectReason)) {
                 throw new \Exception('Alasan reject wajib diisi.');
             }
 
             $level = $this->pr->status === 'pending_rm' ? 1 : 2;
             $user = auth()->user()?->username ?? 'SYSTEM';
 
-            PurchaseRequestService::reject($this->pr->id, $this->actionNotes, $level, $user);
+            PurchaseRequestService::reject($this->pr->id, $this->rejectReason, $level, $user);
 
             $this->loadPR($this->pr->id);
             $this->closeActionModal();
@@ -154,14 +166,14 @@ class PurchaseRequestDetail extends Component
     public function requestRevise(): void
     {
         try {
-            if (empty($this->actionNotes)) {
+            if (empty($this->reviseReason)) {
                 throw new \Exception('Alasan revise wajib diisi.');
             }
 
             $level = $this->pr->status === 'pending_rm' ? 1 : 2;
             $user = auth()->user()?->username ?? 'SYSTEM';
 
-            PurchaseRequestService::requestRevise($this->pr->id, $this->actionNotes, $level, $user);
+            PurchaseRequestService::requestRevise($this->pr->id, $this->reviseReason, $level, $user);
 
             $this->loadPR($this->pr->id);
             $this->closeActionModal();

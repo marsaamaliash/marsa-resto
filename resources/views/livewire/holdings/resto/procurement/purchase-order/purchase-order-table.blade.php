@@ -147,6 +147,30 @@
                                 Payment {!! $sortField === 'payment_by' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                             </th>
 
+                            
+
+                            {{-- Created At --}}
+                            <th wire:click="sortBy('created_at')"
+                                class="px-3 py-3 text-left text-xs font-bold cursor-pointer">
+                                Dibuat {!! $sortField === 'created_at' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                            </th>
+
+                            {{-- Created By --}}
+                            <th class="px-3 py-3 text-left text-xs font-bold">
+                                Oleh
+                            </th>
+
+                            {{-- Updated At --}}
+                            <th wire:click="sortBy('updated_at')"
+                                class="px-3 py-3 text-left text-xs font-bold cursor-pointer">
+                                Diubah {!! $sortField === 'updated_at' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                            </th>
+
+                            {{-- Updated By --}}
+                            <th class="px-3 py-3 text-left text-xs font-bold">
+                                Oleh
+                            </th>
+
                             {{-- Actions --}}
                             <th class="px-4 py-3 text-center text-xs font-bold">
                                 <div class="flex items-center justify-center gap-2">
@@ -232,7 +256,29 @@
                                     </span>
                                 </td>
 
-                                {{-- ROW ACTIONS --}}
+                                
+
+                        {{-- Created At --}}
+                        <td class="px-3 py-2 text-sm text-gray-600">
+                            {{ $item->created_at?->format('d/m/Y H:i') ?? '-' }}
+                        </td>
+
+                        {{-- Created By --}}
+                        <td class="px-3 py-2 text-sm text-gray-600">
+                            {{ $item['created_by'] ?? '-' }}
+                        </td>
+
+                        {{-- Updated At --}}
+                        <td class="px-3 py-2 text-sm text-gray-600">
+                            {{ $item->updated_at?->format('d/m/Y H:i') ?? '-' }}
+                        </td>
+
+                        {{-- Updated By --}}
+                        <td class="px-3 py-2 text-sm text-gray-600">
+                            {{ $item['updated_by'] ?? '-' }}
+                        </td>
+
+                        {{-- ROW ACTIONS --}}
                                 <td class="px-3 py-2 text-center">
                                     <div class="flex justify-center gap-2">
                                         {{-- View Detail --}}
@@ -300,22 +346,22 @@
                                             </x-ui.sccr-button>
                                         @endif
 
-                                        {{-- Delete --}}
-                                        @if ($item->canBeEdited() && $canDelete)
-                                            <x-ui.sccr-button type="button" variant="icon"
-                                                wire:click="deletePO('{{ $item['id'] }}')"
-                                                class="text-red-600 hover:scale-125"
-                                                wire:confirm="Yakin ingin menghapus PO {{ $item['po_number'] }}?"
-                                                title="Hapus">
-                                                <x-ui.sccr-icon name="trash" :size="18" />
-                                            </x-ui.sccr-button>
-                                        @endif
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="9" class="py-10 text-center text-gray-400 italic">
+                                {{-- Delete --}}
+                                @if ($item->canBeEdited() && $canDelete)
+                                    <x-ui.sccr-button type="button" variant="icon"
+                                        wire:click="deletePO('{{ $item['id'] }}')"
+                                        class="text-red-600 hover:scale-125"
+                                        wire:confirm="Yakin ingin menghapus PO {{ $item['po_number'] }}?"
+                                        title="Hapus">
+                                        <x-ui.sccr-icon name="trash" :size="18" />
+                                    </x-ui.sccr-button>
+                                @endif
+                            </div>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="13" class="py-10 text-center text-gray-400 italic">
                                     Data tidak ditemukan
                                 </td>
                             </tr>

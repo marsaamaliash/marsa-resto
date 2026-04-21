@@ -1,13 +1,13 @@
 <x-ui.sccr-card transparent wire:key="purchase-request-create" class="h-full min-h-0 flex flex-col">
 
     {{-- ================= HEADER ================= --}}
-    <div class="relative px-8 py-6 bg-blue-600/80 rounded-b-3xl shadow-lg overflow-hidden">
+    <div class="relative px-8 py-6 bg-gradient-to-r from-blue-600 to-blue-700 rounded-b-3xl shadow-lg">
         <div class="flex justify-between items-start">
             <div>
                 <h1 class="text-3xl font-bold text-white">
                     {{ $isEditMode ? 'Edit Purchase Request' : 'Buat Purchase Request Baru' }}
                 </h1>
-                <p class="text-blue-100 text-sm">
+                <p class="text-blue-100 text-sm mt-1">
                     {{ $isEditMode ? 'Revisi Purchase Request yang sudah ada' : 'Pilih stok kritis atau tambah item lain untuk dibeli' }}
                 </p>
             </div>
@@ -22,16 +22,24 @@
     <div class="flex-1 min-h-0 px-4 py-4 overflow-auto">
         <div class="max-w-6xl mx-auto space-y-6">
 
-            {{-- LOCATION SELECTION --}}
+            {{-- TOAST NOTIFICATION --}}
+            @if ($toast['show'])
+                <div class="fixed top-20 right-4 z-50">
+                    <div class="px-6 py-4 rounded-lg shadow-lg {{ $toast['type'] === 'success' ? 'bg-green-500' : 'bg-red-500' }} text-white">
+                        {{ $toast['message'] }}
+                    </div>
+                </div>
+            @endif
+
+            {{-- STEP 1: LOCATION & INFO --}}
             <div class="bg-white rounded-xl shadow border p-6">
-                <h2 class="text-lg font-bold text-gray-800 mb-4">Lokasi Request</h2>
+                <h2 class="text-lg font-bold text-gray-800 mb-4">Langkah 1: Informasi Lokasi & Request</h2>
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-1">
-                            Lokasi <span class="text-red-500">*</span>
-                        </label>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Lokasi <span class="text-red-500">*</span></label>
                         <select wire:model.live="selectedLocationId"
-                            class="w-full border-gray-300 rounded-md shadow-sm"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             {{ $isEditMode ? 'disabled' : '' }}>
                             <option value="0">-- Pilih Lokasi --</option>
                             @foreach ($this->locations as $loc)
@@ -44,29 +52,27 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-1">
-                            Tanggal
-                        </label>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Tanggal Dibutuhkan</label>
                         <input type="date" wire:model="requiredDate"
-                            class="w-full border-gray-300 rounded-md shadow-sm">
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     </div>
                 </div>
 
                 <div class="mt-4">
-                    <label class="block text-sm font-bold text-gray-700 mb-1">
-                        Catatan PR
-                    </label>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Catatan PR</label>
                     <textarea wire:model="notes" rows="2"
-                        class="w-full border-gray-300 rounded-md shadow-sm"
-                        placeholder="Catatan umum untuk PR ini..."></textarea>
+                        placeholder="Catatan umum untuk PR ini..."
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
                 </div>
             </div>
 
-            {{-- TABS --}}
+            {{-- STEP 2: ITEMS (TABS) --}}
             @if ($selectedLocationId > 0)
                 <div class="bg-white rounded-xl shadow border overflow-hidden">
+                    <h2 class="text-lg font-bold text-gray-800 px-6 pt-6 pb-4">Langkah 2: Pilih Item</h2>
+
                     {{-- TAB HEADERS --}}
-                    <div class="flex border-b">
+                    <div class="flex border-b px-6">
                         <button wire:click="$set('showCriticalTab', true)"
                             class="px-6 py-3 text-sm font-bold {{ $showCriticalTab ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-50' }}">
                             <span class="flex items-center gap-2">
@@ -97,10 +103,8 @@
                     @if ($showCriticalTab)
                         <div class="p-6">
                             <div class="flex justify-between items-center mb-4">
-                                <h3 class="text-lg font-bold text-gray-800">Daftar Stok Kritis</h3>
-                                <p class="text-sm text-gray-600">
-                                    Item dengan stok aktual di bawah atau mendekati minimum
-                                </p>
+                                <h3 class="text-base font-bold text-gray-800">Daftar Stok Kritis</h3>
+                                <p class="text-sm text-gray-600">Item dengan stok aktual di bawah atau mendekati minimum</p>
                             </div>
 
                             @if (count($criticalItems) === 0)
@@ -111,28 +115,28 @@
                                 </div>
                             @else
                                 <div class="overflow-x-auto">
-                                    <table class="min-w-full divide-y divide-gray-200">
-                                        <thead class="bg-gray-50">
+                                    <table class="min-w-full text-sm">
+                                        <thead class="bg-gray-50 border-b">
                                             <tr>
-                                                <th class="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase">Pilih</th>
-                                                <th wire:click="sortBy('item_name')" class="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase cursor-pointer hover:bg-gray-100">
+                                                <th class="px-3 py-3 text-left font-bold text-gray-700">Pilih</th>
+                                                <th wire:click="sortBy('item_name')" class="px-3 py-3 text-left font-bold text-gray-700 cursor-pointer hover:bg-gray-100">
                                                     Item {!! $sortField === 'item_name' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                                                 </th>
-                                                <th wire:click="sortBy('actual_stock')" class="px-3 py-3 text-center text-xs font-bold text-gray-500 uppercase cursor-pointer hover:bg-gray-100">
+                                                <th wire:click="sortBy('actual_stock')" class="px-3 py-3 text-center font-bold text-gray-700 cursor-pointer hover:bg-gray-100">
                                                     Stok Sekarang {!! $sortField === 'actual_stock' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                                                 </th>
-                                                <th wire:click="sortBy('min_stock')" class="px-3 py-3 text-center text-xs font-bold text-gray-500 uppercase cursor-pointer hover:bg-gray-100">
+                                                <th wire:click="sortBy('min_stock')" class="px-3 py-3 text-center font-bold text-gray-700 cursor-pointer hover:bg-gray-100">
                                                     Min Stok {!! $sortField === 'min_stock' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                                                 </th>
-                                                <th wire:click="sortBy('selisih')" class="px-3 py-3 text-center text-xs font-bold text-gray-500 uppercase cursor-pointer hover:bg-gray-100">
+                                                <th wire:click="sortBy('selisih')" class="px-3 py-3 text-center font-bold text-gray-700 cursor-pointer hover:bg-gray-100">
                                                     Selisih {!! $sortField === 'selisih' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                                                 </th>
-                                                <th class="px-3 py-3 text-center text-xs font-bold text-gray-500 uppercase">Status</th>
-                                                <th class="px-3 py-3 text-center text-xs font-bold text-gray-500 uppercase">Qty Order</th>
-                                                <th class="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase">Catatan</th>
+                                                <th class="px-3 py-3 text-center font-bold text-gray-700">Status</th>
+                                                <th class="px-3 py-3 text-center font-bold text-gray-700">Qty Order</th>
+                                                <th class="px-3 py-3 text-left font-bold text-gray-700">Catatan</th>
                                             </tr>
                                         </thead>
-                                        <tbody class="divide-y divide-gray-200 bg-white">
+                                        <tbody class="divide-y bg-white">
                                             @foreach ($criticalItems as $item)
                                                 @php
                                                     $isSelected = isset($selectedCriticalItems[$item['id']]);
@@ -186,7 +190,7 @@
                                                                 min="0.01"
                                                                 wire:change="updateCriticalQty({{ $item['id'] }}, $event.target.value)"
                                                                 value="{{ $selectedCriticalItems[$item['id']]['qty'] }}"
-                                                                class="w-24 border-gray-300 rounded-md text-sm text-right">
+                                                                class="w-24 px-2 py-1 border border-gray-300 rounded text-sm text-right">
                                                             <span class="text-xs text-gray-500 ml-1">{{ $item['uom'] }}</span>
                                                         @else
                                                             <span class="text-sm text-gray-400">-</span>
@@ -196,7 +200,7 @@
                                                         @if ($isSelected)
                                                             <input type="text"
                                                                 wire:model="selectedCriticalItems.{{ $item['id'] }}.notes"
-                                                                class="w-full border-gray-300 rounded-md text-sm"
+                                                                class="w-full px-2 py-1 border border-gray-300 rounded text-sm"
                                                                 placeholder="Catatan item...">
                                                         @else
                                                             <span class="text-sm text-gray-400">-</span>
@@ -214,10 +218,8 @@
                     @else
                         <div class="p-6">
                             <div class="flex justify-between items-center mb-4">
-                                <h3 class="text-lg font-bold text-gray-800">Daftar Item Tersedia (Non-Kritis)</h3>
-                                <p class="text-sm text-gray-600">
-                                    Pilih item tambahan yang ingin dipesan
-                                </p>
+                                <h3 class="text-base font-bold text-gray-800">Daftar Item Tersedia (Non-Kritis)</h3>
+                                <p class="text-sm text-gray-600">Pilih item tambahan yang ingin dipesan</p>
                             </div>
 
                             @if (count($this->availableItems) === 0)
@@ -228,27 +230,27 @@
                                 </div>
                             @else
                                 <div class="overflow-x-auto">
-                                    <table class="min-w-full divide-y divide-gray-200">
-                                        <thead class="bg-gray-50">
+                                    <table class="min-w-full text-sm">
+                                        <thead class="bg-gray-50 border-b">
                                             <tr>
-                                                <th class="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase">Pilih</th>
-                                                <th wire:click="sortBy('item_name')" class="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase cursor-pointer hover:bg-gray-100">
+                                                <th class="px-3 py-3 text-left font-bold text-gray-700">Pilih</th>
+                                                <th wire:click="sortBy('item_name')" class="px-3 py-3 text-left font-bold text-gray-700 cursor-pointer hover:bg-gray-100">
                                                     Item {!! $sortField === 'item_name' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                                                 </th>
-                                                <th wire:click="sortBy('actual_stock')" class="px-3 py-3 text-center text-xs font-bold text-gray-500 uppercase cursor-pointer hover:bg-gray-100">
+                                                <th wire:click="sortBy('actual_stock')" class="px-3 py-3 text-center font-bold text-gray-700 cursor-pointer hover:bg-gray-100">
                                                     Stok Sekarang {!! $sortField === 'actual_stock' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                                                 </th>
-                                                <th wire:click="sortBy('min_stock')" class="px-3 py-3 text-center text-xs font-bold text-gray-500 uppercase cursor-pointer hover:bg-gray-100">
+                                                <th wire:click="sortBy('min_stock')" class="px-3 py-3 text-center font-bold text-gray-700 cursor-pointer hover:bg-gray-100">
                                                     Min Stok {!! $sortField === 'min_stock' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                                                 </th>
-                                                <th wire:click="sortBy('selisih')" class="px-3 py-3 text-center text-xs font-bold text-gray-500 uppercase cursor-pointer hover:bg-gray-100">
+                                                <th wire:click="sortBy('selisih')" class="px-3 py-3 text-center font-bold text-gray-700 cursor-pointer hover:bg-gray-100">
                                                     Selisih {!! $sortField === 'selisih' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                                                 </th>
-                                                <th class="px-3 py-3 text-center text-xs font-bold text-gray-500 uppercase">Qty Order</th>
-                                                <th class="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase">Catatan</th>
+                                                <th class="px-3 py-3 text-center font-bold text-gray-700">Qty Order</th>
+                                                <th class="px-3 py-3 text-left font-bold text-gray-700">Catatan</th>
                                             </tr>
                                         </thead>
-                                        <tbody class="divide-y divide-gray-200 bg-white">
+                                        <tbody class="divide-y bg-white">
                                             @foreach ($this->availableItems as $item)
                                                 @php
                                                     $isSelected = collect($additionalItems)->contains(fn($i) => $i['id'] == $item['id']);
@@ -278,11 +280,11 @@
                                                         <div class="text-xs text-gray-500">{{ $item['uom'] }}</div>
                                                     </td>
                                                     <td class="px-3 py-3 text-center">
-                                                            <span class="text-sm font-mono @if($item['selisih'] > 0) text-red-600 font-semibold @else text-gray-500 @endif">
-                                                                {{ number_format(abs($item['selisih']), 2) }}
-                                                            </span>
-                                                            <div class="text-xs text-gray-500">{{ $item['uom'] }}</div>
-                                                        </td>
+                                                        <span class="text-sm font-mono @if($item['selisih'] > 0) text-red-600 font-semibold @else text-gray-500 @endif">
+                                                            {{ number_format(abs($item['selisih']), 2) }}
+                                                        </span>
+                                                        <div class="text-xs text-gray-500">{{ $item['uom'] }}</div>
+                                                    </td>
                                                     <td class="px-3 py-3 text-center">
                                                         @if ($isSelected)
                                                             <input type="number"
@@ -290,7 +292,7 @@
                                                                 min="0.01"
                                                                 wire:change="updateAdditionalQty({{ $selectedIndex }}, $event.target.value)"
                                                                 value="{{ $additionalItems[$selectedIndex]['qty'] }}"
-                                                                class="w-24 border-gray-300 rounded-md text-sm text-right">
+                                                                class="w-24 px-2 py-1 border border-gray-300 rounded text-sm text-right">
                                                             <span class="text-xs text-gray-500 ml-1">{{ $item['uom'] }}</span>
                                                         @else
                                                             <span class="text-sm text-gray-400">-</span>
@@ -300,7 +302,7 @@
                                                         @if ($isSelected)
                                                             <input type="text"
                                                                 wire:model="additionalItems.{{ $selectedIndex }}.notes"
-                                                                class="w-full border-gray-300 rounded-md text-sm"
+                                                                class="w-full px-2 py-1 border border-gray-300 rounded text-sm"
                                                                 placeholder="Catatan item...">
                                                         @else
                                                             <span class="text-sm text-gray-400">-</span>
@@ -316,11 +318,12 @@
                     @endif
                 </div>
 
-                {{-- SUMMARY & ACTIONS --}}
+                {{-- STEP 3: SUMMARY & ACTIONS --}}
                 <div class="bg-white rounded-xl shadow border p-6">
+                    <h2 class="text-lg font-bold text-gray-800 mb-4">Langkah 3: Ringkasan & Submit</h2>
+
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                         <div>
-                            <h3 class="text-lg font-bold text-gray-800">Ringkasan PR</h3>
                             <p class="text-sm text-gray-600">
                                 <span class="font-semibold">{{ count($selectedCriticalItems) }}</span> item stok kritis +
                                 <span class="font-semibold">{{ count($additionalItems) }}</span> item tambahan
@@ -328,20 +331,18 @@
                         </div>
 
                         <div class="flex gap-3">
-                            <x-ui.sccr-button type="button" wire:click="cancel"
-                                class="bg-gray-500 text-white hover:bg-gray-600">
+                            <a href="{{ route('dashboard.resto.purchase-request') }}"
+                                class="px-6 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500">
                                 Batal
-                            </x-ui.sccr-button>
-
-                            <x-ui.sccr-button type="button" wire:click="saveDraft"
-                                class="bg-orange-500 text-white hover:bg-orange-600">
+                            </a>
+                            <button type="button" wire:click="saveDraft"
+                                class="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-semibold">
                                 Simpan Draft
-                            </x-ui.sccr-button>
-
-                            <x-ui.sccr-button type="button" wire:click="submitToRM"
-                                class="bg-blue-600 text-white hover:bg-blue-700">
+                            </button>
+                            <button type="button" wire:click="submitToRM"
+                                class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold">
                                 Submit ke RM
-                            </x-ui.sccr-button>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -356,8 +357,5 @@
 
         </div>
     </div>
-
-    {{-- ================= TOAST ================= --}}
-    <x-ui.sccr-toast :show="$toast['show']" :type="$toast['type']" :message="$toast['message']" wire:key="toast-{{ microtime() }}" />
 
 </x-ui.sccr-card>

@@ -272,7 +272,7 @@ class PurchaseOrderDetail extends Component
 
     public function isCreator(): bool
     {
-        return $this->po?->created_by === auth()->user()?->id;
+        return $this->po?->created_by === auth()->user()?->username;
     }
 
     public function render()

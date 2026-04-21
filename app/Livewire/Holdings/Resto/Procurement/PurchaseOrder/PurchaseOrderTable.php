@@ -7,7 +7,6 @@ use App\Models\Holdings\Resto\Procurement\Rst_PurchaseOrder;
 use App\Services\Resto\PurchaseOrderService;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
-use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -58,6 +57,7 @@ class PurchaseOrderTable extends Component
         'total_amount',
         'payment_by',
         'created_at',
+        'updated_at',
     ];
 
     public array $selectedItems = [];
