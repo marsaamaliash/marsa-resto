@@ -1,4 +1,4 @@
-<x-ui.sccr-card transparent wire:key="purchase-request-detail" class="h-full min-h-0 flex flex-col">
+﻿<x-ui.sccr-card transparent wire:key="purchase-request-Detail" class="h-full min-h-0 flex flex-col">
 
     {{-- ================= HEADER ================= --}}
     <div class="relative px-8 py-6 bg-gradient-to-r from-blue-600 to-blue-700 rounded-b-3xl shadow-lg">

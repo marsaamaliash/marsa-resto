@@ -1,19 +1,19 @@
-<div>
-    @if ($menu)
+﻿<div>
+    @if ($Menu)
         {{-- ================= HEADER ================= --}}
         <div class="relative px-8 py-6 bg-indigo-600/80 rounded-b-3xl shadow-lg overflow-hidden">
             <div class="flex justify-between items-start">
                 <div>
-                    <h1 class="text-3xl font-bold text-white">{{ $menu->name }}</h1>
+                    <h1 class="text-3xl font-bold text-white">{{ $Menu->name }}</h1>
                     <p class="text-indigo-100 text-sm">
-                        {{ $menu->category ?? 'Tidak ada kategori' }} &middot; 
-                        Harga: Rp {{ number_format($menu->price, 0, ',', '.') }}
+                        {{ $Menu->category ?? 'No Category' }} &middot; 
+                        Harga: Rp {{ number_format($Menu->price, 0, ',', '.') }}
                     </p>
                 </div>
                 <div class="flex gap-2">
-                    <a href="{{ route('dashboard.resto.menu') }}"
+                    <a href="{{ route('dashboard.resto.Menu') }}"
                         class="px-3 py-1 rounded-md text-sm font-medium bg-gray-200 hover:bg-gray-300 text-gray-700">
-                        &larr; Kembali
+                        &larr; Back
                     </a>
                 </div>
             </div>
@@ -28,69 +28,69 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                 <div class="bg-white rounded-xl shadow p-4">
                     <div class="text-xs text-gray-500 uppercase font-bold">Nama Menu</div>
-                    <div class="text-lg font-semibold text-gray-800 mt-1">{{ $menu->name }}</div>
+                    <div class="text-lg font-semibold text-gray-800 mt-1">{{ $Menu->name }}</div>
                 </div>
                 <div class="bg-white rounded-xl shadow p-4">
-                    <div class="text-xs text-gray-500 uppercase font-bold">Kategori</div>
-                    <div class="text-lg font-semibold text-gray-800 mt-1">{{ $menu->category ?? '-' }}</div>
+                    <div class="text-xs text-gray-500 uppercase font-bold">Category</div>
+                    <div class="text-lg font-semibold text-gray-800 mt-1">{{ $Menu->category ?? '-' }}</div>
                 </div>
                 <div class="bg-white rounded-xl shadow p-4">
                     <div class="text-xs text-gray-500 uppercase font-bold">Harga</div>
-                    <div class="text-lg font-semibold text-gray-800 mt-1">Rp {{ number_format($menu->price, 0, ',', '.') }}</div>
+                    <div class="text-lg font-semibold text-gray-800 mt-1">Rp {{ number_format($Menu->price, 0, ',', '.') }}</div>
                 </div>
                 <div class="bg-white rounded-xl shadow p-4">
                     <div class="text-xs text-gray-500 uppercase font-bold">Status Menu</div>
                     <div class="text-lg font-semibold mt-1">
-                        @if ($menu->is_active)
-                            <span class="text-green-600">Aktif</span>
+                        @if ($Menu->is_active)
+                            <span class="text-green-600">Active</span>
                         @else
-                            <span class="text-red-600">Nonaktif</span>
+                            <span class="text-red-600">Inactive</span>
                         @endif
                     </div>
                 </div>
                 <div class="bg-white rounded-xl shadow p-4">
-                    <div class="text-xs text-gray-500 uppercase font-bold">Status Resep</div>
+                    <div class="text-xs text-gray-500 uppercase font-bold">Status Recipe</div>
                     <div class="text-lg font-semibold mt-1">
-                        @if ($menu->recipe_id && $menu->recipe)
-                            @if ($menu->recipe->activeVersion)
-                                <span class="text-green-600" title="Resep Aktif - V{{ $menu->recipe->activeVersion->version_no }}">
-                                    Punya Resep (V{{ $menu->recipe->activeVersion->version_no }})
+                        @if ($Menu->recipe_id && $Menu->recipe)
+                            @if ($Menu->recipe->activeVersion)
+                                <span class="text-green-600" title="Recipe Active - V{{ $Menu->recipe->activeVersion->version_no }}">
+                                    Punya Recipe (V{{ $Menu->recipe->activeVersion->version_no }})
                                 </span>
-                            @elseif ($menu->recipe->is_active)
-                                <span class="text-yellow-600">Resep Aktif (Belum Ada Versi)</span>
+                            @elseif ($Menu->recipe->is_active)
+                                <span class="text-yellow-600">Recipe Active (Not Yet Version)</span>
                             @else
-                                <span class="text-gray-600">Resep Nonaktif</span>
+                                <span class="text-gray-600">Recipe Inactive</span>
                             @endif
                         @else
-                            <span class="text-red-600">Belum Ada Resep</span>
+                            <span class="text-red-600">Not Yet Recipe</span>
                         @endif
                     </div>
                 </div>
             </div>
 
-            @if ($menu->description)
+            @if ($Menu->description)
                 <div class="bg-white rounded-xl shadow p-4 mb-6">
-                    <div class="text-xs text-gray-500 uppercase font-bold mb-1">Deskripsi</div>
-                    <div class="text-sm text-gray-700">{{ $menu->description }}</div>
+                    <div class="text-xs text-gray-500 uppercase font-bold mb-1">Description</div>
+                    <div class="text-sm text-gray-700">{{ $Menu->description }}</div>
                 </div>
             @endif
 
-            {{-- ================= RESEP SECTION ================= --}}
+            {{-- ================= Recipe SECTION ================= --}}
             <div class="bg-white rounded-xl shadow overflow-hidden">
                 <div class="border-b border-gray-200 px-6 py-4 flex justify-between items-center">
-                    <h3 class="text-lg font-semibold text-gray-800">Resep Menu</h3>
+                    <h3 class="text-lg font-semibold text-gray-800">Menu Recipe</h3>
                     
                     <div class="flex gap-2">
-                        @if ($menu->recipe_id)
+                        @if ($Menu->recipe_id)
                             <button wire:click="goToRecipe"
                                 class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium">
-                                Lihat Detail Resep
+                                Lihat Detail Recipe
                             </button>
                         @else
                             @if ($canCreate)
                                 <button wire:click="openAddRecipe"
                                     class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm font-medium">
-                                    + Tambah Resep
+                                    + Add Recipe
                                 </button>
                             @endif
                         @endif
@@ -98,24 +98,24 @@
                 </div>
 
                 <div class="p-6">
-                    @if ($menu->recipe_id && $menu->recipe)
+                    @if ($Menu->recipe_id && $Menu->recipe)
                         {{-- Recipe exists - show summary --}}
                         <div class="bg-purple-50 border border-purple-200 rounded-xl p-4">
                             <div class="flex justify-between items-start mb-4">
                                 <div>
-                                    <h4 class="text-lg font-semibold text-purple-900">{{ $menu->recipe->recipe_name }}</h4>
-                                    <p class="text-sm text-purple-600">{{ $menu->recipe->recipe_code }}</p>
+                                    <h4 class="text-lg font-semibold text-purple-900">{{ $Menu->recipe->recipe_name }}</h4>
+                                    <p class="text-sm text-purple-600">{{ $Menu->recipe->recipe_code }}</p>
                                 </div>
-                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $menu->recipe->is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600' }}">
-                                    {{ $menu->recipe->is_active ? 'Aktif' : 'Nonaktif' }}
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $Menu->recipe->is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600' }}">
+                                    {{ $Menu->recipe->is_active ? 'Active' : 'Inactive' }}
                                 </span>
                             </div>
 
-                            @if ($menu->recipe->activeVersion)
+                            @if ($Menu->recipe->activeVersion)
                                 <div class="border-t border-purple-200 pt-4 mt-4">
-                                    <h5 class="text-sm font-medium text-purple-800 mb-2">Versi Aktif: V{{ $menu->recipe->activeVersion->version_no }}</h5>
+                                    <h5 class="text-sm font-medium text-purple-800 mb-2">Version Active: V{{ $Menu->recipe->activeVersion->version_no }}</h5>
                                     
-                                    @if ($menu->recipe->activeVersion->components->count() > 0)
+                                    @if ($Menu->recipe->activeVersion->components->count() > 0)
                                         <div class="overflow-hidden border border-purple-100 rounded-lg">
                                             <table class="min-w-full divide-y divide-purple-100">
                                                 <thead class="bg-purple-100/50">
@@ -123,11 +123,11 @@
                                                         <th class="px-3 py-2 text-left text-xs font-medium text-purple-700 uppercase">#</th>
                                                         <th class="px-3 py-2 text-left text-xs font-medium text-purple-700 uppercase">Bahan</th>
                                                         <th class="px-3 py-2 text-right text-xs font-medium text-purple-700 uppercase">Qty</th>
-                                                        <th class="px-3 py-2 text-left text-xs font-medium text-purple-700 uppercase">Satuan</th>
+                                                        <th class="px-3 py-2 text-left text-xs font-medium text-purple-700 uppercase">Unit</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody class="bg-white divide-y divide-purple-100">
-                                                    @foreach ($menu->recipe->activeVersion->components as $comp)
+                                                    @foreach ($Menu->recipe->activeVersion->components as $comp)
                                                         <tr>
                                                             <td class="px-3 py-2 text-sm text-gray-600">{{ $comp->line_no }}</td>
                                                             <td class="px-3 py-2 text-sm font-medium text-gray-900">{{ $comp->item?->name ?? '-' }}</td>
@@ -139,11 +139,11 @@
                                             </table>
                                         </div>
                                     @else
-                                        <p class="text-sm text-gray-500 italic">Versi ini belum memiliki komponen bahan.</p>
+                                        <p class="text-sm text-gray-500 italic">Version ini Not Yet memiliki Component bahan.</p>
                                     @endif
                                 </div>
                             @else
-                                <p class="text-sm text-gray-500 italic">Resep ini belum memiliki versi aktif.</p>
+                                <p class="text-sm text-gray-500 italic">Recipe ini Not Yet memiliki Version Active.</p>
                             @endif
                         </div>
                     @else
@@ -154,14 +154,14 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                 </svg>
                             </div>
-                            <h4 class="text-lg font-medium text-gray-700 mb-2">Menu ini belum memiliki resep</h4>
+                            <h4 class="text-lg font-medium text-gray-700 mb-2">Menu ini Not Yet memiliki Recipe</h4>
                             <p class="text-sm text-gray-500 mb-4 max-w-md mx-auto">
-                                Buat resep untuk menu ini agar dapat melakukan produksi dan tracking bahan baku.
+                                Buat Recipe untuk Menu ini agar dapat melakukan produksi dan tracking bahan baku.
                             </p>
                             @if ($canCreate)
                                 <button wire:click="openAddRecipe"
                                     class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm font-medium">
-                                    + Tambah Resep Sekarang
+                                    + Add Recipe Sekarang
                                 </button>
                             @endif
                         </div>
@@ -171,11 +171,11 @@
         </div>
     @else
         <div class="relative px-8 py-6 bg-indigo-600/80 rounded-b-3xl shadow-lg overflow-hidden">
-            <h1 class="text-3xl font-bold text-white">Menu Tidak Ditemukan</h1>
+            <h1 class="text-3xl font-bold text-white">Menu No Ditemukan</h1>
             <div class="mt-4">
-                <a href="{{ route('dashboard.resto.menu') }}"
+                <a href="{{ route('dashboard.resto.Menu') }}"
                     class="px-4 py-2 bg-white text-indigo-600 rounded-md hover:bg-gray-100 text-sm font-medium">
-                    &larr; Kembali ke Daftar Menu
+                    &larr; Back ke Daftar Menu
                 </a>
             </div>
         </div>
@@ -189,15 +189,15 @@
         <div class="fixed inset-0 bg-black/40 z-40" wire:click="closeOverlay"></div>
         <div class="fixed inset-0 z-50 flex items-center justify-center px-6">
             <div class="w-full max-w-4xl bg-white rounded-2xl shadow-2xl relative max-h-[90vh] overflow-y-auto"
-                 wire:key="recipe-create-overlay-{{ $menu?->id }}">
+                 wire:key="recipe-create-overlay-{{ $Menu?->id }}">
                 <x-ui.sccr-button type="button" variant="icon" wire:click="closeOverlay"
-                    class="absolute top-4 right-4 text-gray-400 hover:text-red-500" title="Tutup">
+                    class="absolute top-4 right-4 text-gray-400 hover:text-red-500" title="Close">
                     <span class="text-xl leading-none">&#x2715;</span>
                 </x-ui.sccr-button>
 
-                @livewire('holdings.resto.resep.recipe.recipe-create', 
-                    ['preSelectedMenuId' => $menu?->id],
-                    key('recipe-create-'.$menu?->id))
+                @livewire('holdings.resto.Recipe.recipe.recipe-create', 
+                    ['preSelectedMenuId' => $Menu?->id],
+                    key('recipe-create-'.$Menu?->id))
             </div>
         </div>
     @endif

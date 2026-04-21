@@ -128,11 +128,11 @@ class ComponentForm extends Component
 
             if ($this->componentId) {
                 app(RecipeBomService::class)->updateComponent($this->componentId, $data);
-                $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Komponen berhasil diperbarui.'];
+                $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Component updated successfully.'];
                 $this->dispatch('component-saved');
             } else {
                 app(RecipeBomService::class)->addComponent($this->versionId, $data);
-                $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Komponen berhasil ditambahkan.'];
+                $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Component added successfully.'];
                 $this->dispatch('component-saved');
             }
         } catch (\Exception $e) {

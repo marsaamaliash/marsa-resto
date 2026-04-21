@@ -28,6 +28,8 @@ class StockRequestTable extends Component
 
     public string $sortDirection = 'desc';
 
+    public int $totalAll = 0;
+
     protected array $allowedSortFields = [
         'created_at',
         'movement_id',
@@ -57,6 +59,8 @@ class StockRequestTable extends Component
             ['label' => 'Core Stock', 'route' => 'dashboard.resto.core-stock', 'color' => 'text-gray-800'],
             ['label' => 'Stock Request', 'color' => 'text-gray-900 font-semibold'],
         ];
+
+        $this->totalAll = Rst_RequestActivity::count();
     }
 
     protected function dataQuery(): Collection

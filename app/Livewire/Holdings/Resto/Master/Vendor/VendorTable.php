@@ -8,14 +8,13 @@ use Illuminate\Support\Collection;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class VendorTable extends Component
 {
     use WithPagination;
 
-    /* =====================================================
-       | UI GLOBAL STATE
-       ===================================================== */
     public array $breadcrumbs = [];
 
     public array $toast = ['show' => false, 'type' => 'success', 'message' => ''];
@@ -28,14 +27,15 @@ class VendorTable extends Component
 
     public bool $canDelete = false;
 
-    /* =====================================================
-       | FILTER & SORT
-       ===================================================== */
+    public bool $canApprove = false;
+
     public string $search = '';
 
     public string $filter1 = '';
 
     public string $filter2 = '';
+
+    public string $filterStatus = '';
 
     public int $perPage = 10;
 
@@ -43,45 +43,64 @@ class VendorTable extends Component
 
     public string $sortDirection = 'desc';
 
+    public int $totalAll = 0;
+
     protected array $allowedSortFields = [
         'id',
         'name',
         'code',
+        'email',
+        'pic',
         'no_telp',
-        'address',
+        'status',
         'is_active',
         'created_at',
     ];
 
-    /* =====================================================
-       | SELECTION
-       ===================================================== */
     public array $selectedItems = [];
 
     public bool $selectAll = false;
 
-    /* =====================================================
-       | OVERLAY
-       ===================================================== */
     public ?string $overlayMode = null;
 
     public ?string $overlayId = null;
 
-    /* =====================================================
-       | QUERY STRING
-       ===================================================== */
+    public ?string $actionOverlayMode = null;
+
+    public ?string $actionOverlayId = null;
+
+    public string $actionNotes = '';
+
+    public string $actionReason = '';
+
+    public bool $showColumnPicker = false;
+
+    public array $columnVisibility = [];
+
+    public array $availableColumns = [
+        ['key' => 'id', 'label' => 'ID', 'default' => true],
+        ['key' => 'code', 'label' => 'Code', 'default' => true],
+        ['key' => 'name', 'label' => 'Name', 'default' => true],
+        ['key' => 'email', 'label' => 'Email', 'default' => true],
+        ['key' => 'pic', 'label' => 'PIC', 'default' => true],
+        ['key' => 'no_telp', 'label' => 'Phone', 'default' => true],
+        ['key' => 'default_terms', 'label' => 'Terms', 'default' => true],
+        ['key' => 'status', 'label' => 'Status', 'default' => true],
+        ['key' => 'is_active', 'label' => 'Active', 'default' => true],
+        ['key' => 'created_at', 'label' => 'Created', 'default' => false],
+        ['key' => 'updated_at', 'label' => 'Updated', 'default' => false],
+    ];
+
     protected $queryString = [
         'search' => ['except' => ''],
         'filter1' => ['except' => ''],
         'filter2' => ['except' => ''],
+        'filterStatus' => ['except' => ''],
         'perPage' => ['except' => 10],
         'sortField' => ['except' => 'id'],
         'sortDirection' => ['except' => 'desc'],
     ];
 
-    /* =====================================================
-       | CAPABILITIES
-       ===================================================== */
     private function syncCaps(): void
     {
         $u = auth()->user();
@@ -89,6 +108,7 @@ class VendorTable extends Component
         $this->canCreate = (bool) ($u?->hasPermission('MASTER_VENDOR_CREATE') ?? false);
         $this->canUpdate = (bool) ($u?->hasPermission('MASTER_VENDOR_UPDATE') ?? false);
         $this->canDelete = (bool) ($u?->hasPermission('MASTER_VENDOR_DELETE') ?? false);
+        $this->canApprove = (bool) ($u?->hasPermission('MASTER_VENDOR_APPROVE') ?? false);
 
         $this->canWrite = $this->canCreate || $this->canUpdate;
     }
@@ -97,13 +117,18 @@ class VendorTable extends Component
     {
         $this->breadcrumbs = [
             ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
-            ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
             ['label' => 'Resto', 'route' => 'dashboard.resto', 'color' => 'text-gray-800'],
             ['label' => 'Master Data', 'route' => 'dashboard.resto.master', 'color' => 'text-gray-900 font-semibold'],
             ['label' => 'Vendor', 'color' => 'text-gray-900 font-semibold'],
         ];
 
         $this->syncCaps();
+
+        $this->totalAll = Rst_MasterVendor::withTrashed()->count();
+
+        foreach ($this->availableColumns as $col) {
+            $this->columnVisibility[$col['key']] = $col['default'];
+        }
     }
 
     public function hydrate(): void
@@ -111,24 +136,49 @@ class VendorTable extends Component
         $this->syncCaps();
     }
 
-    /* =====================================================
-       | DATA SOURCE (replace with real query or dummy)
-       ===================================================== */
+    public function toggleColumnPicker(): void
+    {
+        $this->showColumnPicker = ! $this->showColumnPicker;
+    }
+
+    public function resetColumns(): void
+    {
+        foreach ($this->availableColumns as $col) {
+            $this->columnVisibility[$col['key']] = $col['default'];
+        }
+    }
+
     protected function dataQuery(): Collection
     {
-        $query = Rst_MasterVendor::query();
+        $query = Rst_MasterVendor::withTrashed();
+
+        if ($this->filterStatus === 'requested') {
+            $query->whereNull('deleted_at')->where('status', 'requested');
+        } elseif ($this->filterStatus === 'approved') {
+            $query->whereNull('deleted_at')->where('status', 'approved');
+        } elseif ($this->filterStatus === 'rejected') {
+            $query->whereNull('deleted_at')->where('status', 'rejected');
+        } elseif ($this->filterStatus === 'deleted') {
+            $query->onlyTrashed();
+        }
 
         if ($this->search !== '') {
             $search = $this->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                     ->orWhere('code', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('pic', 'like', "%{$search}%")
                     ->orWhere('no_telp', 'like', "%{$search}%");
             });
         }
 
         if ($this->filter1 !== '') {
-            $query->where('is_active', $this->filter1);
+            $query->where('default_terms', $this->filter1);
+        }
+
+        if ($this->filter2 !== '') {
+            $query->where('is_active', $this->filter2);
         }
 
         if (in_array($this->sortField, $this->allowedSortFields, true)) {
@@ -138,9 +188,6 @@ class VendorTable extends Component
         return $query->get();
     }
 
-    /* =====================================================
-       | PAGINATION HELPER (for Collection)
-       ===================================================== */
     protected function paginateCollection(Collection $collection, int $perPage): LengthAwarePaginator
     {
         $currentPage = LengthAwarePaginator::resolveCurrentPage();
@@ -165,9 +212,6 @@ class VendorTable extends Component
             ->toArray();
     }
 
-    /* =====================================================
-       | SORT
-       ===================================================== */
     public function sortBy(string $field): void
     {
         if (! in_array($field, $this->allowedSortFields, true)) {
@@ -184,9 +228,6 @@ class VendorTable extends Component
         $this->sortDirection = 'asc';
     }
 
-    /* =====================================================
-       | FILTER
-       ===================================================== */
     public function applyFilter(): void
     {
         $this->resetPage();
@@ -196,7 +237,7 @@ class VendorTable extends Component
 
     public function clearFilters(): void
     {
-        $this->reset(['search', 'filter1', 'filter2']);
+        $this->reset(['search', 'filter1', 'filter2', 'filterStatus']);
         $this->applyFilter();
     }
 
@@ -207,9 +248,6 @@ class VendorTable extends Component
         }
     }
 
-    /* =====================================================
-       | SELECTION
-       ===================================================== */
     public function updatedSelectAll(bool $value): void
     {
         $visible = $this->visibleIds();
@@ -229,9 +267,6 @@ class VendorTable extends Component
         $this->selectAll = count($visible) > 0 && empty(array_diff($visible, $this->selectedItems));
     }
 
-    /* =====================================================
-       | EXPORT
-       ===================================================== */
     public function exportFiltered()
     {
         $data = $this->dataQuery();
@@ -242,54 +277,65 @@ class VendorTable extends Component
     public function exportSelected()
     {
         if (empty($this->selectedItems)) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Pilih data terlebih dahulu'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Please select data first'];
 
             return null;
         }
 
         $ids = array_values(array_unique(array_map('strval', $this->selectedItems)));
-        $data = $this->dataQuery()->whereIn('id', $ids);
+        $data = Rst_MasterVendor::withTrashed()->whereIn('id', $ids)->get();
 
         return $this->generateExcel($data, 'Selected');
     }
 
     private function generateExcel($data, string $type)
     {
-        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet;
+        $spreadsheet = new Spreadsheet;
         $ws = $spreadsheet->getActiveSheet();
 
-        // TODO: Adjust headers
-        $ws->fromArray([['ID', 'Nama', 'Kode', 'Telepon', 'Alamat', 'Aktif', 'Dibuat']], null, 'A1');
+        $headers = ['ID', 'Code', 'Name', 'Email', 'PIC', 'Phone', 'Terms', 'Status', 'Active', 'Created'];
+        $ws->fromArray([$headers], null, 'A1');
+
+        $termsLabels = [
+            'cash' => 'Cash',
+            '7_hari' => '7 Days',
+            '30_hari' => '30 Days',
+        ];
 
         $row = 2;
         foreach ($data as $item) {
+            $status = $item->deleted_at ? 'Deleted' : ucfirst($item->status ?? 'requested');
+
             $ws->fromArray([
-                $item['id'] ?? '',
-                $item['name'] ?? '',
-                $item['code'] ?? '',
-                $item['no_telp'] ?? '',
-                $item['address'] ?? '',
-                $item['is_active'] ? 'Ya' : 'Tidak',
-                $item['created_at'] ?? '',
+                $item->id,
+                $item->code ?? '',
+                $item->name,
+                $item->email ?? '-',
+                $item->pic ?? '-',
+                $item->no_telp ?? '-',
+                $termsLabels[$item->default_terms] ?? '-',
+                $status,
+                $item->is_active ? 'Yes' : 'No',
+                $item->created_at?->format('Y-m-d H:i:s') ?? '',
             ], null, 'A'.$row++);
+        }
+
+        foreach (range('A', 'J') as $col) {
+            $ws->getColumnDimension($col)->setAutoSize(true);
         }
 
         $filename = "Vendor_{$type}_".now()->format('Ymd_His').'.xlsx';
 
-        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
         $tmp = tempnam(sys_get_temp_dir(), 'vendor_');
-        $writer->save($tmp);
+        (new Xlsx($spreadsheet))->save($tmp);
 
         return response()->download($tmp, $filename)->deleteFileAfterSend(true);
     }
 
-    /* =====================================================
-       | OVERLAY CONTROL
-       ===================================================== */
     public function openCreate(): void
     {
         if (! $this->canCreate) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin create.'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to create.'];
 
             return;
         }
@@ -310,13 +356,152 @@ class VendorTable extends Component
     public function openEdit(string $id): void
     {
         if (! $this->canUpdate) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin update.'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to update.'];
 
             return;
         }
 
         $this->overlayMode = 'edit';
         $this->overlayId = $id;
+    }
+
+    public function openApprove(string $id): void
+    {
+        if (! $this->canApprove) {
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to approve.'];
+
+            return;
+        }
+
+        $this->actionOverlayMode = 'approve';
+        $this->actionOverlayId = $id;
+        $this->actionReason = '';
+    }
+
+    public function openReject(string $id): void
+    {
+        if (! $this->canApprove) {
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to reject.'];
+
+            return;
+        }
+
+        $this->actionOverlayMode = 'reject';
+        $this->actionOverlayId = $id;
+        $this->actionReason = '';
+    }
+
+    public function closeActionOverlay(): void
+    {
+        $this->reset(['actionOverlayMode', 'actionOverlayId', 'actionReason']);
+    }
+
+    public function approveVendor(): void
+    {
+        if (! $this->canApprove) {
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to approve.'];
+
+            return;
+        }
+
+        $vendor = Rst_MasterVendor::withTrashed()->find($this->actionOverlayId);
+
+        if (! $vendor) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data not found.'];
+
+            return;
+        }
+
+        if ($vendor->status !== 'requested') {
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Only vendors with Requested status can be approved.'];
+
+            return;
+        }
+
+        $vendor->update([
+            'status' => 'approved',
+            'rejection_reason' => null,
+        ]);
+
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Vendor approved successfully.'];
+        $this->closeActionOverlay();
+    }
+
+    public function rejectVendor(): void
+    {
+        if (! $this->canApprove) {
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to reject.'];
+
+            return;
+        }
+
+        $this->validate([
+            'actionReason' => ['required', 'string', 'max:65535'],
+        ]);
+
+        $vendor = Rst_MasterVendor::withTrashed()->find($this->actionOverlayId);
+
+        if (! $vendor) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data not found.'];
+
+            return;
+        }
+
+        if ($vendor->status !== 'requested') {
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Only vendors with Requested status can be rejected.'];
+
+            return;
+        }
+
+        $vendor->update([
+            'status' => 'rejected',
+            'rejection_reason' => $this->actionReason,
+        ]);
+
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Vendor rejected successfully.'];
+        $this->closeActionOverlay();
+    }
+
+    public function deleteItem(string $id): void
+    {
+        if (! $this->canDelete) {
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to delete.'];
+
+            return;
+        }
+
+        $item = Rst_MasterVendor::withTrashed()->find($id);
+
+        if (! $item) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data not found.'];
+
+            return;
+        }
+
+        $item->delete();
+
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data deleted successfully.'];
+    }
+
+    public function restoreItem(string $id): void
+    {
+        if (! $this->canDelete) {
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to restore.'];
+
+            return;
+        }
+
+        $item = Rst_MasterVendor::onlyTrashed()->find($id);
+
+        if (! $item) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data not found.'];
+
+            return;
+        }
+
+        $item->restore();
+
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data restored successfully.'];
     }
 
     public function closeOverlay(): void
@@ -334,14 +519,14 @@ class VendorTable extends Component
     public function handleCreated(?string $id = null): void
     {
         $this->closeOverlay();
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data berhasil ditambahkan.'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data added successfully.'];
     }
 
     #[On('vendor-updated')]
     public function handleUpdated(?string $id = null): void
     {
         $this->closeOverlay();
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data berhasil diperbarui.'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data updated successfully.'];
     }
 
     #[On('vendor-open-edit')]
@@ -350,26 +535,25 @@ class VendorTable extends Component
         $this->openEdit($id);
     }
 
-    /* =====================================================
-       | FILTER OPTIONS
-       ===================================================== */
     protected function filter1Options(): array
     {
         return [
-            '' => '-- Semua Status --',
-            '1' => 'Aktif',
-            '0' => 'Nonaktif',
+            '' => '-- All Terms --',
+            'cash' => 'Cash',
+            '7_hari' => '7 Days',
+            '30_hari' => '30 Days',
         ];
     }
 
     protected function filter2Options(): array
     {
-        return [];
+        return [
+            '' => '-- All Active --',
+            '1' => 'Active',
+            '0' => 'Inactive',
+        ];
     }
 
-    /* =====================================================
-       | RENDER
-       ===================================================== */
     public function render()
     {
         $data = $this->paginateCollection($this->dataQuery(), $this->perPage);

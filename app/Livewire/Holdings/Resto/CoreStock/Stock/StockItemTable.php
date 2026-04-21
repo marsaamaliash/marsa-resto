@@ -3,6 +3,7 @@
 namespace App\Livewire\Holdings\Resto\CoreStock\Stock;
 
 use App\Models\Holdings\Resto\CoreStock\Rst_StockBalance;
+use App\Models\Holdings\Resto\Master\Rst_MasterItem;
 use App\Models\Holdings\Resto\Master\Rst_MasterKategori;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
@@ -26,6 +27,8 @@ class StockItemTable extends Component
     public string $sortField = 'item_name';
 
     public string $sortDirection = 'asc';
+
+    public int $totalAll = 0;
 
     protected array $allowedSortFields = [
         'item_name',
@@ -54,8 +57,10 @@ class StockItemTable extends Component
             ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
             ['label' => 'Resto', 'route' => 'dashboard.resto', 'color' => 'text-gray-800'],
             ['label' => 'Core Stock', 'route' => 'dashboard.resto.core-stock', 'color' => 'text-gray-800'],
-            ['label' => 'Stock Item', 'color' => 'text-gray-900 font-semibold'],
+            ['label' => 'Item Stock', 'color' => 'text-gray-900 font-semibold'],
         ];
+
+        $this->totalAll = Rst_MasterItem::count();
     }
 
     protected function dataQuery(): Collection
@@ -208,7 +213,7 @@ class StockItemTable extends Component
     public function exportSelected()
     {
         if (empty($this->selectedItems)) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Pilih data terlebih dahulu'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Please select data first'];
 
             return null;
         }
@@ -224,7 +229,7 @@ class StockItemTable extends Component
         $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet;
         $ws = $spreadsheet->getActiveSheet();
 
-        $ws->fromArray([['ID', 'Item', 'SKU', 'Kategori', 'Qty Available', 'Qty Reserved', 'Qty In Transit', 'Qty Waste', 'Total Qty', 'Satuan']], null, 'A1');
+        $ws->fromArray([['ID', 'Item', 'SKU', 'Category', 'Qty Available', 'Qty Reserved', 'Qty In Transit', 'Qty Waste', 'Total Qty', 'Unit']], null, 'A1');
 
         $row = 2;
         foreach ($data as $item) {

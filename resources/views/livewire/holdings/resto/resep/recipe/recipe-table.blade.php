@@ -1,12 +1,12 @@
-<x-ui.sccr-card transparent wire:key="recipe" class="h-full min-h-0 flex flex-col">
+﻿<x-ui.sccr-card transparent wire:key="recipe" class="h-full min-h-0 flex flex-col">
 
     {{-- ================= HEADER ================= --}}
     <div class="relative px-8 py-6 bg-purple-600/80 rounded-b-3xl shadow-lg overflow-hidden">
         <div class="flex justify-between items-start">
             <div>
-                <h1 class="text-3xl font-bold text-white">Resep Menu</h1>
+                <h1 class="text-3xl font-bold text-white">Menu Recipe</h1>
                 <p class="text-purple-100 text-sm">
-                    Manajemen Resep & Bahan (BOM)
+                    Recipe & Ingredient Management (BOM)
                 </p>
             </div>
         </div>
@@ -14,7 +14,7 @@
         <div class="mt-4 flex justify-between items-center text-sm">
             <x-ui.sccr-breadcrumb :items="$breadcrumbs" />
             <div class="text-white">
-                Menampilkan <span class="font-bold text-black">{{ $data->total() }}</span> data
+                Showing <span class="font-bold text-black">{{ $data->total() }}</span> of <span class="font-bold text-black">{{ $totalAll }}</span> data
             </div>
         </div>
     </div>
@@ -28,15 +28,15 @@
                 {{-- SEARCH INPUT --}}
                 <div class="relative top-1">
                     <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">
-                        Kode / Nama / Menu
+                        Code / Name / Menu
                     </span>
-                    <x-ui.sccr-input name="search" wire:model="search" placeholder="Ketik lalu enter..."
+                    <x-ui.sccr-input name="search" wire:model="search" placeholder="Type and press enter..."
                         class="w-64" />
                 </div>
 
                 {{-- FILTER 1: Menu Category --}}
                 <div class="relative top-1">
-                    <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">Kategori</span>
+                    <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">Category</span>
                     <x-ui.sccr-select name="filter1" wire:model.live="filter1" :options="$filter1Options"
                         class="w-40" />
                 </div>
@@ -52,8 +52,8 @@
                 <div class="flex flex-wrap items-center gap-1">
                     <x-ui.sccr-button type="submit" variant="primary"
                         class="bg-gray-900 text-gray-100 hover:bg-gray-400">
-                        <x-ui.sccr-icon name="cari" :size="20" />
-                        Cari
+                        <x-ui.sccr-icon name="Search" :size="20" />
+                        Search
                     </x-ui.sccr-button>
 
                     <x-ui.sccr-button type="button" wire:click="clearFilters"
@@ -118,41 +118,41 @@
 
                             <th wire:click="sortBy('recipe_name')"
                                 class="px-4 py-3 text-left text-xs font-bold cursor-pointer">
-                                Nama Resep {!! $sortField === 'recipe_name' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                                Recipe Name {!! $sortField === 'recipe_name' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                             </th>
 
                             <th class="px-4 py-3 text-left text-xs font-bold">
-                                Menu / Tipe
+                                Menu / Type
                             </th>
 
                             <th class="px-4 py-3 text-center text-xs font-bold">
-                                Versi Aktif
+                                Version Active
                             </th>
 
                             <th class="px-4 py-3 text-center text-xs font-bold">
-                                Jml Komponen
+                                Component Count
                             </th>
 
                             <th wire:click="sortBy('is_active')"
                                 class="px-4 py-3 text-center text-xs font-bold cursor-pointer">
-                                Aktif {!! $sortField === 'is_active' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                                Active {!! $sortField === 'is_active' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                             </th>
 
                             {{-- ACTIONS HEADER --}}
                             <th class="px-4 py-3 text-center text-xs font-bold">
                                 <div class="flex items-center justify-center gap-2">
-                                    <span>Aksi</span>
+                                    <span>Actions</span>
 
                                     @if ($canCreate && $canWrite)
                                         <div class="flex gap-1">
                                             <x-ui.sccr-button type="button" variant="icon-circle"
                                                 wire:click="openCreate" class="w-8 h-8 hover:scale-105"
-                                                title="Tambah Resep Menu">
+                                                title="Add Menu Recipe">
                                                 <x-ui.sccr-icon name="plus" :size="18" />
                                             </x-ui.sccr-button>
                                             <x-ui.sccr-button type="button" variant="icon-circle"
                                                 wire:click="openCreateSemiFinished" class="w-8 h-8 hover:scale-105 bg-orange-600"
-                                                title="Tambah Resep Semi-Finished">
+                                                title="Add Semi-Finished Recipe">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" viewBox="0 0 20 20" fill="currentColor">
                                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" />
                                                 </svg>
@@ -192,10 +192,10 @@
                                 </td>
 
                                 <td class="px-4 py-2 text-sm">
-                                    @if ($item->menu_id)
-                                        {{ $item->menu?->name ?? '-' }}
-                                        @if ($item->menu?->category)
-                                            <span class="text-xs text-gray-400">({{ $item->menu->category }})</span>
+                                    @if ($item->Menu_id)
+                                        {{ $item->Menu?->name ?? '-' }}
+                                        @if ($item->Menu?->category)
+                                            <span class="text-xs text-gray-400">({{ $item->Menu->category }})</span>
                                         @endif
                                     @else
                                         <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800">
@@ -224,9 +224,9 @@
 
                                 <td class="px-4 py-2 text-center text-sm">
                                     @if ($item['is_active'])
-                                        <span class="text-green-600 font-semibold">Ya</span>
+                                        <span class="text-green-600 font-semibold">Yes</span>
                                     @else
-                                        <span class="text-red-600">Tidak</span>
+                                        <span class="text-red-600">No</span>
                                     @endif
                                 </td>
 
@@ -242,8 +242,8 @@
                                         @if ($canDelete)
                                             <x-ui.sccr-button type="button" variant="icon"
                                                 wire:click="deleteRecipe('{{ $item['id'] }}')"
-                                                class="text-red-600 hover:scale-125" title="Hapus"
-                                                onclick="return confirm('Yakin ingin menghapus resep ini?')">
+                                                class="text-red-600 hover:scale-125" title="Delete"
+                                                onclick="return confirm('Yakin ingin menghapus Recipe ini?')">
                                                 <x-ui.sccr-icon name="delete" :size="20" />
                                             </x-ui.sccr-button>
                                         @endif
@@ -253,7 +253,7 @@
                         @empty
                             <tr>
                                 <td colspan="9" class="py-10 text-center text-gray-400 italic">
-                                    Data tidak ditemukan
+                                    No data found
                                 </td>
                             </tr>
                         @endforelse
@@ -265,7 +265,7 @@
             <div
                 class="flex-none px-6 py-3 border-t bg-white flex flex-col md:flex-row justify-between items-center gap-3">
                 <div class="text-sm text-gray-600 flex items-center">
-                    <span class="font-bold text-gray-800 mr-1">{{ count($selectedItems) }}</span> item dipilih
+                    <span class="font-bold text-gray-800 mr-1">{{ count($selectedItems) }}</span> items selected
                 </div>
 
                 <div>
@@ -286,11 +286,11 @@
         <div class="fixed inset-0 z-50 flex items-center justify-center px-6">
             <div class="w-full max-w-4xl bg-white rounded-2xl shadow-2xl relative max-h-[90vh] overflow-y-auto">
                 <x-ui.sccr-button type="button" variant="icon" wire:click="closeOverlay"
-                    class="absolute top-4 right-4 text-gray-400 hover:text-red-500" title="Tutup">
+                    class="absolute top-4 right-4 text-gray-400 hover:text-red-500" title="Close">
                     <span class="text-xl leading-none">&#x2715;</span>
                 </x-ui.sccr-button>
 
-                @livewire('holdings.resto.resep.recipe.recipe-create')
+                @livewire('holdings.resto.Recipe.recipe.recipe-create')
             </div>
         </div>
     @endif
@@ -302,27 +302,27 @@
         <div class="fixed inset-0 z-50 flex items-center justify-center px-6">
             <div class="w-full max-w-4xl bg-white rounded-2xl shadow-2xl relative max-h-[90vh] overflow-y-auto">
                 <x-ui.sccr-button type="button" variant="icon" wire:click="closeOverlay"
-                    class="absolute top-4 right-4 text-gray-400 hover:text-red-500" title="Tutup">
+                    class="absolute top-4 right-4 text-gray-400 hover:text-red-500" title="Close">
                     <span class="text-xl leading-none">&#x2715;</span>
                 </x-ui.sccr-button>
 
-                @livewire('holdings.resto.resep.recipe.recipe-create', ['isSemiFinished' => true])
+                @livewire('holdings.resto.Recipe.recipe.recipe-create', ['isSemiFinished' => true])
             </div>
         </div>
     @endif
 
-    {{-- ================= OVERLAY: EDIT ================= --}}
-    @if ($overlayMode === 'edit' && $overlayId)
+    {{-- ================= OVERLAY: Edit ================= --}}
+    @if ($overlayMode === 'Edit' && $overlayId)
         <div class="fixed inset-0 bg-black/40 z-40" wire:click="closeOverlay"></div>
 
         <div class="fixed inset-0 z-50 flex items-center justify-center px-6">
             <div class="w-full max-w-2xl bg-white rounded-2xl shadow-2xl relative">
                 <x-ui.sccr-button type="button" variant="icon" wire:click="closeOverlay"
-                    class="absolute top-4 right-4 text-gray-400 hover:text-red-500" title="Tutup">
+                    class="absolute top-4 right-4 text-gray-400 hover:text-red-500" title="Close">
                     <span class="text-xl leading-none">&#x2715;</span>
                 </x-ui.sccr-button>
 
-                @livewire('holdings.resto.resep.recipe.recipe-edit', ['id' => $overlayId])
+                @livewire('holdings.resto.Recipe.recipe.recipe-Edit', ['id' => $overlayId])
             </div>
         </div>
     @endif

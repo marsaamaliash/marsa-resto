@@ -32,6 +32,8 @@ class StockMutationTable extends Component
 
     public string $sortDirection = 'desc';
 
+    public int $totalAll = 0;
+
     protected array $allowedSortFields = [
         'created_at',
         'item_name',
@@ -62,6 +64,8 @@ class StockMutationTable extends Component
             ['label' => 'Core Stock', 'route' => 'dashboard.resto.core-stock', 'color' => 'text-gray-800'],
             ['label' => 'Stock Mutation', 'color' => 'text-gray-900 font-semibold'],
         ];
+
+        $this->totalAll = Rst_StockMutation::count();
     }
 
     protected function dataQuery(): Collection
@@ -190,7 +194,7 @@ class StockMutationTable extends Component
     public function exportSelected()
     {
         if (empty($this->selectedItems)) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Pilih data terlebih dahulu'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Please select data first'];
 
             return null;
         }
@@ -206,7 +210,7 @@ class StockMutationTable extends Component
         $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet;
         $ws = $spreadsheet->getActiveSheet();
 
-        $ws->fromArray([['ID', 'Tanggal', 'Item', 'SKU', 'Lokasi', 'Tipe', 'Qty', 'Qty Before', 'Qty After', 'Reference', 'Dari Lokasi', 'Ke Lokasi', 'Notes', 'Satuan']], null, 'A1');
+        $ws->fromArray([['ID', 'Date', 'Item', 'SKU', 'Location', 'Type', 'Qty', 'Qty Before', 'Qty After', 'Reference', 'From Location', 'To Location', 'Notes', 'Unit']], null, 'A1');
 
         $row = 2;
         foreach ($data as $item) {
@@ -240,8 +244,8 @@ class StockMutationTable extends Component
     protected function filter1Options(): array
     {
         return [
-            'in' => 'IN (Penerimaan)',
-            'out' => 'OUT (Pengeluaran)',
+            'in' => 'IN (Receipt)',
+            'out' => 'OUT (Issue)',
             'transfer_in' => 'Transfer In',
             'transfer_out' => 'Transfer Out',
             'adjustment' => 'Adjustment',

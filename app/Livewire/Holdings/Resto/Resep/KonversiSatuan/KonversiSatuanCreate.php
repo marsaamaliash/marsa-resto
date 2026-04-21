@@ -17,6 +17,8 @@ class KonversiSatuanCreate extends Component
 
     public string $conversion_factor = '';
 
+    public ?string $notes = '';
+
     public array $toast = ['show' => false, 'type' => 'success', 'message' => ''];
 
     protected function rules(): array
@@ -26,20 +28,21 @@ class KonversiSatuanCreate extends Component
             'from_uom_id' => ['required', 'integer', 'different:to_uom_id'],
             'to_uom_id' => ['required', 'integer', 'different:from_uom_id'],
             'conversion_factor' => ['required', 'numeric', 'min:0.0001'],
+            'notes' => ['nullable', 'string', 'max:1000'],
         ];
     }
 
     protected function messages(): array
     {
         return [
-            'from_uom_id.different' => 'Dari Satuan harus berbeda dengan Ke Satuan',
-            'to_uom_id.different' => 'Ke Satuan harus berbeda dengan Dari Satuan',
+            'from_uom_id.different' => 'From Unit must be different from To Unit',
+            'to_uom_id.different' => 'To Unit must be different from From Unit',
         ];
     }
 
     public function store(): void
     {
-        $this->validate();
+        $validated = $this->validate();
 
         $exists = Rst_KonversiSatuan::where('item_id', $this->item_id)
             ->where('from_uoms_id', $this->from_uom_id)
@@ -47,24 +50,55 @@ class KonversiSatuanCreate extends Component
             ->exists();
 
         if ($exists) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Konversi sudah ada untuk kombinasi ini'];
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Conversion already exists for this combination'];
 
             return;
         }
 
         Rst_KonversiSatuan::create([
-            'item_id' => $this->item_id,
-            'from_uoms_id' => $this->from_uom_id,
-            'to_uoms_id' => $this->to_uom_id,
-            'conversion_factor' => $this->conversion_factor,
+            'item_id' => $validated['item_id'],
+            'from_uoms_id' => $validated['from_uom_id'],
+            'to_uoms_id' => $validated['to_uom_id'],
+            'conversion_factor' => $validated['conversion_factor'],
+            'notes' => $validated['notes'] ?? null,
         ]);
-
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Konversi Satuan berhasil ditambahkan'];
 
         $this->dispatch('konversi-satuan-created');
         $this->dispatch('konversi-satuan-overlay-close');
 
-        $this->reset(['item_id', 'from_uom_id', 'to_uom_id', 'conversion_factor']);
+        $this->reset(['item_id', 'from_uom_id', 'to_uom_id', 'conversion_factor', 'notes']);
+    }
+
+    public function saveDraft(): void
+    {
+        $validated = $this->validate();
+
+        $exists = Rst_KonversiSatuan::where('item_id', $this->item_id)
+            ->where('from_uoms_id', $this->from_uom_id)
+            ->where('to_uoms_id', $this->to_uom_id)
+            ->exists();
+
+        if ($exists) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Conversion already exists for this combination'];
+
+            return;
+        }
+
+        Rst_KonversiSatuan::create([
+            'item_id' => $validated['item_id'],
+            'from_uoms_id' => $validated['from_uom_id'],
+            'to_uoms_id' => $validated['to_uom_id'],
+            'conversion_factor' => $validated['conversion_factor'],
+            'notes' => $validated['notes'] ?? null,
+            'is_active' => false,
+        ]);
+
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Unit conversion draft saved successfully'];
+
+        $this->dispatch('konversi-satuan-created');
+        $this->dispatch('konversi-satuan-overlay-close');
+
+        $this->reset(['item_id', 'from_uom_id', 'to_uom_id', 'conversion_factor', 'notes']);
     }
 
     public function cancel(): void

@@ -1,4 +1,4 @@
-<x-ui.sccr-card transparent wire:key="production-order" class="h-full min-h-0 flex flex-col">
+﻿<x-ui.sccr-card transparent wire:key="production-order" class="h-full min-h-0 flex flex-col">
 
     <div class="relative px-8 py-6 bg-emerald-600/80 rounded-b-3xl shadow-lg overflow-hidden">
         <div class="flex justify-between items-start">
@@ -7,9 +7,9 @@
                 <p class="text-emerald-100 text-sm">Manajemen Production Order &amp; Eksekusi Produksi</p>
             </div>
             @if ($canCreate)
-                <a href="{{ route('dashboard.resto.resep.production.create') }}"
+                <a href="{{ route('dashboard.resto.recipe.production.create') }}"
                     class="px-4 py-2 bg-white text-emerald-700 rounded-md hover:bg-gray-100 text-sm font-medium font-semibold">
-                    + Buat Production Order
+                    + Create Production Order
                 </a>
             @endif
         </div>
@@ -17,7 +17,7 @@
         <div class="mt-4 flex justify-between items-center text-sm">
             <x-ui.sccr-breadcrumb :items="$breadcrumbs" />
             <div class="text-white">
-                Menampilkan <span class="font-bold text-black">{{ $data->total() }}</span> data
+                Showing <span class="font-bold text-black">{{ $data->total() }}</span> of <span class="font-bold text-black">{{ $totalAll }}</span> data
             </div>
         </div>
     </div>
@@ -27,7 +27,7 @@
             <form wire:submit.prevent="applyFilter" class="flex flex-wrap items-center gap-1 flex-grow">
                 <div class="relative top-1">
                     <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">Prod. No</span>
-                    <x-ui.sccr-input name="search" wire:model="search" placeholder="Cari Prod No..." class="w-64" />
+                    <x-ui.sccr-input name="search" wire:model="search" placeholder="Search Prod No..." class="w-64" />
                 </div>
 
                 <div class="relative top-1">
@@ -42,7 +42,7 @@
 
                 <div class="flex flex-wrap items-center gap-1">
                     <x-ui.sccr-button type="submit" variant="primary" class="bg-gray-900 text-gray-100 hover:bg-gray-400">
-                        <x-ui.sccr-icon name="cari" :size="20" /> Cari
+                        <x-ui.sccr-icon name="Search" :size="20" /> Search
                     </x-ui.sccr-button>
                     <x-ui.sccr-button type="button" wire:click="clearFilters" class="bg-gray-800 text-gray-100 hover:bg-gray-400">
                         <x-ui.sccr-icon name="clear" :size="20" /> Clear
@@ -75,15 +75,15 @@
                             <th wire:click="sortBy('prod_no')" class="px-4 py-3 text-left text-xs font-bold cursor-pointer">
                                 Prod No {!! $sortField === 'prod_no' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                             </th>
-                            <th class="px-4 py-3 text-left text-xs font-bold">Resep</th>
-                            <th class="px-4 py-3 text-left text-xs font-bold">Versi</th>
+                            <th class="px-4 py-3 text-left text-xs font-bold">Recipe</th>
+                            <th class="px-4 py-3 text-left text-xs font-bold">Version</th>
                             <th class="px-4 py-3 text-right text-xs font-bold">Planned Qty</th>
                             <th class="px-4 py-3 text-center text-xs font-bold">Status</th>
                             <th class="px-4 py-3 text-center text-xs font-bold">Approval</th>
                             <th wire:click="sortBy('business_date')" class="px-4 py-3 text-left text-xs font-bold cursor-pointer">
                                 BDate {!! $sortField === 'business_date' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                             </th>
-                            <th class="px-4 py-3 text-center text-xs font-bold">Aksi</th>
+                            <th class="px-4 py-3 text-center text-xs font-bold">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 bg-gray-100">
@@ -92,8 +92,8 @@
                                 <td class="px-4 py-2 font-mono text-sm font-semibold">{{ $item['id'] }}</td>
                                 <td class="px-4 py-2 font-mono text-sm">{{ $item['prod_no'] }}</td>
                                 <td class="px-4 py-2 text-sm">{{ $item->recipe?->recipe_name ?? '-' }}</td>
-                                <td class="px-4 py-2 text-sm">V{{ $item->recipeVersion?->version_no ?? '-' }}</td>
-                                <td class="px-4 py-2 text-sm text-right font-mono">{{ number_format($item['planned_output_qty'], 2) }}</td>
+                                <td class="px-4 py-2 text-sm">V{{ $item->recipeversion?->version_no ?? '-' }}</td>
+                                <td class="px-4 py-2 text-sm text-right font-mono">{{ number_format($item['planned_Output_qty'], 2) }}</td>
                                 <td class="px-4 py-2 text-center">
                                     @php $s = $item['status'] ?? 'draft'; @endphp
                                     @if ($s === 'draft')
@@ -109,7 +109,7 @@
                                     @endif
                                 </td>
                                 <td class="px-4 py-2 text-center">
-                                    @php $a = $item['approval_status'] ?? 'draft'; @endphp
+                                    @php $a = $item['Approval_status'] ?? 'draft'; @endphp
                                     @if ($a === 'draft')
                                         <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">Draft</span>
                                     @elseif ($a === 'submitted')
@@ -130,7 +130,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9" class="py-10 text-center text-gray-400 italic">Data tidak ditemukan</td>
+                                <td colspan="9" class="py-10 text-center text-gray-400 italic">No data found</td>
                             </tr>
                         @endforelse
                     </tbody>

@@ -48,7 +48,7 @@ class PurchaseRequestCreate extends Component
             ['label' => 'Resto', 'route' => 'dashboard.resto', 'color' => 'text-gray-800'],
             ['label' => 'Procurement', 'route' => 'dashboard.resto.procurement', 'color' => 'text-gray-800'],
             ['label' => 'Purchase Request', 'route' => 'dashboard.resto.purchase-request', 'color' => 'text-gray-800'],
-            ['label' => $id ? 'Edit PR' : 'Buat PR Baru', 'color' => 'text-gray-900 font-semibold'],
+            ['label' => $id ? 'Edit PR' : 'Create New PR', 'color' => 'text-gray-900 font-semibold'],
         ];
 
         $this->requiredDate = now()->addDays(7)->format('Y-m-d');
@@ -62,7 +62,7 @@ class PurchaseRequestCreate extends Component
     {
         $pr = Rst_PurchaseRequest::with(['items.item', 'items.uom', 'requesterLocation'])->find($id);
         if (! $pr || ! $pr->canBeEdited()) {
-            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'PR tidak ditemukan atau tidak dapat diedit.'];
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'PR not found or cannot be edited.'];
             $this->redirectRoute('dashboard.resto.purchase-request');
 
             return;
@@ -355,7 +355,7 @@ class PurchaseRequestCreate extends Component
 
             PurchaseRequestService::submitToRM($pr->id, $this->notes, $user);
 
-            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Purchase Request berhasil disubmit ke RM untuk approval.'];
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Purchase Request submitted to RM for approval.'];
             $this->redirectRoute('dashboard.resto.purchase-request');
         } catch (\Exception $e) {
             $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
@@ -365,12 +365,12 @@ class PurchaseRequestCreate extends Component
     private function validateData(): void
     {
         if ($this->selectedLocationId === 0) {
-            throw new \Exception('Pilih lokasi terlebih dahulu.');
+            throw new \Exception('Please select a location first.');
         }
 
         $totalItems = count($this->selectedCriticalItems) + count($this->additionalItems);
         if ($totalItems === 0) {
-            throw new \Exception('Pilih minimal 1 item untuk Purchase Request.');
+            throw new \Exception('Select at least 1 item for Purchase Request.');
         }
     }
 

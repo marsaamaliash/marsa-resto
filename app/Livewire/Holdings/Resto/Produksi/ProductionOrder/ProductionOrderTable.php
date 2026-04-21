@@ -36,6 +36,8 @@ class ProductionOrderTable extends Component
 
     public string $sortDirection = 'desc';
 
+    public int $totalAll = 0;
+
     protected array $allowedSortFields = [
         'id',
         'prod_no',
@@ -75,11 +77,13 @@ class ProductionOrderTable extends Component
         $this->breadcrumbs = [
             ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
             ['label' => 'Resto', 'route' => 'dashboard.resto', 'color' => 'text-gray-800'],
-            ['label' => 'Resep', 'route' => 'dashboard.resto.resep', 'color' => 'text-gray-800'],
+            ['label' => 'Recipe', 'route' => 'dashboard.resto.resep', 'color' => 'text-gray-800'],
             ['label' => 'Production', 'color' => 'text-gray-900 font-semibold'],
         ];
 
         $this->syncCaps();
+
+        $this->totalAll = Rst_ProductionOrder::count();
     }
 
     public function hydrate(): void
@@ -178,7 +182,7 @@ class ProductionOrderTable extends Component
     protected function filter1Options(): array
     {
         return [
-            '' => '-- Semua Status --',
+            '' => '-- All Status --',
             'draft' => 'Draft',
             'issued' => 'Issued',
             'in_progress' => 'In Progress',
@@ -190,7 +194,7 @@ class ProductionOrderTable extends Component
     protected function filter2Options(): array
     {
         return [
-            '' => '-- Semua Approval --',
+            '' => '-- All Approvals --',
             'draft' => 'Draft',
             'submitted' => 'Submitted',
             'approved' => 'Approved',

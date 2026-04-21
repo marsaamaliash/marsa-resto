@@ -1,4 +1,4 @@
-<x-ui.sccr-card transparent wire:key="stock-mutation" class="h-full min-h-0 flex flex-col">
+﻿<x-ui.sccr-card transparent wire:key="stock-mutation" class="h-full min-h-0 flex flex-col">
 
     {{-- ================= HEADER ================= --}}
     <div class="relative px-8 py-6 bg-blue-600/80 rounded-b-3xl shadow-lg overflow-hidden">
@@ -14,7 +14,7 @@
         <div class="mt-4 flex justify-between items-center text-sm">
             <x-ui.sccr-breadcrumb :items="$breadcrumbs" />
             <div class="text-white">
-                Menampilkan <span class="font-bold text-black">{{ $data->total() }}</span> data
+                Showing <span class="font-bold text-black">{{ $data->total() }}</span> of <span class="font-bold text-black">{{ $totalAll }}</span> data
             </div>
         </div>
     </div>
@@ -28,21 +28,21 @@
                 {{-- SEARCH INPUT --}}
                 <div class="relative top-1">
                     <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">
-                        Cari
+                        Search
                     </span>
-                    <x-ui.sccr-input name="search" wire:model="search" placeholder="Item/SKU/Lokasi/Reference..."
+                    <x-ui.sccr-input name="search" wire:model="search" placeholder="Item/SKU/Location/Reference..."
                         class="w-64" />
                 </div>
 
-                {{-- FILTER 1: Tipe Mutasi --}}
+                {{-- FILTER 1: Type Mutasi --}}
                 <div class="relative top-1">
-                    <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">Tipe</span>
+                    <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">Type</span>
                     <x-ui.sccr-select name="filter1" wire:model.live="filter1" :options="$filter1Options" class="w-44" />
                 </div>
 
-                {{-- FILTER 2: Lokasi --}}
+                {{-- FILTER 2: Location --}}
                 <div class="relative top-1">
-                    <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">Lokasi</span>
+                    <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">Location</span>
                     <x-ui.sccr-select name="filter2" wire:model.live="filter2" :options="$filter2Options" class="w-40" />
                 </div>
 
@@ -56,8 +56,8 @@
                 <div class="flex flex-wrap items-center gap-1">
                     <x-ui.sccr-button type="submit" variant="primary"
                         class="bg-gray-900 text-gray-100 hover:bg-gray-400">
-                        <x-ui.sccr-icon name="cari" :size="20" />
-                        Cari
+                        <x-ui.sccr-icon name="Search" :size="20" />
+                        Search
                     </x-ui.sccr-button>
 
                     <x-ui.sccr-button type="button" wire:click="clearFilters"
@@ -127,12 +127,12 @@
 
                             {{-- <th wire:click="sortBy('location_name')"
                                 class="px-3 py-3 text-left text-xs font-bold cursor-pointer">
-                                Lokasi {!! $sortField === 'location_name' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                                Location {!! $sortField === 'location_name' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                             </th> --}}
 
                             <th wire:click="sortBy('type')"
                                 class="px-3 py-3 text-center text-xs font-bold cursor-pointer">
-                                Tipe {!! $sortField === 'type' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                                Type {!! $sortField === 'type' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                             </th>
 
                             <th wire:click="sortBy('qty')"
@@ -161,7 +161,7 @@
                             </th>
 
                             <th class="px-3 py-3 text-left text-xs font-bold">
-                                Satuan
+                                Unit
                             </th>
                         </tr>
                     </thead>
@@ -178,7 +178,7 @@
                                     'reserve' => 'bg-yellow-100 text-yellow-800 border-yellow-200',
                                     'unreserve' => 'bg-gray-100 text-gray-800 border-gray-200',
                                     'consume' => 'bg-pink-100 text-pink-800 border-pink-200',
-                                    'waste' => 'bg-red-200 text-red-900 border-red-300',
+                                    'Waste' => 'bg-red-200 text-red-900 border-red-300',
                                 ];
                                 $typeLabels = [
                                     'in' => 'IN',
@@ -189,7 +189,7 @@
                                     'reserve' => 'RSV',
                                     'unreserve' => 'UNRSV',
                                     'consume' => 'CNSM',
-                                    'waste' => 'WSTE',
+                                    'Waste' => 'WSTE',
                                 ];
                                 $badgeClass = $typeColors[$item->type] ?? 'bg-gray-100 text-gray-800';
                                 $typeLabel = $typeLabels[$item->type] ?? $item->type;
@@ -274,7 +274,7 @@
                         @empty
                             <tr>
                                 <td colspan="13" class="py-10 text-center text-gray-400 italic">
-                                    Data tidak ditemukan
+                                    No data found
                                 </td>
                             </tr>
                         @endforelse
@@ -286,7 +286,7 @@
             <div
                 class="flex-none px-6 py-3 border-t bg-white flex flex-col md:flex-row justify-between items-center gap-3">
                 <div class="text-sm text-gray-600 flex items-center">
-                    <span class="font-bold text-gray-800 mr-1">{{ count($selectedItems) }}</span> item dipilih
+                    <span class="font-bold text-gray-800 mr-1">{{ count($selectedItems) }}</span> items selected
                 </div>
 
                 <div>

@@ -99,10 +99,10 @@ class OutputForm extends Component
                 unset($data['line_no'], $data['created_by']);
                 $data['updated_by'] = auth()->id();
                 Rst_RecipeOutput::findOrFail($this->outputId)->update($data);
-                $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Output berhasil diperbarui.'];
+                $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Output updated successfully.'];
             } else {
                 Rst_RecipeOutput::create($data);
-                $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Output berhasil ditambahkan.'];
+                $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Output added successfully.'];
             }
 
             $this->dispatch('output-saved');

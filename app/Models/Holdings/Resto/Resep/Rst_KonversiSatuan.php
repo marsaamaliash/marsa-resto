@@ -6,9 +6,12 @@ use App\Models\Holdings\Resto\Master\Rst_MasterItem;
 use App\Models\Holdings\Resto\Master\Rst_MasterSatuan;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Rst_KonversiSatuan extends Model
 {
+    use SoftDeletes;
+
     protected $connection = 'sccr_resto';
 
     protected $table = 'uom_conversions';
@@ -20,6 +23,10 @@ class Rst_KonversiSatuan extends Model
         'from_uoms_id',
         'to_uoms_id',
         'conversion_factor',
+        'notes',
+        'created_by',
+        'updated_by',
+        'deleted_by',
     ];
 
     public function item(): BelongsTo

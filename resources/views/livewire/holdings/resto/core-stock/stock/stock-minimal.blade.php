@@ -1,4 +1,4 @@
-<x-ui.sccr-card transparent wire:key="stock-minimal" class="h-full min-h-0 flex flex-col">
+﻿<x-ui.sccr-card transparent wire:key="stock-minimal" class="h-full min-h-0 flex flex-col">
 
     {{-- ================= HEADER ================= --}}
     <div class="relative px-8 py-6 bg-red-600/80 rounded-b-3xl shadow-lg overflow-hidden">
@@ -14,7 +14,7 @@
         <div class="mt-4 flex justify-between items-center text-sm">
             <x-ui.sccr-breadcrumb :items="$breadcrumbs" />
             <div class="text-white">
-                Menampilkan <span class="font-bold text-black">{{ $data->total() }}</span> data
+                Showing <span class="font-bold text-black">{{ $data->total() }}</span> of <span class="font-bold text-black">{{ $totalAll }}</span> data
             </div>
         </div>
     </div>
@@ -30,13 +30,13 @@
                     <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">
                         Nama / SKU
                     </span>
-                    <x-ui.sccr-input name="search" wire:model="search" placeholder="Ketik lalu enter..."
+                    <x-ui.sccr-input name="search" wire:model="search" placeholder="Type and press enter..."
                         class="w-64" />
                 </div>
 
-                {{-- FILTER 1: Kategori --}}
+                {{-- FILTER 1: Category --}}
                 <div class="relative top-1">
-                    <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">Kategori</span>
+                    <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">Category</span>
                     <x-ui.sccr-select name="filter1" wire:model.live="filter1" :options="$filter1Options"
                         class="w-40" />
                 </div>
@@ -45,8 +45,8 @@
                 <div class="flex flex-wrap items-center gap-1">
                     <x-ui.sccr-button type="submit" variant="primary"
                         class="bg-gray-900 text-gray-100 hover:bg-gray-400">
-                        <x-ui.sccr-icon name="cari" :size="20" />
-                        Cari
+                        <x-ui.sccr-icon name="Search" :size="20" />
+                        Search
                     </x-ui.sccr-button>
 
                     <x-ui.sccr-button type="button" wire:click="clearFilters"
@@ -110,7 +110,7 @@
                             </th>
 
                             <th class="px-4 py-3 text-left text-xs font-bold">
-                                Kategori
+                                Category
                             </th>
 
                             <th wire:click="sortBy('qty_available')"
@@ -133,7 +133,7 @@
                             </th>
 
                             <th class="px-4 py-3 text-left text-xs font-bold">
-                                Satuan
+                                Unit
                             </th>
                         </tr>
                     </thead>
@@ -195,7 +195,7 @@
                         @empty
                             <tr>
                                 <td colspan="9" class="py-10 text-center text-gray-400 italic">
-                                    Tidak ada item dengan stok kritis
+                                    No items with critical stock
                                 </td>
                             </tr>
                         @endforelse
@@ -207,7 +207,7 @@
             <div
                 class="flex-none px-6 py-3 border-t bg-white flex flex-col md:flex-row justify-between items-center gap-3">
                 <div class="text-sm text-gray-600 flex items-center">
-                    <span class="font-bold text-gray-800 mr-1">{{ count($selectedItems) }}</span> item dipilih
+                    <span class="font-bold text-gray-800 mr-1">{{ count($selectedItems) }}</span> items selected
                 </div>
 
                 <div>

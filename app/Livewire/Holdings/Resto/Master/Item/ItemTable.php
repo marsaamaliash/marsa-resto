@@ -10,6 +10,8 @@ use Illuminate\Support\Collection;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class ItemTable extends Component
 {
@@ -33,16 +35,22 @@ class ItemTable extends Component
 
     public string $filter2 = '';
 
+    public string $filterStatus = '';
+
     public int $perPage = 10;
 
     public string $sortField = 'id';
 
     public string $sortDirection = 'desc';
 
+    public int $totalAll = 0;
+
     protected array $allowedSortFields = [
         'id',
         'name',
         'sku',
+        'category_name',
+        'uom_name',
         'min_stock',
         'is_active',
         'is_stockable',
@@ -57,10 +65,32 @@ class ItemTable extends Component
 
     public ?string $overlayId = null;
 
+    public bool $showColumnPicker = false;
+
+    public array $columnVisibility = [];
+
+    public array $availableColumns = [
+        ['key' => 'id', 'label' => 'ID', 'default' => true],
+        ['key' => 'name', 'label' => 'Name', 'default' => true],
+        ['key' => 'sku', 'label' => 'SKU', 'default' => true],
+        ['key' => 'category', 'label' => 'Category', 'default' => true],
+        ['key' => 'uom', 'label' => 'Unit', 'default' => true],
+        ['key' => 'min_stock', 'label' => 'Min. Stock', 'default' => true],
+        ['key' => 'is_active', 'label' => 'Active', 'default' => true],
+        ['key' => 'is_stockable', 'label' => 'Stockable', 'default' => true],
+        ['key' => 'status', 'label' => 'Status', 'default' => true],
+        ['key' => 'type', 'label' => 'Type', 'default' => false],
+        ['key' => 'has_batch', 'label' => 'Batch', 'default' => false],
+        ['key' => 'has_expiry', 'label' => 'Expiry', 'default' => false],
+        ['key' => 'created_at', 'label' => 'Created', 'default' => false],
+        ['key' => 'updated_at', 'label' => 'Updated', 'default' => false],
+    ];
+
     protected $queryString = [
         'search' => ['except' => ''],
         'filter1' => ['except' => ''],
         'filter2' => ['except' => ''],
+        'filterStatus' => ['except' => ''],
         'perPage' => ['except' => 10],
         'sortField' => ['except' => 'id'],
         'sortDirection' => ['except' => 'desc'],
@@ -81,13 +111,18 @@ class ItemTable extends Component
     {
         $this->breadcrumbs = [
             ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
-            ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
             ['label' => 'Resto', 'route' => 'dashboard.resto', 'color' => 'text-gray-800'],
             ['label' => 'Master Data', 'route' => 'dashboard.resto.master', 'color' => 'text-gray-900 font-semibold'],
             ['label' => 'Item', 'color' => 'text-gray-900 font-semibold'],
         ];
 
         $this->syncCaps();
+
+        $this->totalAll = Rst_MasterItem::withTrashed()->count();
+
+        foreach ($this->availableColumns as $col) {
+            $this->columnVisibility[$col['key']] = $col['default'];
+        }
     }
 
     public function hydrate(): void
@@ -95,9 +130,29 @@ class ItemTable extends Component
         $this->syncCaps();
     }
 
+    public function toggleColumnPicker(): void
+    {
+        $this->showColumnPicker = ! $this->showColumnPicker;
+    }
+
+    public function resetColumns(): void
+    {
+        foreach ($this->availableColumns as $col) {
+            $this->columnVisibility[$col['key']] = $col['default'];
+        }
+    }
+
     protected function dataQuery(): Collection
     {
-        $query = Rst_MasterItem::with(['category', 'uom']);
+        $query = Rst_MasterItem::withTrashed()->with(['category', 'uom']);
+
+        if ($this->filterStatus === 'active') {
+            $query->whereNull('deleted_at')->where('is_active', true);
+        } elseif ($this->filterStatus === 'draft') {
+            $query->whereNull('deleted_at')->where('is_active', false);
+        } elseif ($this->filterStatus === 'deleted') {
+            $query->onlyTrashed();
+        }
 
         if ($this->search !== '') {
             $search = $this->search;
@@ -117,7 +172,17 @@ class ItemTable extends Component
         }
 
         if (in_array($this->sortField, $this->allowedSortFields, true)) {
-            $query->orderBy($this->sortField, $this->sortDirection);
+            if ($this->sortField === 'category_name') {
+                $query->join('categories', 'items.category_id', '=', 'categories.id')
+                    ->orderBy('categories.name', $this->sortDirection)
+                    ->select('items.*');
+            } elseif ($this->sortField === 'uom_name') {
+                $query->join('uoms', 'items.uom_id', '=', 'uoms.id')
+                    ->orderBy('uoms.name', $this->sortDirection)
+                    ->select('items.*');
+            } else {
+                $query->orderBy($this->sortField, $this->sortDirection);
+            }
         }
 
         return $query->get();
@@ -172,7 +237,7 @@ class ItemTable extends Component
 
     public function clearFilters(): void
     {
-        $this->reset(['search', 'filter1', 'filter2']);
+        $this->reset(['search', 'filter1', 'filter2', 'filterStatus']);
         $this->applyFilter();
     }
 
@@ -212,44 +277,59 @@ class ItemTable extends Component
     public function exportSelected()
     {
         if (empty($this->selectedItems)) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Pilih data terlebih dahulu'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Please select data first'];
 
             return null;
         }
 
         $ids = array_values(array_unique(array_map('strval', $this->selectedItems)));
-        $data = $this->dataQuery()->whereIn('id', $ids);
+        $data = Rst_MasterItem::withTrashed()->with(['category', 'uom'])->whereIn('id', $ids)->get();
 
         return $this->generateExcel($data, 'Selected');
     }
 
     private function generateExcel($data, string $type)
     {
-        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet;
+        $spreadsheet = new Spreadsheet;
         $ws = $spreadsheet->getActiveSheet();
 
-        $ws->fromArray([['ID', 'Nama', 'SKU', 'Kategori', 'Satuan', 'Min Stok', 'Aktif', 'Stokable', 'Dibuat']], null, 'A1');
+        $headers = ['ID', 'Name', 'SKU', 'Type', 'Category', 'Unit', 'Min Stock', 'Active', 'Stockable', 'Batch', 'Expiry', 'Status', 'Created'];
+        $ws->fromArray([$headers], null, 'A1');
 
         $row = 2;
         foreach ($data as $item) {
+            $status = $item->deleted_at ? 'Deleted' : ($item->is_active ? 'Active' : 'Draft');
+            $typeLabel = match ($item->type) {
+                'raw' => 'Raw Material',
+                'prep' => 'Semi Finished',
+                default => ucfirst($item->type ?? ''),
+            };
+
             $ws->fromArray([
-                $item['id'] ?? '',
-                $item['name'] ?? '',
-                $item['sku'] ?? '',
+                $item->id,
+                $item->name,
+                $item->sku,
+                $typeLabel,
                 $item->category?->name ?? '-',
                 $item->uom?->name ?? '-',
-                $item['min_stock'] ?? '0',
-                $item['is_active'] ? 'Ya' : 'Tidak',
-                $item['is_stockable'] ? 'Ya' : 'Tidak',
-                $item['created_at'] ?? '',
+                $item->is_stockable ? $item->min_stock : '-',
+                $item->is_active ? 'Yes' : 'No',
+                $item->is_stockable ? 'Yes' : '-',
+                $item->is_stockable ? ($item->has_batch ? 'Yes' : 'No') : '-',
+                $item->is_stockable ? ($item->has_expiry ? 'Yes' : 'No') : '-',
+                $status,
+                $item->created_at?->format('Y-m-d H:i:s') ?? '',
             ], null, 'A'.$row++);
+        }
+
+        foreach (range('A', 'M') as $col) {
+            $ws->getColumnDimension($col)->setAutoSize(true);
         }
 
         $filename = "Item_{$type}_".now()->format('Ymd_His').'.xlsx';
 
-        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
         $tmp = tempnam(sys_get_temp_dir(), 'item_');
-        $writer->save($tmp);
+        (new Xlsx($spreadsheet))->save($tmp);
 
         return response()->download($tmp, $filename)->deleteFileAfterSend(true);
     }
@@ -257,7 +337,7 @@ class ItemTable extends Component
     public function openCreate(): void
     {
         if (! $this->canCreate) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin create.'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to create.'];
 
             return;
         }
@@ -278,13 +358,55 @@ class ItemTable extends Component
     public function openEdit(string $id): void
     {
         if (! $this->canUpdate) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin update.'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to update.'];
 
             return;
         }
 
         $this->overlayMode = 'edit';
         $this->overlayId = $id;
+    }
+
+    public function deleteItem(string $id): void
+    {
+        if (! $this->canDelete) {
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to delete.'];
+
+            return;
+        }
+
+        $item = Rst_MasterItem::withTrashed()->find($id);
+
+        if (! $item) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Item not found.'];
+
+            return;
+        }
+
+        $item->delete();
+
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Item deleted successfully.'];
+    }
+
+    public function restoreItem(string $id): void
+    {
+        if (! $this->canDelete) {
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to restore.'];
+
+            return;
+        }
+
+        $item = Rst_MasterItem::onlyTrashed()->find($id);
+
+        if (! $item) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Item not found.'];
+
+            return;
+        }
+
+        $item->restore();
+
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Item restored successfully.'];
     }
 
     public function closeOverlay(): void
@@ -302,14 +424,14 @@ class ItemTable extends Component
     public function handleCreated(?string $id = null): void
     {
         $this->closeOverlay();
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data berhasil ditambahkan.'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data added successfully.'];
     }
 
     #[On('item-updated')]
     public function handleUpdated(?string $id = null): void
     {
         $this->closeOverlay();
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data berhasil diperbarui.'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data updated successfully.'];
     }
 
     #[On('item-open-edit')]

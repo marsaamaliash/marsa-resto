@@ -119,7 +119,7 @@ class WaiterOrders extends Component
         if (! $this->selectTambahOrderId) {
             $this->toastShow = true;
             $this->toastType = 'error';
-            $this->toastMessage = 'Pilih order terlebih dahulu';
+            $this->toastMessage = 'Please select an order first';
 
             return;
         }
@@ -148,7 +148,7 @@ class WaiterOrders extends Component
         if (! $this->selectEditOrderId) {
             $this->toastShow = true;
             $this->toastType = 'error';
-            $this->toastMessage = 'Pilih order terlebih dahulu';
+            $this->toastMessage = 'Please select an order first';
 
             return;
         }
@@ -163,7 +163,7 @@ class WaiterOrders extends Component
         $this->showEditModal = false;
         $this->toastShow = true;
         $this->toastType = 'success';
-        $this->toastMessage = 'Data order berhasil diperbarui';
+        $this->toastMessage = 'Order data updated successfully';
     }
 
     public function deliverItem(int $itemId): void
@@ -173,7 +173,7 @@ class WaiterOrders extends Component
 
         $this->toastShow = true;
         $this->toastType = 'success';
-        $this->toastMessage = 'Item diantar';
+        $this->toastMessage = 'Item delivered';
     }
 
     public function hideToast(): void

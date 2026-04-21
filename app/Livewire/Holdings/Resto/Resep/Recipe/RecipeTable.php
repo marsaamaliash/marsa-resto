@@ -37,6 +37,8 @@ class RecipeTable extends Component
 
     public string $sortDirection = 'desc';
 
+    public int $totalAll = 0;
+
     protected array $allowedSortFields = [
         'id',
         'recipe_code',
@@ -78,11 +80,13 @@ class RecipeTable extends Component
         $this->breadcrumbs = [
             ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
             ['label' => 'Resto', 'route' => 'dashboard.resto', 'color' => 'text-gray-800'],
-            ['label' => 'Resep', 'route' => 'dashboard.resto.resep', 'color' => 'text-gray-800'],
+            ['label' => 'Recipe', 'route' => 'dashboard.resto.resep', 'color' => 'text-gray-800'],
             ['label' => 'Recipe', 'color' => 'text-gray-900 font-semibold'],
         ];
 
         $this->syncCaps();
+
+        $this->totalAll = Rst_Recipe::count();
     }
 
     public function hydrate(): void
@@ -216,7 +220,7 @@ class RecipeTable extends Component
     public function exportSelected()
     {
         if (empty($this->selectedItems)) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Pilih data terlebih dahulu'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Please select data first'];
 
             return null;
         }
@@ -232,7 +236,7 @@ class RecipeTable extends Component
         $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet;
         $ws = $spreadsheet->getActiveSheet();
 
-        $ws->fromArray([['ID', 'Kode Resep', 'Nama Resep', 'Menu/Tipe', 'Versi Aktif', 'Jml Komponen', 'Aktif', 'Dibuat']], null, 'A1');
+        $ws->fromArray([['ID', 'Recipe Code', 'Recipe Name', 'Menu/Type', 'Active Version', 'Component Count', 'Active', 'Created']], null, 'A1');
 
         $row = 2;
         foreach ($data as $item) {
@@ -247,7 +251,7 @@ class RecipeTable extends Component
                 $menuOrType,
                 $activeVersion ? 'V'.$activeVersion->version_no : '-',
                 $activeVersion ? $activeVersion->components->count() : 0,
-                $item['is_active'] ? 'Ya' : 'Tidak',
+                $item['is_active'] ? 'Yes' : 'No',
                 $item['created_at'] ?? '',
             ], null, 'A'.$row++);
         }
@@ -264,7 +268,7 @@ class RecipeTable extends Component
     public function openCreate(): void
     {
         if (! $this->canCreate) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin create.'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to create.'];
 
             return;
         }
@@ -279,7 +283,7 @@ class RecipeTable extends Component
     public function openCreateSemiFinished(): void
     {
         if (! $this->canCreate) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin create.'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to create.'];
 
             return;
         }
@@ -300,7 +304,7 @@ class RecipeTable extends Component
     public function openEdit(string $id): void
     {
         if (! $this->canUpdate) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin update.'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to update.'];
 
             return;
         }
@@ -324,14 +328,14 @@ class RecipeTable extends Component
     public function handleCreated(?string $id = null): void
     {
         $this->closeOverlay();
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Resep berhasil ditambahkan.'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Recipe added successfully.'];
     }
 
     #[On('recipe-updated')]
     public function handleUpdated(?string $id = null): void
     {
         $this->closeOverlay();
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Resep berhasil diperbarui.'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Recipe updated successfully.'];
     }
 
     #[On('recipe-open-edit')]
@@ -343,7 +347,7 @@ class RecipeTable extends Component
     public function deleteRecipe(string $id): void
     {
         if (! $this->canDelete) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin delete.'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to delete.'];
 
             return;
         }
@@ -353,7 +357,7 @@ class RecipeTable extends Component
             $recipe->deleted_by = auth()->id();
             $recipe->save();
             $recipe->delete();
-            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Resep berhasil dihapus.'];
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Recipe deleted successfully.'];
         } catch (\Exception $e) {
             $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
         }
@@ -373,7 +377,7 @@ class RecipeTable extends Component
             ->filter()
             ->toArray();
 
-        $options = ['' => '-- Semua Kategori Menu --'];
+        $options = ['' => '-- All Menu Categories --'];
         foreach ($categories as $category) {
             $options[$category] = $category;
         }
@@ -384,9 +388,9 @@ class RecipeTable extends Component
     protected function filter2Options(): array
     {
         return [
-            '' => '-- Semua Status --',
-            'active' => 'Aktif',
-            'inactive' => 'Nonaktif',
+            '' => '-- All Status --',
+            'active' => 'Active',
+            'inactive' => 'Inactive',
         ];
     }
 

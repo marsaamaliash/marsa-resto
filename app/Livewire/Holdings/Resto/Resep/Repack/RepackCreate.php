@@ -59,8 +59,8 @@ class RepackCreate extends Component
     protected function messages(): array
     {
         return [
-            'source_item_id.different' => 'Item Sumber harus berbeda dengan Item Target',
-            'target_item_id.different' => 'Item Target harus berbeda dengan Item Sumber',
+            'source_item_id.different' => 'Source Item must be different from Target Item',
+            'target_item_id.different' => 'Target Item must be different from Source Item',
         ];
     }
 
@@ -79,7 +79,7 @@ class RepackCreate extends Component
                 'notes' => $this->notes ?: null,
             ]);
 
-            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Repack Stok berhasil ditambahkan'];
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Stock Repack added successfully'];
 
             $this->dispatch('repack-created');
             $this->dispatch('repack-overlay-close');
@@ -158,7 +158,7 @@ class RepackCreate extends Component
 
         $this->showNewItemModal = false;
         $this->target_item_id = (string) $item->id;
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Item berhasil ditambahkan'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Item added successfully'];
         $this->dispatch('item-created');
     }
 

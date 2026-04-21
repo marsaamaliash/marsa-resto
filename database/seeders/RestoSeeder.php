@@ -14,6 +14,9 @@ class RestoSeeder extends Seeder
         $this->command->info('Seeding Resto locations...');
         $this->call(LokasiSeeder::class);
 
+        $this->command->info('Seeding Resto meja...');
+        $this->call(MejaSeeder::class);
+
         $this->command->info('Seeding Resto initial stock...');
         $this->call(StockInitialSeeder::class);
 

@@ -71,4 +71,8 @@
     ❌
        @elseif ($name === 'paper')
     📝
+@elseif ($name === 'columns')
+    📋
+@elseif ($name === 'refresh')
+    🔁
 @endif

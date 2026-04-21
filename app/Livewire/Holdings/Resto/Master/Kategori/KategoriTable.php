@@ -8,6 +8,8 @@ use Illuminate\Support\Collection;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class KategoriTable extends Component
 {
@@ -31,16 +33,20 @@ class KategoriTable extends Component
 
     public string $filter2 = '';
 
+    public string $filterStatus = '';
+
     public int $perPage = 10;
 
     public string $sortField = 'id';
 
     public string $sortDirection = 'desc';
 
+    public int $totalAll = 0;
+
     protected array $allowedSortFields = [
         'id',
         'name',
-        'slug',
+        'description',
         'is_active',
         'created_at',
     ];
@@ -53,10 +59,25 @@ class KategoriTable extends Component
 
     public ?string $overlayId = null;
 
+    public bool $showColumnPicker = false;
+
+    public array $columnVisibility = [];
+
+    public array $availableColumns = [
+        ['key' => 'id', 'label' => 'ID', 'default' => true],
+        ['key' => 'name', 'label' => 'Name', 'default' => true],
+        ['key' => 'description', 'label' => 'Description', 'default' => true],
+        ['key' => 'is_active', 'label' => 'Active', 'default' => true],
+        ['key' => 'status', 'label' => 'Status', 'default' => true],
+        ['key' => 'created_at', 'label' => 'Created', 'default' => false],
+        ['key' => 'updated_at', 'label' => 'Updated', 'default' => false],
+    ];
+
     protected $queryString = [
         'search' => ['except' => ''],
         'filter1' => ['except' => ''],
         'filter2' => ['except' => ''],
+        'filterStatus' => ['except' => ''],
         'perPage' => ['except' => 10],
         'sortField' => ['except' => 'id'],
         'sortDirection' => ['except' => 'desc'],
@@ -77,13 +98,18 @@ class KategoriTable extends Component
     {
         $this->breadcrumbs = [
             ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
-            ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
             ['label' => 'Resto', 'route' => 'dashboard.resto', 'color' => 'text-gray-800'],
             ['label' => 'Master Data', 'route' => 'dashboard.resto.master', 'color' => 'text-gray-900 font-semibold'],
-            ['label' => 'Kategori', 'color' => 'text-gray-900 font-semibold'],
+            ['label' => 'Category', 'color' => 'text-gray-900 font-semibold'],
         ];
 
         $this->syncCaps();
+
+        $this->totalAll = Rst_MasterKategori::withTrashed()->count();
+
+        foreach ($this->availableColumns as $col) {
+            $this->columnVisibility[$col['key']] = $col['default'];
+        }
     }
 
     public function hydrate(): void
@@ -91,20 +117,36 @@ class KategoriTable extends Component
         $this->syncCaps();
     }
 
+    public function toggleColumnPicker(): void
+    {
+        $this->showColumnPicker = ! $this->showColumnPicker;
+    }
+
+    public function resetColumns(): void
+    {
+        foreach ($this->availableColumns as $col) {
+            $this->columnVisibility[$col['key']] = $col['default'];
+        }
+    }
+
     protected function dataQuery(): Collection
     {
-        $query = Rst_MasterKategori::query();
+        $query = Rst_MasterKategori::withTrashed();
+
+        if ($this->filterStatus === 'active') {
+            $query->whereNull('deleted_at')->where('is_active', true);
+        } elseif ($this->filterStatus === 'draft') {
+            $query->whereNull('deleted_at')->where('is_active', false);
+        } elseif ($this->filterStatus === 'deleted') {
+            $query->onlyTrashed();
+        }
 
         if ($this->search !== '') {
             $search = $this->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('slug', 'like', "%{$search}%");
+                    ->orWhere('description', 'like', "%{$search}%");
             });
-        }
-
-        if ($this->filter1 !== '') {
-            $query->where('is_active', $this->filter1);
         }
 
         if (in_array($this->sortField, $this->allowedSortFields, true)) {
@@ -163,7 +205,7 @@ class KategoriTable extends Component
 
     public function clearFilters(): void
     {
-        $this->reset(['search', 'filter1', 'filter2']);
+        $this->reset(['search', 'filter1', 'filter2', 'filterStatus']);
         $this->applyFilter();
     }
 
@@ -203,41 +245,47 @@ class KategoriTable extends Component
     public function exportSelected()
     {
         if (empty($this->selectedItems)) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Pilih data terlebih dahulu'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Please select data first'];
 
             return null;
         }
 
         $ids = array_values(array_unique(array_map('strval', $this->selectedItems)));
-        $data = $this->dataQuery()->whereIn('id', $ids);
+        $data = Rst_MasterKategori::withTrashed()->whereIn('id', $ids)->get();
 
         return $this->generateExcel($data, 'Selected');
     }
 
     private function generateExcel($data, string $type)
     {
-        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet;
+        $spreadsheet = new Spreadsheet;
         $ws = $spreadsheet->getActiveSheet();
 
-        $ws->fromArray([['ID', 'Nama', 'Slug', 'Deskripsi', 'Aktif', 'Dibuat']], null, 'A1');
+        $headers = ['ID', 'Name', 'Description', 'Active', 'Status', 'Created'];
+        $ws->fromArray([$headers], null, 'A1');
 
         $row = 2;
         foreach ($data as $item) {
+            $status = $item->deleted_at ? 'Deleted' : ($item->is_active ? 'Active' : 'Draft');
+
             $ws->fromArray([
-                $item['id'] ?? '',
-                $item['name'] ?? '',
-                $item['slug'] ?? '',
-                $item['description'] ?? '',
-                $item['is_active'] ? 'Ya' : 'Tidak',
-                $item['created_at'] ?? '',
+                $item->id,
+                $item->name,
+                $item->description ?? '-',
+                $item->is_active ? 'Yes' : 'No',
+                $status,
+                $item->created_at?->format('Y-m-d H:i:s') ?? '',
             ], null, 'A'.$row++);
+        }
+
+        foreach (range('A', 'F') as $col) {
+            $ws->getColumnDimension($col)->setAutoSize(true);
         }
 
         $filename = "Kategori_{$type}_".now()->format('Ymd_His').'.xlsx';
 
-        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
         $tmp = tempnam(sys_get_temp_dir(), 'kategori_');
-        $writer->save($tmp);
+        (new Xlsx($spreadsheet))->save($tmp);
 
         return response()->download($tmp, $filename)->deleteFileAfterSend(true);
     }
@@ -245,7 +293,7 @@ class KategoriTable extends Component
     public function openCreate(): void
     {
         if (! $this->canCreate) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin create.'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to create.'];
 
             return;
         }
@@ -266,13 +314,55 @@ class KategoriTable extends Component
     public function openEdit(string $id): void
     {
         if (! $this->canUpdate) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin update.'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to update.'];
 
             return;
         }
 
         $this->overlayMode = 'edit';
         $this->overlayId = $id;
+    }
+
+    public function deleteItem(string $id): void
+    {
+        if (! $this->canDelete) {
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to delete.'];
+
+            return;
+        }
+
+        $item = Rst_MasterKategori::withTrashed()->find($id);
+
+        if (! $item) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data not found.'];
+
+            return;
+        }
+
+        $item->delete();
+
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data deleted successfully.'];
+    }
+
+    public function restoreItem(string $id): void
+    {
+        if (! $this->canDelete) {
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to restore.'];
+
+            return;
+        }
+
+        $item = Rst_MasterKategori::onlyTrashed()->find($id);
+
+        if (! $item) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data not found.'];
+
+            return;
+        }
+
+        $item->restore();
+
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data restored successfully.'];
     }
 
     public function closeOverlay(): void
@@ -290,14 +380,14 @@ class KategoriTable extends Component
     public function handleCreated(?string $id = null): void
     {
         $this->closeOverlay();
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data berhasil ditambahkan.'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data added successfully.'];
     }
 
     #[On('kategori-updated')]
     public function handleUpdated(?string $id = null): void
     {
         $this->closeOverlay();
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data berhasil diperbarui.'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data updated successfully.'];
     }
 
     #[On('kategori-open-edit')]
@@ -308,11 +398,7 @@ class KategoriTable extends Component
 
     protected function filter1Options(): array
     {
-        return [
-            '' => '-- Semua Status --',
-            '1' => 'Aktif',
-            '0' => 'Nonaktif',
-        ];
+        return [];
     }
 
     protected function filter2Options(): array

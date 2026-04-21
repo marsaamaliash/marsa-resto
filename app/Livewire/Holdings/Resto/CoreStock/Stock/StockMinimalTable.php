@@ -3,6 +3,7 @@
 namespace App\Livewire\Holdings\Resto\CoreStock\Stock;
 
 use App\Models\Holdings\Resto\CoreStock\Rst_StockBalance;
+use App\Models\Holdings\Resto\Master\Rst_MasterItem;
 use App\Models\Holdings\Resto\Master\Rst_MasterKategori;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
@@ -26,6 +27,8 @@ class StockMinimalTable extends Component
     public string $sortField = 'selisih';
 
     public string $sortDirection = 'desc';
+
+    public int $totalAll = 0;
 
     protected array $allowedSortFields = [
         'item_name',
@@ -52,8 +55,10 @@ class StockMinimalTable extends Component
             ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
             ['label' => 'Resto', 'route' => 'dashboard.resto', 'color' => 'text-gray-800'],
             ['label' => 'Core Stock', 'route' => 'dashboard.resto.core-stock', 'color' => 'text-gray-800'],
-            ['label' => 'Stock Kritis', 'color' => 'text-gray-900 font-semibold'],
+            ['label' => 'Critical Stock', 'color' => 'text-gray-900 font-semibold'],
         ];
+
+        $this->totalAll = Rst_MasterItem::where('min_stock', '>', 0)->count();
     }
 
     protected function dataQuery(): Collection
@@ -216,7 +221,7 @@ class StockMinimalTable extends Component
     public function exportSelected()
     {
         if (empty($this->selectedItems)) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Pilih data terlebih dahulu'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Please select data first'];
 
             return null;
         }
@@ -232,7 +237,7 @@ class StockMinimalTable extends Component
         $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet;
         $ws = $spreadsheet->getActiveSheet();
 
-        $ws->fromArray([['ID', 'Item', 'SKU', 'Kategori', 'Stok Sekarang', 'Min Stok', 'Selisih', 'Status', 'Satuan']], null, 'A1');
+        $ws->fromArray([['ID', 'Item', 'SKU', 'Category', 'Current Stock', 'Min Stock', 'Difference', 'Status', 'Unit']], null, 'A1');
 
         $row = 2;
         foreach ($data as $item) {
@@ -244,7 +249,7 @@ class StockMinimalTable extends Component
                 $item->qty_available ?? '0',
                 $item->min_stock ?? '0',
                 $item->selisih ?? '0',
-                $item->status === 'critical' ? 'Kritis' : 'Warning',
+                $item->status === 'critical' ? 'Critical' : 'Warning',
                 $item->item?->uom?->name ?? '-',
             ], null, 'A'.$row++);
         }
