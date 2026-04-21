@@ -1,4 +1,4 @@
-<x-ui.sccr-card transparent wire:key="purchase-request-table" class="h-full min-h-0 flex flex-col">
+﻿<x-ui.sccr-card transparent wire:key="purchase-request-table" class="h-full min-h-0 flex flex-col">
 
     {{-- ================= HEADER ================= --}}
     <div class="relative px-8 py-6 bg-blue-600/80 rounded-b-3xl shadow-lg overflow-hidden">
@@ -164,6 +164,8 @@
                                 Oleh
                             </th>
 
+                            {{-- Actions --}}
+                            {{-- Actions --}}
                             {{-- Actions --}}
                             <th class="px-4 py-3 text-center text-xs font-bold">
                                 <div class="flex items-center justify-center gap-2">
