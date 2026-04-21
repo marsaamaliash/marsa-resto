@@ -30,6 +30,11 @@ class Rst_StockOpname extends Model
         return $this->hasMany(Rst_StockOpnameItem::class, 'stock_opname_id');
     }
 
+    public function adjustments(): HasMany
+    {
+        return $this->hasMany(Rst_StockOpnameAdjustment::class, 'stock_opname_id');
+    }
+
     public function location(): BelongsTo
     {
         return $this->belongsTo(\App\Models\Holdings\Resto\Master\Rst_MasterLokasi::class, 'location_id');

@@ -18,6 +18,7 @@
     <div class="flex-1 min-h-0 px-4 pb-2 overflow-y-auto">
         @if ($detail)
             <div class="py-4">
+                {{-- 1. Opname Information --}}
                 <div class="bg-teal-50 border border-teal-200 rounded-lg p-4 mb-4">
                     <h3 class="font-bold text-lg text-gray-800 mb-3">Opname Information</h3>
                     <div class="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
@@ -88,11 +89,12 @@
                     </div>
                 </div>
 
+                {{-- 2. Detail Items (read-only, from stock_opname_items) --}}
                 @if ($detail->items->count() > 0)
                     <div class="mb-4">
                         <div class="flex items-center justify-between mb-3">
                             <h3 class="font-bold text-lg text-gray-800">Items</h3>
-                            @if ($detail->items->some(fn ($i) => $i['status'] !== 'match'))
+                            @if ($detail->items->some(fn ($i) => $i['status'] !== 'match') && ! $adjustmentLocked)
                                 <x-ui.sccr-button type="button" wire:click="toggleAdjustmentForm"
                                     class="bg-amber-500 text-white hover:bg-amber-600">
                                     <x-ui.sccr-icon name="edit" :size="18" />
@@ -143,57 +145,33 @@
                     </div>
                 @endif
 
-                @if ($showAdjustmentForm)
+                {{-- 3. Form Adjustment (editable, saves to stock_opname_adjustments) --}}
+                @if ($showAdjustmentForm && ! $adjustmentLocked)
                     <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
-                        <h3 class="font-bold text-lg text-gray-800 mb-3">
-                            @if ($adjustmentLocked)
-                                Adjustment (Terkunci)
-                            @else
-                                Form Adjustment
-                            @endif
-                        </h3>
-                        @if (! $adjustmentLocked)
-                            <p class="text-sm text-gray-600 mb-4">Ubah stok fisik untuk item yang memiliki selisih. Centang item yang ingin di-adjust.</p>
-                        @else
-                            <p class="text-sm text-gray-600 mb-4">Adjustment sudah dilakukan dan tidak bisa diubah lagi.</p>
-                        @endif
+                        <h3 class="font-bold text-lg text-gray-800 mb-3">Form Adjustment</h3>
+                        <p class="text-sm text-gray-600 mb-4">Ubah stok fisik dan tambahkan catatan untuk item yang memiliki selisih.</p>
 
                         <div class="bg-white border rounded-lg overflow-hidden">
                             <table class="min-w-full divide-y divide-gray-200 text-sm">
                                 <thead class="bg-gray-50">
                                     <tr>
-                                        @if (! $adjustmentLocked)
-                                            <th class="px-3 py-2 text-center text-xs font-bold text-gray-600 uppercase w-12">✓</th>
-                                        @endif
                                         <th class="px-3 py-2 text-left text-xs font-bold text-gray-600 uppercase">Item</th>
                                         <th class="px-3 py-2 text-right text-xs font-bold text-gray-600 uppercase">Stok Sistem</th>
                                         <th class="px-3 py-2 text-right text-xs font-bold text-gray-600 uppercase">Stok Fisik</th>
                                         <th class="px-3 py-2 text-right text-xs font-bold text-gray-600 uppercase">Selisih</th>
                                         <th class="px-3 py-2 text-center text-xs font-bold text-gray-600 uppercase">Status</th>
-                                        @if (! $adjustmentLocked)
-                                            <th class="px-3 py-2 text-left text-xs font-bold text-gray-600 uppercase">Catatan</th>
-                                        @endif
+                                        <th class="px-3 py-2 text-left text-xs font-bold text-gray-600 uppercase">Catatan</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-200">
                                     @foreach ($adjustmentItems as $index => $adjItem)
                                         <tr class="{{ $adjItem['status'] !== 'match' ? 'bg-yellow-50' : '' }}">
-                                            @if (! $adjustmentLocked)
-                                                <td class="px-3 py-2 text-center">
-                                                    <input type="checkbox" wire:model="adjustmentItems.{{ $index }}.confirmed"
-                                                        class="rounded border-gray-300">
-                                                </td>
-                                            @endif
                                             <td class="px-3 py-2">{{ $adjItem['item_name'] }}</td>
                                             <td class="px-3 py-2 text-right font-mono">{{ number_format($adjItem['system_qty'], 2) }}</td>
-                                            <td class="px-3 py-2 text-right font-mono">
-                                                @if ($adjustmentLocked)
-                                                    {{ number_format($adjItem['physical_qty'], 2) }}
-                                                @else
-                                                    <input type="number" step="0.01"
-                                                        wire:model="adjustmentItems.{{ $index }}.physical_qty"
-                                                        class="w-24 border-gray-300 rounded text-sm text-right">
-                                                @endif
+                                            <td class="px-3 py-2">
+                                                <input type="number" step="0.01"
+                                                    wire:model="adjustmentItems.{{ $index }}.physical_qty"
+                                                    class="w-24 border-gray-300 rounded text-sm text-right">
                                             </td>
                                             <td class="px-3 py-2 text-right font-mono {{ $adjItem['difference'] < 0 ? 'text-red-600' : ($adjItem['difference'] > 0 ? 'text-green-600' : '') }}">
                                                 {{ number_format($adjItem['difference'], 2) }}
@@ -207,70 +185,65 @@
                                                     <span class="px-2 py-0.5 rounded bg-red-100 text-red-800 text-xs">Deficit</span>
                                                 @endif
                                             </td>
-                                            @if (! $adjustmentLocked)
-                                                <td class="px-3 py-2">
-                                                    <input type="text" wire:model="adjustmentItems.{{ $index }}.remark"
-                                                        class="w-full border-gray-300 rounded text-sm">
-                                                </td>
-                                            @endif
+                                            <td class="px-3 py-2">
+                                                <input type="text" wire:model="adjustmentItems.{{ $index }}.remark"
+                                                    class="w-full border-gray-300 rounded text-sm">
+                                            </td>
                                         </tr>
                                     @endforeach
                                 </tbody>
                             </table>
                         </div>
 
-                        @if (! $adjustmentLocked)
-                            <div class="flex gap-2 mt-4">
-                                <x-ui.sccr-button type="button" wire:click="saveAdjustments"
-                                    class="bg-amber-500 text-white hover:bg-amber-600">
-                                    <x-ui.sccr-icon name="save" :size="18" />
-                                    Simpan Adjustment
-                                </x-ui.sccr-button>
-                                <x-ui.sccr-button type="button" wire:click="toggleAdjustmentForm"
-                                    class="bg-gray-300 text-gray-700 hover:bg-gray-400">
-                                    Batal
-                                </x-ui.sccr-button>
-                            </div>
-                        @endif
+                        <div class="flex gap-2 mt-4">
+                            <x-ui.sccr-button type="button" wire:click="saveAdjustments"
+                                class="bg-amber-500 text-white hover:bg-amber-600">
+                                <x-ui.sccr-icon name="save" :size="18" />
+                                Simpan Adjustment
+                            </x-ui.sccr-button>
+                            <x-ui.sccr-button type="button" wire:click="toggleAdjustmentForm"
+                                class="bg-gray-300 text-gray-700 hover:bg-gray-400">
+                                Batal
+                            </x-ui.sccr-button>
+                        </div>
                     </div>
                 @endif
 
-                @if ($detail['status'] === 'completed')
+                {{-- 4. Adjustment Hasil (read-only, from stock_opname_adjustments) --}}
+                @if ($adjustmentLocked && count($adjustmentItems) > 0)
                     <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-                        <h3 class="font-bold text-lg text-gray-800 mb-3">Hasil Adjustment</h3>
+                        <h3 class="font-bold text-lg text-gray-800 mb-3">Adjustment (Terkunci)</h3>
                         <div class="bg-white border rounded-lg overflow-hidden">
                             <table class="min-w-full divide-y divide-gray-200 text-sm">
                                 <thead class="bg-gray-50">
                                     <tr>
-                                        <th class="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase">Item</th>
-                                        <th class="px-4 py-3 text-right text-xs font-bold text-gray-600 uppercase">Stok Sistem</th>
-                                        <th class="px-4 py-3 text-right text-xs font-bold text-gray-600 uppercase">Stok Fisik</th>
-                                        <th class="px-4 py-3 text-right text-xs font-bold text-gray-600 uppercase">Selisih</th>
-                                        <th class="px-4 py-3 text-center text-xs font-bold text-gray-600 uppercase">Status</th>
-                                        <th class="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase">Satuan</th>
+                                        <th class="px-3 py-2 text-left text-xs font-bold text-gray-600 uppercase">Item</th>
+                                        <th class="px-3 py-2 text-right text-xs font-bold text-gray-600 uppercase">Stok Sistem</th>
+                                        <th class="px-3 py-2 text-right text-xs font-bold text-gray-600 uppercase">Stok Fisik</th>
+                                        <th class="px-3 py-2 text-right text-xs font-bold text-gray-600 uppercase">Selisih</th>
+                                        <th class="px-3 py-2 text-center text-xs font-bold text-gray-600 uppercase">Status</th>
+                                        <th class="px-3 py-2 text-left text-xs font-bold text-gray-600 uppercase">Catatan</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-200">
-                                    @foreach ($detail->items as $opnameItem)
-                                        <tr class="{{ $opnameItem['status'] !== 'match' ? 'bg-yellow-50' : '' }}">
-                                            <td class="px-4 py-3">{{ $opnameItem->item?->name ?? '-' }}</td>
-                                            <td class="px-4 py-3 text-right font-mono">{{ number_format($opnameItem['system_qty'], 2) }}</td>
-                                            <td class="px-4 py-3 text-right font-mono">{{ number_format($opnameItem['physical_qty'], 2) }}</td>
-                                            <td class="px-4 py-3 text-right font-mono {{ $opnameItem['difference'] < 0 ? 'text-red-600' : ($opnameItem['difference'] > 0 ? 'text-green-600' : '') }}">
-                                                {{ number_format($opnameItem['difference'], 2) }}
+                                    @foreach ($adjustmentItems as $adjItem)
+                                        <tr class="{{ $adjItem['status'] !== 'match' ? 'bg-yellow-50' : '' }}">
+                                            <td class="px-3 py-2">{{ $adjItem['item_name'] }}</td>
+                                            <td class="px-3 py-2 text-right font-mono">{{ number_format($adjItem['system_qty'], 2) }}</td>
+                                            <td class="px-3 py-2 text-right font-mono">{{ number_format($adjItem['physical_qty'], 2) }}</td>
+                                            <td class="px-3 py-2 text-right font-mono {{ $adjItem['difference'] < 0 ? 'text-red-600' : ($adjItem['difference'] > 0 ? 'text-green-600' : '') }}">
+                                                {{ number_format($adjItem['difference'], 2) }}
                                             </td>
-                                            <td class="px-4 py-3 text-center">
-                                                @if ($opnameItem['status'] === 'match')
+                                            <td class="px-3 py-2 text-center">
+                                                @if ($adjItem['status'] === 'match')
                                                     <span class="px-2 py-0.5 rounded bg-green-100 text-green-800 text-xs">Match</span>
-                                                @elseif ($opnameItem['status'] === 'surplus')
+                                                @elseif ($adjItem['status'] === 'surplus')
                                                     <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 text-xs">Surplus</span>
-                                                @elseif ($opnameItem['status'] === 'deficit')
+                                                @elseif ($adjItem['status'] === 'deficit')
                                                     <span class="px-2 py-0.5 rounded bg-red-100 text-red-800 text-xs">Deficit</span>
-                                                @else
-                                                    {{ $opnameItem['status'] }}
                                                 @endif
                                             </td>
-                                            <td class="px-4 py-3">{{ $opnameItem->uom?->symbols ?? '' }}</td>
+                                            <td class="px-3 py-2 text-sm">{{ $adjItem['remark'] ?? '-' }}</td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -279,6 +252,7 @@
                     </div>
                 @endif
 
+                {{-- 5. Actions: Submit / Approval --}}
                 @if ($detail['status'] === 'draft')
                     <div class="bg-gray-50 border rounded-lg p-4 mt-6">
                         <h3 class="font-bold text-lg text-gray-800 mb-3">Actions</h3>
@@ -293,65 +267,50 @@
                 @endif
 
                 @if ($detail['status'] === 'requested')
-                    @php
-                        $allItemsAdjusted = $detail->items->every(function ($item) {
-                            return $item['status'] === 'match' || $item['physical_qty'] > 0;
-                        });
-                    @endphp
+                    <div class="bg-gray-50 border rounded-lg p-4 mt-6">
+                        <h3 class="font-bold text-lg text-gray-800 mb-3">Actions</h3>
+                        <div class="flex flex-wrap gap-2">
+                            @php $approvalLevel = $detail['approval_level'] ?? 0; @endphp
 
-                    @if ($allItemsAdjusted)
-                        <div class="bg-gray-50 border rounded-lg p-4 mt-6">
-                            <h3 class="font-bold text-lg text-gray-800 mb-3">Actions</h3>
-                            <div class="flex flex-wrap gap-2">
-                                @php $approvalLevel = $detail['approval_level'] ?? 0; @endphp
-
-                                @if ($approvalLevel == 0)
-                                    <x-ui.sccr-button type="button" wire:click="excChefCanApprove('{{ $detail['id'] }}')"
-                                        class="bg-green-600 text-white hover:bg-green-700">
-                                        <x-ui.sccr-icon name="approve" :size="18" />
-                                        Approve (Exc Chef)
-                                    </x-ui.sccr-button>
-                                @endif
-
-                                @if ($approvalLevel == 1)
-                                    <x-ui.sccr-button type="button" wire:click="rmCanApprove('{{ $detail['id'] }}')"
-                                        class="bg-green-600 text-white hover:bg-green-700">
-                                        <x-ui.sccr-icon name="approve" :size="18" />
-                                        Approve (RM)
-                                    </x-ui.sccr-button>
-                                @endif
-
-                                @if ($approvalLevel == 2)
-                                    <x-ui.sccr-button type="button" wire:click="spvCanApprove('{{ $detail['id'] }}')"
-                                        class="bg-green-600 text-white hover:bg-green-700">
-                                        <x-ui.sccr-icon name="approve" :size="18" />
-                                        Approve (SPV)
-                                    </x-ui.sccr-button>
-                                @endif
-
-                                @if ($approvalLevel == 3)
-                                    <x-ui.sccr-button type="button" wire:click="finalizeOpname('{{ $detail['id'] }}')"
-                                        class="bg-teal-600 text-white hover:bg-teal-700">
-                                        <x-ui.sccr-icon name="check" :size="18" />
-                                        Finalize & Adjust Stock
-                                    </x-ui.sccr-button>
-                                @endif
-
-                                <x-ui.sccr-button type="button" wire:click="rejectOpname('{{ $detail['id'] }}')"
-                                    class="bg-red-100 text-red-700 hover:bg-red-200 border border-red-300">
-                                    <x-ui.sccr-icon name="no" :size="18" />
-                                    Tolak
+                            @if ($approvalLevel == 0)
+                                <x-ui.sccr-button type="button" wire:click="excChefCanApprove('{{ $detail['id'] }}')"
+                                    class="bg-green-600 text-white hover:bg-green-700">
+                                    <x-ui.sccr-icon name="approve" :size="18" />
+                                    Approve (Exc Chef)
                                 </x-ui.sccr-button>
-                            </div>
+                            @endif
+
+                            @if ($approvalLevel == 1)
+                                <x-ui.sccr-button type="button" wire:click="rmCanApprove('{{ $detail['id'] }}')"
+                                    class="bg-green-600 text-white hover:bg-green-700">
+                                    <x-ui.sccr-icon name="approve" :size="18" />
+                                    Approve (RM)
+                                </x-ui.sccr-button>
+                            @endif
+
+                            @if ($approvalLevel == 2)
+                                <x-ui.sccr-button type="button" wire:click="spvCanApprove('{{ $detail['id'] }}')"
+                                    class="bg-green-600 text-white hover:bg-green-700">
+                                    <x-ui.sccr-icon name="approve" :size="18" />
+                                    Approve (SPV)
+                                </x-ui.sccr-button>
+                            @endif
+
+                            @if ($approvalLevel == 3)
+                                <x-ui.sccr-button type="button" wire:click="finalizeOpname('{{ $detail['id'] }}')"
+                                    class="bg-teal-600 text-white hover:bg-teal-700">
+                                    <x-ui.sccr-icon name="check" :size="18" />
+                                    Finalize & Adjust Stock
+                                </x-ui.sccr-button>
+                            @endif
+
+                            <x-ui.sccr-button type="button" wire:click="rejectOpname('{{ $detail['id'] }}')"
+                                class="bg-red-100 text-red-700 hover:bg-red-200 border border-red-300">
+                                <x-ui.sccr-icon name="no" :size="18" />
+                                Tolak
+                            </x-ui.sccr-button>
                         </div>
-                    @else
-                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-6">
-                            <p class="text-sm text-yellow-800">
-                                <x-ui.sccr-icon name="warning" :size="16" class="inline" />
-                                Adjustment belum dilakukan. Silakan lakukan adjustment terlebih dahulu sebelum approve.
-                            </p>
-                        </div>
-                    @endif
+                    </div>
                 @endif
             </div>
         @endif
