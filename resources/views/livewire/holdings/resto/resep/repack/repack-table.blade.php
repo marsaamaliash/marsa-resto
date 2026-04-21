@@ -1,4 +1,4 @@
-<x-ui.sccr-card transparent wire:key="satuan" class="h-full min-h-0 flex flex-col">
+﻿<x-ui.sccr-card transparent wire:key="Unit" class="h-full min-h-0 flex flex-col">
 
     {{-- ================= HEADER ================= --}}
     <div class="relative px-8 py-6 bg-blue-600/80 rounded-b-3xl shadow-lg overflow-hidden">
@@ -14,7 +14,7 @@
         <div class="mt-4 flex justify-between items-center text-sm">
             <x-ui.sccr-breadcrumb :items="$breadcrumbs" />
             <div class="text-white">
-                Menampilkan <span class="font-bold text-black">{{ $data->total() }}</span> dari <span class="font-bold text-black">{{ $totalAll }}</span> data
+                Showing <span class="font-bold text-black">{{ $data->total() }}</span> of <span class="font-bold text-black">{{ $totalAll }}</span> data
             </div>
         </div>
     </div>
@@ -52,8 +52,8 @@
                 <div class="flex flex-wrap items-center gap-1">
                     <x-ui.sccr-button type="submit" variant="primary"
                         class="bg-gray-900 text-gray-100 hover:bg-gray-400">
-                        <x-ui.sccr-icon name="cari" :size="20" />
-                        Cari
+                        <x-ui.sccr-icon name="Search" :size="20" />
+                        Search
                     </x-ui.sccr-button>
 
                     <x-ui.sccr-button type="button" wire:click="clearFilters"
@@ -112,23 +112,23 @@
                             </th>
 
                             <th class="px-4 py-3 text-center text-xs font-bold uppercase tracking-wider bg-amber-600/50">
-                                Konversi
+                                KonVersion
                             </th>
 
                             <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">
-                                Item Sumber
+                                Source Item
                             </th>
 
                             <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">
-                                Item Target
+                                Target Item
                             </th>
 
                             <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">
-                                Lokasi
+                                Location
                             </th>
 
                             <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">
-                                Dibuat Oleh
+                                Created Oleh
                             </th>
 
                             <th wire:click="sortBy('created_at')"
@@ -142,10 +142,10 @@
 
                             <th class="px-3 py-3 text-center text-xs font-bold uppercase tracking-wider">
                                 <div class="flex items-center justify-center gap-2">
-                                    <span>Aksi</span>
+                                    <span>Actions</span>
                                     @if ($canCreate && $canWrite)
                                         <x-ui.sccr-button type="button" variant="icon-circle"
-                                            wire:click="openCreate" class="w-7 h-7 hover:scale-105" title="Tambah Data">
+                                            wire:click="openCreate" class="w-7 h-7 hover:scale-105" title="Add Data">
                                             <x-ui.sccr-icon name="plus" :size="16" />
                                         </x-ui.sccr-button>
                                     @endif
@@ -172,7 +172,7 @@
                                     <div class="flex items-center justify-center gap-2 text-sm">
                                         <span class="font-mono font-semibold text-gray-700">{{ $item->qty_source_taken }}</span>
                                         <span class="text-xs text-gray-400">{{ $item->sourceItem?->uom?->name ?? 'unit' }}</span>
-                                        <span class="inline-flex items-center justify-center w-6 h-5 rounded text-xs font-bold bg-amber-100 text-amber-700 border border-amber-200">×{{ $item->multiplier }}</span>
+                                        <span class="inline-flex items-center justify-center w-6 h-5 rounded text-xs font-bold bg-amber-100 text-amber-700 border border-amber-200">×{{ $item->Multiplier }}</span>
                                         <span class="text-gray-400">→</span>
                                         <span class="font-mono font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded border border-green-200">{{ $item->qty_target_result }}</span>
                                         <span class="text-xs text-gray-400">{{ $item->targetItem?->uom?->name ?? 'unit' }}</span>
@@ -223,7 +223,7 @@
                                             <x-ui.sccr-button type="button" variant="icon"
                                                 wire:click="openEdit('{{ $item['id'] }}')"
                                                 class="text-gray-500 hover:text-amber-600 hover:scale-110" title="Edit">
-                                                <x-ui.sccr-icon name="edit" :size="16" />
+                                                <x-ui.sccr-icon name="Edit" :size="16" />
                                             </x-ui.sccr-button>
                                         @endif
                                     </div>
@@ -234,7 +234,7 @@
                                 <td colspan="10" class="py-12 text-center text-gray-400 italic">
                                     <div class="flex flex-col items-center gap-2">
                                         <x-ui.sccr-icon name="inbox" :size="40" />
-                                        <span>Data tidak ditemukan</span>
+                                        <span>No data found</span>
                                     </div>
                                 </td>
                             </tr>
@@ -247,7 +247,7 @@
             <div
                 class="flex-none px-6 py-3 border-t bg-white flex flex-col md:flex-row justify-between items-center gap-3">
                 <div class="text-sm text-gray-600 flex items-center">
-                    <span class="font-bold text-gray-800 mr-1">{{ count($selectedItems) }}</span> item dipilih
+                    <span class="font-bold text-gray-800 mr-1">{{ count($selectedItems) }}</span> items selected
                 </div>
 
                 <div>
@@ -268,11 +268,11 @@
         <div class="fixed inset-0 z-50 flex items-center justify-center px-6">
             <div class="w-full max-w-xl bg-white rounded-2xl shadow-2xl relative">
                 <x-ui.sccr-button type="button" variant="icon" wire:click="closeOverlay"
-                    class="absolute top-4 right-4 text-gray-400 hover:text-red-500" title="Tutup">
+                    class="absolute top-4 right-4 text-gray-400 hover:text-red-500" title="Close">
                     <span class="text-xl leading-none">✕</span>
                 </x-ui.sccr-button>
 
-                @livewire('holdings.resto.resep.repack.repack-create')
+                @livewire('holdings.resto.Recipe.repack.repack-create')
             </div>
         </div>
     @endif
@@ -284,13 +284,13 @@
         <div class="fixed inset-0 z-50 flex items-center justify-center px-6">
             <div class="w-full max-w-6xl bg-white rounded-2xl shadow-2xl relative">
                 <x-ui.sccr-button type="button" variant="icon" wire:click="closeOverlay"
-                    class="absolute top-4 right-4 text-gray-400 hover:text-red-500" title="Tutup">
+                    class="absolute top-4 right-4 text-gray-400 hover:text-red-500" title="Close">
                     <span class="text-xl leading-none">✕</span>
                 </x-ui.sccr-button>
 
-                {{-- REPACK DETAIL --}}
+                {{-- REPACK Detail --}}
                 <div class="p-6 max-h-[90vh] overflow-y-auto">
-                    @if ($detail)
+                    @if ($Detail)
                         <h2 class="text-2xl font-bold text-gray-800 mb-6">Detail Repack Stok</h2>
 
                         {{-- Header Info --}}
@@ -298,105 +298,105 @@
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                                 <div>
                                     <div class="font-semibold text-gray-600 text-xs uppercase">No. Repack</div>
-                                    <div class="font-mono font-bold text-blue-700 text-lg">{{ $detail['repack_number'] }}</div>
+                                    <div class="font-mono font-bold text-blue-700 text-lg">{{ $Detail['repack_number'] }}</div>
                                 </div>
                                 <div>
-                                    <div class="font-semibold text-gray-600 text-xs uppercase">Lokasi</div>
-                                    <div class="font-semibold text-gray-800">{{ $detail->location?->name ?? '-' }}</div>
+                                    <div class="font-semibold text-gray-600 text-xs uppercase">Location</div>
+                                    <div class="font-semibold text-gray-800">{{ $Detail->location?->name ?? '-' }}</div>
                                 </div>
                                 <div>
-                                    <div class="font-semibold text-gray-600 text-xs uppercase">Dibuat Oleh</div>
-                                    <div class="text-gray-800">{{ $detail->creator?->name ?? 'System' }}</div>
+                                    <div class="font-semibold text-gray-600 text-xs uppercase">Created Oleh</div>
+                                    <div class="text-gray-800">{{ $Detail->creator?->name ?? 'System' }}</div>
                                 </div>
                                 <div>
                                     <div class="font-semibold text-gray-600 text-xs uppercase">Tanggal</div>
-                                    <div class="text-gray-800">{{ $detail['created_at']?->format('d/m/Y H:i') }} WITA</div>
+                                    <div class="text-gray-800">{{ $Detail['created_at']?->format('d/m/Y H:i') }} WITA</div>
                                 </div>
                             </div>
                         </div>
 
-                        {{-- ITEM SUMBER - Before & After --}}
+                        {{-- Source Item - Before & After --}}
                         <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
                             <div class="flex items-center gap-2 mb-3">
                                 <span class="px-2 py-1 rounded bg-red-100 text-red-800 text-xs font-bold">OUT</span>
-                                <h3 class="font-bold text-lg text-gray-800">Item Sumber (Dikurangi)</h3>
+                                <h3 class="font-bold text-lg text-gray-800">Source Item (Dikurangi)</h3>
                             </div>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div class="bg-white border border-red-100 rounded-lg p-4">
-                                    <div class="text-xs font-semibold text-gray-500 uppercase mb-2">SEBELUM</div>
-                                    <div class="text-xl font-bold text-gray-800">{{ $repackOut?->item?->name ?? $detail->sourceItem?->name ?? '-' }}</div>
-                                    <div class="text-sm text-gray-600">{{ $repackOut?->uom?->name ?? $detail->sourceItem?->uom?->name ?? 'unit' }}</div>
+                                    <div class="text-xs font-semibold text-gray-500 uppercase mb-2">SENot Yet</div>
+                                    <div class="text-xl font-bold text-gray-800">{{ $repackOut?->item?->name ?? $Detail->sourceItem?->name ?? '-' }}</div>
+                                    <div class="text-sm text-gray-600">{{ $repackOut?->uom?->name ?? $Detail->sourceItem?->uom?->name ?? 'unit' }}</div>
                                     <div class="mt-2 text-3xl font-mono font-bold text-gray-700">
                                         {{ number_format($repackOut?->qty_before ?? 0, 2) }}
                                     </div>
-                                    <div class="text-xs text-gray-500">di {{ $repackOut?->location?->name ?? $detail->location?->name ?? '-' }}</div>
+                                    <div class="text-xs text-gray-500">di {{ $repackOut?->location?->name ?? $Detail->location?->name ?? '-' }}</div>
                                 </div>
                                 <div class="bg-white border border-red-100 rounded-lg p-4">
                                     <div class="text-xs font-semibold text-gray-500 uppercase mb-2">SESUDAH</div>
-                                    <div class="text-xl font-bold text-gray-800">{{ $repackOut?->item?->name ?? $detail->sourceItem?->name ?? '-' }}</div>
-                                    <div class="text-sm text-gray-600">{{ $repackOut?->uom?->name ?? $detail->sourceItem?->uom?->name ?? 'unit' }}</div>
+                                    <div class="text-xl font-bold text-gray-800">{{ $repackOut?->item?->name ?? $Detail->sourceItem?->name ?? '-' }}</div>
+                                    <div class="text-sm text-gray-600">{{ $repackOut?->uom?->name ?? $Detail->sourceItem?->uom?->name ?? 'unit' }}</div>
                                     <div class="mt-2 text-3xl font-mono font-bold text-red-700">
                                         {{ number_format($repackOut?->qty_after ?? 0, 2) }}
                                         <span class="text-sm font-normal text-gray-500">
                                             ({{ $repackOut?->qty_after < $repackOut?->qty_before ? '-' : '+' }}{{ number_format(($repackOut?->qty_after ?? 0) - ($repackOut?->qty_before ?? 0), 2) }})
                                         </span>
                                     </div>
-                                    <div class="text-xs text-gray-500">di {{ $repackOut?->location?->name ?? $detail->location?->name ?? '-' }}</div>
+                                    <div class="text-xs text-gray-500">di {{ $repackOut?->location?->name ?? $Detail->location?->name ?? '-' }}</div>
                                 </div>
                             </div>
                             <div class="mt-3 text-sm text-gray-600">
                                 <span class="font-semibold">Qty diambil:</span> 
-                                {{ number_format($detail['qty_source_taken'], 2) }} {{ $detail->sourceItem?->uom?->name ?? 'unit' }}
+                                {{ number_format($Detail['qty_source_taken'], 2) }} {{ $Detail->sourceItem?->uom?->name ?? 'unit' }}
                             </div>
                         </div>
 
-                        {{-- ITEM TARGET - Before & After --}}
+                        {{-- Target Item - Before & After --}}
                         <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
                             <div class="flex items-center gap-2 mb-3">
                                 <span class="px-2 py-1 rounded bg-green-100 text-green-800 text-xs font-bold">IN</span>
-                                <h3 class="font-bold text-lg text-gray-800">Item Target (Ditambahkan)</h3>
+                                <h3 class="font-bold text-lg text-gray-800">Target Item (Ditambahkan)</h3>
                             </div>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div class="bg-white border border-green-100 rounded-lg p-4">
-                                    <div class="text-xs font-semibold text-gray-500 uppercase mb-2">SEBELUM</div>
-                                    <div class="text-xl font-bold text-gray-800">{{ $repackIn?->item?->name ?? $detail->targetItem?->name ?? '-' }}</div>
-                                    <div class="text-sm text-gray-600">{{ $repackIn?->uom?->name ?? $detail->targetItem?->uom?->name ?? 'unit' }}</div>
+                                    <div class="text-xs font-semibold text-gray-500 uppercase mb-2">SENot Yet</div>
+                                    <div class="text-xl font-bold text-gray-800">{{ $repackIn?->item?->name ?? $Detail->targetItem?->name ?? '-' }}</div>
+                                    <div class="text-sm text-gray-600">{{ $repackIn?->uom?->name ?? $Detail->targetItem?->uom?->name ?? 'unit' }}</div>
                                     <div class="mt-2 text-3xl font-mono font-bold text-gray-700">
                                         {{ number_format($repackIn?->qty_before ?? 0, 2) }}
                                     </div>
-                                    <div class="text-xs text-gray-500">di {{ $repackIn?->location?->name ?? $detail->location?->name ?? '-' }}</div>
+                                    <div class="text-xs text-gray-500">di {{ $repackIn?->location?->name ?? $Detail->location?->name ?? '-' }}</div>
                                 </div>
                                 <div class="bg-white border border-green-100 rounded-lg p-4">
                                     <div class="text-xs font-semibold text-gray-500 uppercase mb-2">SESUDAH</div>
-                                    <div class="text-xl font-bold text-gray-800">{{ $repackIn?->item?->name ?? $detail->targetItem?->name ?? '-' }}</div>
-                                    <div class="text-sm text-gray-600">{{ $repackIn?->uom?->name ?? $detail->targetItem?->uom?->name ?? 'unit' }}</div>
+                                    <div class="text-xl font-bold text-gray-800">{{ $repackIn?->item?->name ?? $Detail->targetItem?->name ?? '-' }}</div>
+                                    <div class="text-sm text-gray-600">{{ $repackIn?->uom?->name ?? $Detail->targetItem?->uom?->name ?? 'unit' }}</div>
                                     <div class="mt-2 text-3xl font-mono font-bold text-green-700">
                                         {{ number_format($repackIn?->qty_after ?? 0, 2) }}
                                         <span class="text-sm font-normal text-gray-500">
                                             (+{{ number_format(($repackIn?->qty_after ?? 0) - ($repackIn?->qty_before ?? 0), 2) }})
                                         </span>
                                     </div>
-                                    <div class="text-xs text-gray-500">di {{ $repackIn?->location?->name ?? $detail->location?->name ?? '-' }}</div>
+                                    <div class="text-xs text-gray-500">di {{ $repackIn?->location?->name ?? $Detail->location?->name ?? '-' }}</div>
                                 </div>
                             </div>
                             <div class="mt-3 text-sm text-gray-600">
                                 <span class="font-semibold">Qty hasil repack:</span> 
-                                {{ number_format($detail['qty_source_taken'], 2) }} × {{ $detail['multiplier'] }} = 
-                                <span class="font-bold text-green-700">{{ number_format($detail['qty_target_result'], 2) }}</span>
-                                {{ $detail->targetItem?->uom?->name ?? 'unit' }}
+                                {{ number_format($Detail['qty_source_taken'], 2) }} × {{ $Detail['Multiplier'] }} = 
+                                <span class="font-bold text-green-700">{{ number_format($Detail['qty_target_result'], 2) }}</span>
+                                {{ $Detail->targetItem?->uom?->name ?? 'unit' }}
                             </div>
                         </div>
 
                         {{-- Notes --}}
-                        @if ($detail['notes'])
+                        @if ($Detail['notes'])
                             <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                                <div class="font-semibold text-gray-600 text-xs uppercase">Catatan</div>
-                                <div class="text-sm text-gray-700">{{ $detail['notes'] }}</div>
+                                <div class="font-semibold text-gray-600 text-xs uppercase">Notes</div>
+                                <div class="text-sm text-gray-700">{{ $Detail['notes'] }}</div>
                             </div>
                         @endif
                     @else
                         <div class="text-center text-gray-500 py-12">
-                            <p class="text-lg font-semibold">Data tidak ditemukan</p>
+                            <p class="text-lg font-semibold">No data found</p>
                         </div>
                     @endif
                 </div>
@@ -404,18 +404,18 @@
         </div>
     @endif
 
-    {{-- ================= OVERLAY: EDIT ================= --}}
-    @if ($overlayMode === 'edit' && $overlayId)
+    {{-- ================= OVERLAY: Edit ================= --}}
+    @if ($overlayMode === 'Edit' && $overlayId)
         <div class="fixed inset-0 bg-black/40 z-40" wire:click="closeOverlay"></div>
 
         <div class="fixed inset-0 z-50 flex items-center justify-center px-6">
             <div class="w-full max-w-6xl bg-white rounded-2xl shadow-2xl relative">
                 <x-ui.sccr-button type="button" variant="icon" wire:click="closeOverlay"
-                    class="absolute top-4 right-4 text-gray-400 hover:text-red-500" title="Tutup">
+                    class="absolute top-4 right-4 text-gray-400 hover:text-red-500" title="Close">
                     <span class="text-xl leading-none">✕</span>
                 </x-ui.sccr-button>
 
-                {{-- Replace with actual edit component --}}
+                {{-- Replace with actual Edit component --}}
                 <div class="p-6 text-center text-gray-500">
                     <p class="text-lg font-semibold">Form Edit</p>
                     <p class="text-sm">ID: {{ $overlayId }}</p>

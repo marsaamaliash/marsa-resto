@@ -28,7 +28,7 @@ class KategoriCreate extends Component
             'is_active' => $this->is_active,
         ]);
 
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Kategori berhasil ditambahkan'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Category added successfully'];
 
         $this->dispatch('kategori-created');
         $this->dispatch('kategori-overlay-close');
@@ -51,7 +51,7 @@ class KategoriCreate extends Component
             'is_active' => false,
         ]);
 
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Draft kategori berhasil disimpan'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Category draft saved successfully'];
 
         $this->dispatch('kategori-created');
         $this->dispatch('kategori-overlay-close');

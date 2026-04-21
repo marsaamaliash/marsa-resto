@@ -54,7 +54,7 @@ class ProductionOrderShow extends Component
         $this->breadcrumbs = [
             ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
             ['label' => 'Resto', 'route' => 'dashboard.resto', 'color' => 'text-gray-800'],
-            ['label' => 'Resep', 'route' => 'dashboard.resto.resep', 'color' => 'text-gray-800'],
+            ['label' => 'Recipe', 'route' => 'dashboard.resto.resep', 'color' => 'text-gray-800'],
             ['label' => 'Production', 'route' => 'dashboard.resto.resep.production', 'color' => 'text-gray-800'],
             ['label' => 'Detail', 'color' => 'text-gray-900 font-semibold'],
         ];
@@ -126,7 +126,7 @@ class ProductionOrderShow extends Component
     {
         try {
             app(ProductionOrderService::class)->updateStatus($this->id, $status);
-            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Status berhasil diubah ke '.ucfirst(str_replace('_', ' ', $status)).'.'];
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Status changed to '.ucfirst(str_replace('_', ' ', $status)).'.'];
         } catch (\Exception $e) {
             $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
         }
@@ -146,7 +146,7 @@ class ProductionOrderShow extends Component
                 'notes' => $this->issueForm['notes'],
             ]);
 
-            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Material berhasil di-issue.'];
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Material issued successfully.'];
             $this->initIssueForm();
         } catch (\Exception $e) {
             $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
@@ -172,7 +172,7 @@ class ProductionOrderShow extends Component
                 'notes' => $this->outputForm['notes'],
             ]);
 
-            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Output berhasil dicatat.'];
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Output recorded successfully.'];
             $this->initOutputForm();
         } catch (\Exception $e) {
             $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
@@ -183,7 +183,7 @@ class ProductionOrderShow extends Component
     {
         try {
             app(ProductionExecutionService::class)->postOutputToInventory($outputLineId);
-            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Output berhasil di-post ke inventory.'];
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Output posted to inventory successfully.'];
         } catch (\Exception $e) {
             $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
         }
@@ -209,7 +209,7 @@ class ProductionOrderShow extends Component
                 'notes' => $this->wasteForm['notes'] ?? null,
             ]);
 
-            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Waste berhasil dicatat.'];
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Waste recorded successfully.'];
             $this->wasteForm = ['item_id' => null, 'qty_waste' => '', 'uom_id' => null, 'waste_stage' => 'production', 'waste_type' => 'normal', 'charge_mode' => 'absorbed', 'reason_code' => '', 'notes' => ''];
         } catch (\Exception $e) {
             $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
@@ -220,7 +220,7 @@ class ProductionOrderShow extends Component
     {
         try {
             app(ProductionConsumeService::class)->completeProduction($this->id);
-            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Production order berhasil di-complete. Semua output di-post ke inventory.'];
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Production order completed. All outputs posted to inventory.'];
         } catch (\Exception $e) {
             $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
         }

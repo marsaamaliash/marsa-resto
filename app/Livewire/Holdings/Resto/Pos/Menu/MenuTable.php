@@ -213,7 +213,7 @@ class MenuTable extends Component
     {
         $categories = Rst_Menu::distinct()->pluck('category')->filter()->toArray();
 
-        $options = ['' => '-- Semua Kategori --'];
+        $options = ['' => '-- All Categories --'];
         foreach ($categories as $category) {
             $options[$category] = $category;
         }
@@ -224,11 +224,11 @@ class MenuTable extends Component
     protected function filter2Options(): array
     {
         return [
-            '' => '-- Semua Status --',
-            'active' => 'Aktif',
-            'inactive' => 'Nonaktif',
-            'has_recipe' => 'Punya Resep',
-            'no_recipe' => 'Belum Punya Resep',
+            '' => '-- All Status --',
+            'active' => 'Active',
+            'inactive' => 'Inactive',
+            'has_recipe' => 'Has Recipe',
+            'no_recipe' => 'No Recipe Yet',
         ];
     }
 

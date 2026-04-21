@@ -59,7 +59,7 @@ class RecipeShow extends Component
         $this->breadcrumbs = [
             ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
             ['label' => 'Resto', 'route' => 'dashboard.resto', 'color' => 'text-gray-800'],
-            ['label' => 'Resep', 'route' => 'dashboard.resto.resep', 'color' => 'text-gray-800'],
+            ['label' => 'Recipe', 'route' => 'dashboard.resto.resep', 'color' => 'text-gray-800'],
             ['label' => 'Recipe', 'route' => 'dashboard.resto.resep.recipe', 'color' => 'text-gray-800'],
             ['label' => 'Detail', 'color' => 'text-gray-900 font-semibold'],
         ];
@@ -123,7 +123,7 @@ class RecipeShow extends Component
     {
         try {
             app(RecipeVersionService::class)->activateVersion($versionId);
-            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Versi berhasil diaktifkan.'];
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Version activated successfully.'];
             $this->selectedVersionId = $versionId;
         } catch (\Exception $e) {
             $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
@@ -133,14 +133,14 @@ class RecipeShow extends Component
     public function deleteVersion(int $versionId): void
     {
         if (! $this->canDelete) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin delete.'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to delete.'];
 
             return;
         }
 
         try {
             app(RecipeVersionService::class)->deleteVersion($versionId);
-            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Versi berhasil dihapus.'];
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Version deleted successfully.'];
             if ($this->selectedVersionId === $versionId) {
                 $this->selectedVersionId = null;
             }
@@ -159,11 +159,11 @@ class RecipeShow extends Component
         try {
             if ($recipe->is_active) {
                 app(RecipeService::class)->deactivateRecipe($this->id);
-                $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Resep berhasil dinonaktifkan.'];
+                $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Recipe deactivated.'];
             } else {
                 // Activate recipe - will need to activate a version too
                 $recipe->update(['is_active' => true, 'updated_by' => auth()->id()]);
-                $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Resep berhasil diaktifkan.'];
+                $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Recipe activated.'];
             }
         } catch (\Exception $e) {
             $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
@@ -251,7 +251,7 @@ class RecipeShow extends Component
                 'components' => $this->newVersionComponents,
             ]);
 
-            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Versi baru berhasil dibuat. Silakan aktifkan versi ini.'];
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'New version created successfully. Please activate this version.'];
             $this->closeOverlay();
             $this->selectedVersionId = $version->id;
 
@@ -264,33 +264,33 @@ class RecipeShow extends Component
     {
         $menu = Rst_Menu::find($menuId);
         if (! $menu) {
-            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Menu tidak ditemukan.'];
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Menu not found.'];
 
             return;
         }
 
         $menu->update(['recipe_id' => $this->id]);
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Resep berhasil di-link ke menu "'.$menu->name.'".'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Recipe linked to menu "'.$menu->name.'".'];
     }
 
     public function unlinkRecipeFromMenu(int $menuId): void
     {
         $menu = Rst_Menu::find($menuId);
         if (! $menu) {
-            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Menu tidak ditemukan.'];
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Menu not found.'];
 
             return;
         }
 
         $menu->update(['recipe_id' => null]);
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Resep berhasil di-unlink dari menu "'.$menu->name.'".'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Recipe unlinked from menu "'.$menu->name.'".'];
     }
 
     #[On('recipe-updated')]
     public function handleUpdated(): void
     {
         $this->closeOverlay();
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Resep berhasil diperbarui.'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Recipe updated successfully.'];
     }
 
     #[On('recipe-overlay-close')]

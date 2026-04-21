@@ -1,4 +1,4 @@
-<x-ui.sccr-card transparent wire:key="purchase-request-detail" class="h-full min-h-0 flex flex-col">
+﻿<x-ui.sccr-card transparent wire:key="purchase-request-Detail" class="h-full min-h-0 flex flex-col">
 
     {{-- ================= HEADER ================= --}}
     <div class="relative px-8 py-6 bg-blue-600/80 rounded-b-3xl shadow-lg overflow-hidden">
@@ -54,7 +54,7 @@
                         <h3 class="text-sm font-bold text-gray-500 uppercase mb-3">Informasi PR</h3>
                         <div class="space-y-2">
                             <div class="flex justify-between">
-                                <span class="text-sm text-gray-600">Lokasi</span>
+                                <span class="text-sm text-gray-600">Location</span>
                                 <span class="text-sm font-medium">{{ $pr->requesterLocation?->name ?? '-' }}</span>
                             </div>
                             <div class="flex justify-between">
@@ -72,7 +72,7 @@
                         </div>
                     </div>
 
-                    {{-- APPROVAL INFO --}}
+                    {{-- Approval INFO --}}
                     <div class="bg-white rounded-xl shadow border p-5">
                         <h3 class="text-sm font-bold text-gray-500 uppercase mb-3">Approval History</h3>
                         <div class="space-y-2">
@@ -142,7 +142,7 @@
                 {{-- NOTES --}}
                 @if ($pr->notes)
                     <div class="bg-yellow-50 rounded-xl shadow border border-yellow-200 p-5">
-                        <h3 class="text-sm font-bold text-yellow-700 uppercase mb-2">Catatan PR</h3>
+                        <h3 class="text-sm font-bold text-yellow-700 uppercase mb-2">Notes PR</h3>
                         <p class="text-sm text-gray-800">{{ $pr->notes }}</p>
                     </div>
                 @endif
@@ -169,7 +169,7 @@
                                     <th class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">Qty Order</th>
                                     <th class="px-4 py-3 text-right text-xs font-bold text-gray-500 uppercase">Est. Harga</th>
                                     <th class="px-4 py-3 text-right text-xs font-bold text-gray-500 uppercase">Total</th>
-                                    <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Catatan</th>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Notes</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 bg-white">
@@ -231,13 +231,13 @@
                     <x-ui.sccr-button type="button" wire:click="back"
                         class="bg-gray-500 text-white hover:bg-gray-600">
                         <x-ui.sccr-icon name="arrow-left" :size="16" class="mr-1" />
-                        Kembali
+                        Back
                     </x-ui.sccr-button>
 
                     @if ($canEdit)
-                        <x-ui.sccr-button type="button" wire:click="edit"
+                        <x-ui.sccr-button type="button" wire:click="Edit"
                             class="bg-blue-600 text-white hover:bg-blue-700">
-                            <x-ui.sccr-icon name="edit" :size="16" class="mr-1" />
+                            <x-ui.sccr-icon name="Edit" :size="16" class="mr-1" />
                             {{ $pr->isRevised() ? 'Revisi PR' : 'Edit PR' }}
                         </x-ui.sccr-button>
                     @endif
@@ -316,23 +316,23 @@
                     <div class="mb-4">
                         <label class="block text-sm font-bold text-gray-700 mb-1">
                             @if ($actionModal === 'reject')
-                                Alasan Reject <span class="text-red-500">*</span>
+                                Rejection Reason <span class="text-red-500">*</span>
                             @elseif ($actionModal === 'revise')
                                 Alasan Revise <span class="text-red-500">*</span>
                             @else
-                                Catatan (Opsional)
+                                Notes (Optional)
                             @endif
                         </label>
                         <textarea wire:model="actionNotes" rows="3"
                             class="w-full border-gray-300 rounded-md text-sm"
-                            placeholder="@if ($actionModal === 'reject') Alasan reject wajib diisi... @elseif ($actionModal === 'revise') Alasan revise wajib diisi... @else Tambahkan catatan... @endif"></textarea>
+                            placeholder="@if ($actionModal === 'reject') Rejection Reason wajib diisi... @elseif ($actionModal === 'revise') Alasan revise wajib diisi... @else Tambahkan Notes... @endif"></textarea>
                     </div>
                 </div>
 
                 <div class="px-6 py-4 border-t bg-gray-50 flex justify-end gap-2">
                     <x-ui.sccr-button type="button" wire:click="closeActionModal"
                         class="bg-gray-500 text-white hover:bg-gray-600">
-                        Batal
+                        Cancel
                     </x-ui.sccr-button>
 
                     @if ($actionModal === 'approve_rm')

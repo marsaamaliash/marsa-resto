@@ -3,7 +3,7 @@
         <div class="flex justify-between items-start">
             <div>
                 <h1 class="text-3xl md:text-4xl font-bold mb-2">Purchase Request (PR)</h1>
-                <p class="text-lg text-gray-800">Halaman Purchase Request</p>
+                <p class="text-lg text-gray-800">Purchase Request Page</p>
             </div>
         </div>
 
@@ -18,7 +18,7 @@
 
     <div class="max-w-7xl mx-auto px-6 lg:px-8 py-10">
         <div class="flex items-center justify-center h-64">
-            <p class="text-xl text-gray-500">Halaman Purchase Request (PR) — dalam pengembangan</p>
+            <p class="text-xl text-gray-500">Purchase Request (PR) Page — under development</p>
         </div>
     </div>
 </div>

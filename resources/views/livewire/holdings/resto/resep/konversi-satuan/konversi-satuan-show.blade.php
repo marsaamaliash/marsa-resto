@@ -1,5 +1,5 @@
 <div class="p-6">
-    <h2 class="text-xl font-bold mb-4">Detail Konversi Satuan</h2>
+    <h2 class="text-xl font-bold mb-4">Unit Conversion Detail</h2>
 
     @if ($konversi)
         <dl class="space-y-4">
@@ -14,17 +14,17 @@
             </div>
 
             <div>
-                <dt class="text-sm font-medium text-gray-500">Dari Satuan</dt>
+                <dt class="text-sm font-medium text-gray-500">From Unit</dt>
                 <dd class="text-sm text-gray-900">{{ $konversi->fromUom?->name ?? '-' }}</dd>
             </div>
 
             <div>
-                <dt class="text-sm font-medium text-gray-500">Ke Satuan</dt>
+                <dt class="text-sm font-medium text-gray-500">To Unit</dt>
                 <dd class="text-sm text-gray-900">{{ $konversi->toUom?->name ?? '-' }}</dd>
             </div>
 
             <div>
-                <dt class="text-sm font-medium text-gray-500">Nilai Konversi</dt>
+                <dt class="text-sm font-medium text-gray-500">Conversion Value</dt>
                 <dd class="text-sm text-gray-900">{{ $konversi->conversion_factor }}</dd>
             </div>
 
@@ -45,12 +45,12 @@
             </div>
 
             <div>
-                <dt class="text-sm font-medium text-gray-500">Dibuat</dt>
+                <dt class="text-sm font-medium text-gray-500">Created</dt>
                 <dd class="text-sm text-gray-900">{{ $konversi->created_at?->format('d M Y H:i') ?? '-' }}</dd>
             </div>
 
             <div>
-                <dt class="text-sm font-medium text-gray-500">Diubah</dt>
+                <dt class="text-sm font-medium text-gray-500">Updated</dt>
                 <dd class="text-sm text-gray-900">{{ $konversi->updated_at?->format('d M Y H:i') ?? '-' }}</dd>
             </div>
         </dl>
@@ -64,6 +64,6 @@
             @endif
         </div>
     @else
-        <p class="text-center text-gray-500">Data tidak ditemukan</p>
+        <p class="text-center text-gray-500">Data not found</p>
     @endif
 </div>

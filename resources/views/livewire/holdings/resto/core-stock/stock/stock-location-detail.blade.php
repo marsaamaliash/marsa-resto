@@ -1,4 +1,4 @@
-<x-ui.sccr-card transparent wire:key="stock-location-detail" class="h-full min-h-0 flex flex-col">
+﻿<x-ui.sccr-card transparent wire:key="stock-location-Detail" class="h-full min-h-0 flex flex-col">
 
     {{-- ================= HEADER ================= --}}
     <div class="relative px-8 py-6 bg-blue-600/80 rounded-b-3xl shadow-lg overflow-hidden">
@@ -6,7 +6,7 @@
             <div>
                 <h1 class="text-3xl font-bold text-white">Detail Stok: {{ $location?->name ?? '-' }}</h1>
                 <p class="text-blue-100 text-sm">
-                    Informasi stok berdasarkan lokasi spesifik
+                    Informasi stok berdasarkan Location spesifik
                 </p>
             </div>
         </div>
@@ -14,7 +14,7 @@
         <div class="mt-4 flex justify-between items-center text-sm">
             <x-ui.sccr-breadcrumb :items="$breadcrumbs" />
             <div class="text-white">
-                Menampilkan <span class="font-bold text-black">{{ $data->total() }}</span> dari <span class="font-bold text-black">{{ $totalAll }}</span> data
+                Showing <span class="font-bold text-black">{{ $data->total() }}</span> of <span class="font-bold text-black">{{ $totalAll }}</span> data
             </div>
         </div>
     </div>
@@ -30,13 +30,13 @@
                     <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">
                         Item / SKU
                     </span>
-                    <x-ui.sccr-input name="search" wire:model="search" placeholder="Ketik lalu enter..."
+                    <x-ui.sccr-input name="search" wire:model="search" placeholder="Type and press enter..."
                         class="w-64" />
                 </div>
 
-                {{-- FILTER: Kategori --}}
+                {{-- FILTER: Category --}}
                 <div class="relative top-1">
-                    <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">Kategori</span>
+                    <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">Category</span>
                     <x-ui.sccr-select name="filter1" wire:model.live="filter1" :options="$filter1Options"
                         class="w-40" />
                 </div>
@@ -45,8 +45,8 @@
                 <div class="flex flex-wrap items-center gap-1">
                     <x-ui.sccr-button type="submit" variant="primary"
                         class="bg-gray-900 text-gray-100 hover:bg-gray-400">
-                        <x-ui.sccr-icon name="cari" :size="20" />
-                        Cari
+                        <x-ui.sccr-icon name="Search" :size="20" />
+                        Search
                     </x-ui.sccr-button>
 
                     <x-ui.sccr-button type="button" wire:click="clearFilters"
@@ -125,18 +125,18 @@
                                 Qty In Transit {!! $sortField === 'qty_in_transit' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                             </th>
 
-                            <th wire:click="sortBy('qty_waste')"
+                            <th wire:click="sortBy('qty_Waste')"
                                 class="px-3 py-3 text-right text-xs font-bold cursor-pointer">
-                                Qty Waste {!! $sortField === 'qty_waste' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                                Waste Qty {!! $sortField === 'qty_Waste' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                             </th>
 
                             <th wire:click="sortBy('category_name')"
                                 class="px-3 py-3 text-center text-xs font-bold cursor-pointer">
-                                Kategori {!! $sortField === 'category_name' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                                Category {!! $sortField === 'category_name' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                             </th>
 
                             <th class="px-3 py-3 text-center text-xs font-bold">
-                                Aksi
+                                Actions
                             </th>
                         </tr>
                     </thead>
@@ -178,7 +178,7 @@
                                 </td>
 
                                 <td class="px-3 py-2 text-right text-sm font-mono">
-                                    {{ number_format($item->qty_waste, 2) }}
+                                    {{ number_format($item->qty_Waste, 2) }}
                                 </td>
 
                                 <td class="px-3 py-2 text-center text-xs text-gray-500">
@@ -196,7 +196,7 @@
                         @empty
                             <tr>
                                 <td colspan="9" class="py-10 text-center text-gray-400 italic">
-                                    Data tidak ditemukan
+                                    No data found
                                 </td>
                             </tr>
                         @endforelse
@@ -208,7 +208,7 @@
             <div
                 class="flex-none px-6 py-3 border-t bg-white flex flex-col md:flex-row justify-between items-center gap-3">
                 <div class="text-sm text-gray-600 flex items-center">
-                    <span class="font-bold text-gray-800 mr-1">{{ count($selectedItems) }}</span> item dipilih
+                    <span class="font-bold text-gray-800 mr-1">{{ count($selectedItems) }}</span> items selected
                 </div>
 
                 <div>
@@ -222,20 +222,20 @@
     {{-- ================= TOAST ================= --}}
     <x-ui.sccr-toast :show="$toast['show']" :type="$toast['type']" :message="$toast['message']" wire:key="toast-{{ microtime() }}" />
 
-    {{-- ================= OVERLAY: DETAIL ================= --}}
-    @if ($overlayMode === 'detail' && $overlayId && $detailData['balance'])
+    {{-- ================= OVERLAY: Detail ================= --}}
+    @if ($overlayMode === 'Detail' && $overlayId && $detailData['balance'])
         <div class="fixed inset-0 bg-black/40 z-40" wire:click="closeOverlay"></div>
 
         <div class="fixed inset-0 z-50 flex items-center justify-center px-6">
             <div class="w-full max-w-3xl bg-white rounded-2xl shadow-2xl relative max-h-[90vh] overflow-hidden flex flex-col">
                 <x-ui.sccr-button type="button" variant="icon" wire:click="closeOverlay"
-                    class="absolute top-4 right-4 text-gray-400 hover:text-red-500" title="Tutup">
+                    class="absolute top-4 right-4 text-gray-400 hover:text-red-500" title="Close">
                     <span class="text-xl leading-none">&#x2715;</span>
                 </x-ui.sccr-button>
 
                 <div class="p-6 border-b bg-gray-50">
                     <h2 class="text-xl font-bold text-gray-800">{{ $detailData['balance']->item?->name ?? '-' }}</h2>
-                    <p class="text-sm text-gray-500">SKU: {{ $detailData['balance']->item?->sku ?? '-' }} | Kategori: {{ $detailData['balance']->item?->category?->name ?? '-' }}</p>
+                    <p class="text-sm text-gray-500">SKU: {{ $detailData['balance']->item?->sku ?? '-' }} | Category: {{ $detailData['balance']->item?->category?->name ?? '-' }}</p>
                 </div>
 
                 @php
@@ -270,11 +270,11 @@
                         <div class="bg-gray-50 p-4 rounded-lg">
                             <div class="text-xs text-gray-500 uppercase mb-1">Waste</div>
                             <div class="font-mono text-2xl font-bold text-gray-800">
-                                {{ number_format($balance->qty_waste ?? 0, 2) }}
+                                {{ number_format($balance->qty_Waste ?? 0, 2) }}
                             </div>
                         </div>
                         <div class="bg-gray-50 p-4 rounded-lg">
-                            <div class="text-xs text-gray-500 uppercase mb-1">Satuan</div>
+                            <div class="text-xs text-gray-500 uppercase mb-1">Unit</div>
                             <div class="font-bold text-gray-800">
                                 {{ $balance->uom?->name ?? '-' }}
                             </div>
@@ -312,7 +312,7 @@
                                                         'reserve' => 'text-yellow-600',
                                                         'unreserve' => 'text-gray-600',
                                                         'consume' => 'text-pink-600',
-                                                        'waste' => 'text-red-800'
+                                                        'Waste' => 'text-red-800'
                                                     ];
                                                 @endphp
                                                 <span class="{{ $typeColors[$mutation->type] ?? 'text-gray-800' }} font-medium">
@@ -335,7 +335,7 @@
                         </div>
                     @else
                         <div class="text-center py-4 text-gray-400 italic">
-                            Tidak ada mutation history
+                            No mutation history
                         </div>
                     @endif
                 </div>

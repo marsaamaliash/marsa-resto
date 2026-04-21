@@ -104,7 +104,7 @@ class ProductionOrderCreate extends Component
                 'notes' => $this->notes,
             ]);
 
-            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Production Order berhasil dibuat.'];
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Production Order created successfully.'];
 
             $this->redirect(route('dashboard.resto.resep.production.detail', $order->id));
         } catch (\Exception $e) {

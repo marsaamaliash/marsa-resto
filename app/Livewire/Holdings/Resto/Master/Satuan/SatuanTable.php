@@ -66,13 +66,13 @@ class SatuanTable extends Component
 
     public array $availableColumns = [
         ['key' => 'id', 'label' => 'ID', 'default' => true],
-        ['key' => 'name', 'label' => 'Nama', 'default' => true],
-        ['key' => 'symbols', 'label' => 'Simbol', 'default' => true],
-        ['key' => 'type', 'label' => 'Tipe', 'default' => true],
-        ['key' => 'is_active', 'label' => 'Aktif', 'default' => true],
+        ['key' => 'name', 'label' => 'Name', 'default' => true],
+        ['key' => 'symbols', 'label' => 'Symbol', 'default' => true],
+        ['key' => 'type', 'label' => 'Type', 'default' => true],
+        ['key' => 'is_active', 'label' => 'Active', 'default' => true],
         ['key' => 'status', 'label' => 'Status', 'default' => true],
-        ['key' => 'created_at', 'label' => 'Dibuat', 'default' => false],
-        ['key' => 'updated_at', 'label' => 'Diubah', 'default' => false],
+        ['key' => 'created_at', 'label' => 'Created', 'default' => false],
+        ['key' => 'updated_at', 'label' => 'Updated', 'default' => false],
     ];
 
     protected $queryString = [
@@ -102,7 +102,7 @@ class SatuanTable extends Component
             ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
             ['label' => 'Resto', 'route' => 'dashboard.resto', 'color' => 'text-gray-800'],
             ['label' => 'Master Data', 'route' => 'dashboard.resto.master', 'color' => 'text-gray-900 font-semibold'],
-            ['label' => 'Satuan', 'color' => 'text-gray-900 font-semibold'],
+            ['label' => 'Unit', 'color' => 'text-gray-900 font-semibold'],
         ];
 
         $this->syncCaps();
@@ -251,7 +251,7 @@ class SatuanTable extends Component
     public function exportSelected()
     {
         if (empty($this->selectedItems)) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Pilih data terlebih dahulu'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Please select data first'];
 
             return null;
         }
@@ -267,7 +267,7 @@ class SatuanTable extends Component
         $spreadsheet = new Spreadsheet;
         $ws = $spreadsheet->getActiveSheet();
 
-        $headers = ['ID', 'Nama', 'Simbol', 'Tipe', 'Aktif', 'Status', 'Dibuat'];
+        $headers = ['ID', 'Name', 'Symbol', 'Type', 'Active', 'Status', 'Created'];
         $ws->fromArray([$headers], null, 'A1');
 
         $typeLabels = [
@@ -285,7 +285,7 @@ class SatuanTable extends Component
                 $item->name,
                 $item->symbols ?? '',
                 $typeLabels[$item->type] ?? '-',
-                $item->is_active ? 'Ya' : 'Tidak',
+                $item->is_active ? 'Yes' : 'No',
                 $status,
                 $item->created_at?->format('Y-m-d H:i:s') ?? '',
             ], null, 'A'.$row++);
@@ -306,7 +306,7 @@ class SatuanTable extends Component
     public function openCreate(): void
     {
         if (! $this->canCreate) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin create.'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to create.'];
 
             return;
         }
@@ -327,7 +327,7 @@ class SatuanTable extends Component
     public function openEdit(string $id): void
     {
         if (! $this->canUpdate) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin update.'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to update.'];
 
             return;
         }
@@ -339,7 +339,7 @@ class SatuanTable extends Component
     public function deleteItem(string $id): void
     {
         if (! $this->canDelete) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin delete.'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to delete.'];
 
             return;
         }
@@ -347,20 +347,20 @@ class SatuanTable extends Component
         $item = Rst_MasterSatuan::withTrashed()->find($id);
 
         if (! $item) {
-            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data tidak ditemukan.'];
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data not found.'];
 
             return;
         }
 
         $item->delete();
 
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data berhasil dihapus.'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data deleted successfully.'];
     }
 
     public function restoreItem(string $id): void
     {
         if (! $this->canDelete) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin restore.'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to restore.'];
 
             return;
         }
@@ -368,14 +368,14 @@ class SatuanTable extends Component
         $item = Rst_MasterSatuan::onlyTrashed()->find($id);
 
         if (! $item) {
-            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data tidak ditemukan.'];
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data not found.'];
 
             return;
         }
 
         $item->restore();
 
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data berhasil di-restore.'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data restored successfully.'];
     }
 
     public function closeOverlay(): void
@@ -393,14 +393,14 @@ class SatuanTable extends Component
     public function handleCreated(?string $id = null): void
     {
         $this->closeOverlay();
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data berhasil ditambahkan.'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data added successfully.'];
     }
 
     #[On('satuan-updated')]
     public function handleUpdated(?string $id = null): void
     {
         $this->closeOverlay();
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data berhasil diperbarui.'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data updated successfully.'];
     }
 
     #[On('satuan-open-edit')]
@@ -412,7 +412,7 @@ class SatuanTable extends Component
     protected function filter1Options(): array
     {
         return [
-            '' => '-- Semua Tipe --',
+            '' => '-- All Types --',
             'weight' => 'Weight',
             'volume' => 'Volume',
             'unit' => 'Unit',

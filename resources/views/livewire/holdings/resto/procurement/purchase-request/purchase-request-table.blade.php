@@ -1,4 +1,4 @@
-<x-ui.sccr-card transparent wire:key="purchase-request-table" class="h-full min-h-0 flex flex-col">
+﻿<x-ui.sccr-card transparent wire:key="purchase-request-table" class="h-full min-h-0 flex flex-col">
 
     {{-- ================= HEADER ================= --}}
     <div class="relative px-8 py-6 bg-blue-600/80 rounded-b-3xl shadow-lg overflow-hidden">
@@ -6,7 +6,7 @@
             <div>
                 <h1 class="text-3xl font-bold text-white">Purchase Request</h1>
                 <p class="text-blue-100 text-sm">
-                    Pengajuan pembelian barang (PR) dengan multi-level approval
+                    Pengajuan pembelian barang (PR) dengan multi-level Approval
                 </p>
             </div>
         </div>
@@ -14,7 +14,7 @@
         <div class="mt-4 flex justify-between items-center text-sm">
             <x-ui.sccr-breadcrumb :items="$breadcrumbs" />
             <div class="text-white">
-                Menampilkan <span class="font-bold text-black">{{ $data->total() }}</span> dari <span class="font-bold text-black">{{ $totalAll }}</span> data
+                Showing <span class="font-bold text-black">{{ $data->total() }}</span> of <span class="font-bold text-black">{{ $totalAll }}</span> data
             </div>
         </div>
     </div>
@@ -28,10 +28,10 @@
                 {{-- SEARCH INPUT --}}
                 <div class="relative top-1">
                     <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">
-                        Cari
+                        Search
                     </span>
                     <x-ui.sccr-input name="search" wire:model="search"
-                        placeholder="PR Number, Lokasi, Item..." class="w-72" />
+                        placeholder="PR Number, Location, Item..." class="w-72" />
                 </div>
 
                 {{-- FILTER 1: Status --}}
@@ -45,7 +45,7 @@
                 {{-- FILTER 2: Location --}}
                 <div class="relative top-1">
                     <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">
-                        Lokasi
+                        Location
                     </span>
                     <x-ui.sccr-select name="filterLocation" wire:model.live="filterLocation" :options="$this->filterLocationOptions" class="w-48" />
                 </div>
@@ -54,8 +54,8 @@
                 <div class="flex flex-wrap items-center gap-1">
                     <x-ui.sccr-button type="submit" variant="primary"
                         class="bg-gray-900 text-gray-100 hover:bg-gray-400">
-                        <x-ui.sccr-icon name="cari" :size="20" />
-                        Cari
+                        <x-ui.sccr-icon name="Search" :size="20" />
+                        Search
                     </x-ui.sccr-button>
 
                     <x-ui.sccr-button type="button" wire:click="clearFilters"
@@ -120,7 +120,7 @@
                             {{-- Location --}}
                             <th wire:click="sortBy('requester_location_id')"
                                 class="px-3 py-3 text-left text-xs font-bold cursor-pointer">
-                                Lokasi {!! $sortField === 'requester_location_id' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                                Location {!! $sortField === 'requester_location_id' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                             </th>
 
                             {{-- Requester --}}
@@ -149,11 +149,11 @@
                             {{-- Actions --}}
                             <th class="px-4 py-3 text-center text-xs font-bold">
                                 <div class="flex items-center justify-center gap-2">
-                                    <span>Aksi</span>
+                                    <span>Actions</span>
 
                                     @if ($canCreate)
                                         <x-ui.sccr-button type="button" variant="icon-circle" wire:click="openCreateFromCritical"
-                                            class="w-8 h-8 hover:scale-105" title="Buat PR dari Stok Kritis">
+                                            class="w-8 h-8 hover:scale-105" title="Buat PR of Stok Kritis">
                                             <x-ui.sccr-icon name="plus" :size="18" />
                                         </x-ui.sccr-button>
                                     @endif
@@ -237,16 +237,16 @@
                                 <td class="px-3 py-2 text-center">
                                     <div class="flex justify-center gap-2">
                                         {{-- View Detail --}}
-                                        <a href="{{ route('dashboard.resto.purchase-request.detail', $item['id']) }}"
+                                        <a href="{{ route('dashboard.resto.purchase-request.Detail', $item['id']) }}"
                                             class="text-gray-700 hover:scale-125" title="Detail">
                                             <x-ui.sccr-icon name="eye" :size="18" />
                                         </a>
 
                                         {{-- Edit/Revise --}}
                                         @if ($item->canBeEdited() && ($canCreate || $canUpdate))
-                                            <a href="{{ route('dashboard.resto.purchase-request.detail', $item['id']) }}?mode=edit"
+                                            <a href="{{ route('dashboard.resto.purchase-request.Detail', $item['id']) }}?mode=Edit"
                                                 class="text-blue-600 hover:scale-125" title="Edit">
-                                                <x-ui.sccr-icon name="edit" :size="18" />
+                                                <x-ui.sccr-icon name="Edit" :size="18" />
                                             </a>
                                         @endif
 
@@ -298,7 +298,7 @@
                                                 wire:click="deletePR('{{ $item['id'] }}')"
                                                 class="text-red-600 hover:scale-125"
                                                 wire:confirm="Yakin ingin menghapus PR {{ $item['pr_number'] }}?"
-                                                title="Hapus">
+                                                title="Delete">
                                                 <x-ui.sccr-icon name="trash" :size="18" />
                                             </x-ui.sccr-button>
                                         @endif
@@ -308,7 +308,7 @@
                         @empty
                             <tr>
                                 <td colspan="9" class="py-10 text-center text-gray-400 italic">
-                                    Data tidak ditemukan
+                                    No data found
                                 </td>
                             </tr>
                         @endforelse
@@ -320,7 +320,7 @@
             <div
                 class="flex-none px-6 py-3 border-t bg-white flex flex-col md:flex-row justify-between items-center gap-3">
                 <div class="text-sm text-gray-600 flex items-center">
-                    <span class="font-bold text-gray-800 mr-1">{{ count($selectedItems) }}</span> item dipilih
+                    <span class="font-bold text-gray-800 mr-1">{{ count($selectedItems) }}</span> items selected
                 </div>
 
                 <div>
@@ -363,23 +363,23 @@
                     <div class="mb-4">
                         <label class="block text-sm font-bold text-gray-700 mb-1">
                             @if ($actionOverlayMode === 'reject')
-                                Alasan Reject <span class="text-red-500">*</span>
+                                Rejection Reason <span class="text-red-500">*</span>
                             @elseif ($actionOverlayMode === 'revise')
                                 Alasan Revise <span class="text-red-500">*</span>
                             @else
-                                Catatan (Opsional)
+                                Notes (Optional)
                             @endif
                         </label>
                         <textarea wire:model="actionNotes" rows="3"
                             class="w-full border-gray-300 rounded-md text-sm"
-                            placeholder="@if ($actionOverlayMode === 'reject') Alasan reject wajib diisi... @elseif ($actionOverlayMode === 'revise') Alasan revise wajib diisi... @else Tambahkan catatan... @endif"></textarea>
+                            placeholder="@if ($actionOverlayMode === 'reject') Rejection Reason wajib diisi... @elseif ($actionOverlayMode === 'revise') Alasan revise wajib diisi... @else Tambahkan Notes... @endif"></textarea>
                     </div>
                 </div>
 
                 <div class="px-6 py-4 border-t bg-gray-50 flex justify-end gap-2">
                     <x-ui.sccr-button type="button" wire:click="closeActionOverlay"
                         class="bg-gray-500 text-white hover:bg-gray-600">
-                        Batal
+                        Cancel
                     </x-ui.sccr-button>
 
                     @if ($actionOverlayMode === 'approve_rm')

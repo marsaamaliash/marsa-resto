@@ -163,15 +163,15 @@ class RecipeCreate extends Component
         }
 
         $messages = [
-            'menu_id.required' => 'Pilih menu terlebih dahulu',
-            'recipe_name.required' => 'Nama resep wajib diisi',
-            'components.required' => 'Minimal harus ada 1 komponen bahan',
-            'components.*.component_type.required' => 'Pilih tipe komponen',
-            'components.*.item_id.required' => 'Pilih item bahan',
-            'components.*.recipe_id.required' => 'Pilih resep semi-finished',
-            'components.*.uom_id.required' => 'Satuan wajib diisi',
-            'components.*.qty.required' => 'Masukkan jumlah/qty',
-            'components.*.qty.min' => 'Qty minimal 0.01',
+            'menu_id.required' => 'Please select a menu first',
+            'recipe_name.required' => 'Recipe name is required',
+            'components.required' => 'At least 1 ingredient component is required',
+            'components.*.component_type.required' => 'Select component type',
+            'components.*.item_id.required' => 'Select ingredient item',
+            'components.*.recipe_id.required' => 'Select semi-finished recipe',
+            'components.*.uom_id.required' => 'Unit is required',
+            'components.*.qty.required' => 'Enter quantity',
+            'components.*.qty.min' => 'Minimum quantity is 0.01',
         ];
 
         $this->validate($rules, $messages);
@@ -221,8 +221,8 @@ class RecipeCreate extends Component
             $recipe = app(RecipeService::class)->createRecipe($recipeData);
 
             $successMessage = $this->isSemiFinished
-                ? 'Resep semi-finished berhasil dibuat dengan versi 1'
-                : 'Resep berhasil dibuat dengan versi 1';
+                ? 'Semi-finished recipe created with version 1'
+                : 'Recipe created with version 1';
 
             $this->toast = ['show' => true, 'type' => 'success', 'message' => $successMessage];
             $this->dispatch('recipe-created', $recipe->id);

@@ -38,7 +38,7 @@ class SatuanCreate extends Component
             'is_active' => $this->is_active,
         ]);
 
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Satuan berhasil ditambahkan'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Unit added successfully'];
 
         $this->dispatch('satuan-created');
         $this->dispatch('satuan-overlay-close');
@@ -62,7 +62,7 @@ class SatuanCreate extends Component
             'is_active' => false,
         ]);
 
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Draft satuan berhasil disimpan'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Unit draft saved successfully'];
 
         $this->dispatch('satuan-created');
         $this->dispatch('satuan-overlay-close');

@@ -1,6 +1,6 @@
-<div class="p-6">
+﻿<div class="p-6">
     @if ($item)
-        <h2 class="text-xl font-bold mb-4">Detail Item</h2>
+        <h2 class="text-xl font-bold mb-4">Item Detail</h2>
 
         <div class="space-y-4">
             <div class="grid grid-cols-2 gap-4">
@@ -9,7 +9,7 @@
                     <p class="text-sm font-mono">{{ $item->id }}</p>
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500">Nama Item</label>
+                    <label class="block text-xs font-medium text-gray-500">Item Name</label>
                     <p class="text-sm font-semibold">{{ $item->name }}</p>
                 </div>
             </div>
@@ -20,7 +20,7 @@
                     <p class="text-sm font-mono">{{ $item->sku }}</p>
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500">Tipe Item</label>
+                    <label class="block text-xs font-medium text-gray-500">Type Item</label>
                     <p class="text-sm">
                         @if ($item->type === 'raw')
                             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">Raw Material</span>
@@ -34,41 +34,41 @@
             </div>
 
             <div>
-                <label class="block text-xs font-medium text-gray-500">Deskripsi</label>
+                <label class="block text-xs font-medium text-gray-500">Description</label>
                 <p class="text-sm">{{ $item->description ?: '-' }}</p>
             </div>
 
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-xs font-medium text-gray-500">Kategori</label>
+                    <label class="block text-xs font-medium text-gray-500">Category</label>
                     <p class="text-sm">{{ $item->category?->name ?? '-' }}</p>
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500">Satuan</label>
+                    <label class="block text-xs font-medium text-gray-500">Unit</label>
                     <p class="text-sm">{{ $item->uom?->name ?? '-' }}</p>
                 </div>
             </div>
 
             <div class="grid grid-cols-4 gap-4">
                 <div>
-                    <label class="block text-xs font-medium text-gray-500">Min. Stok</label>
+                    <label class="block text-xs font-medium text-gray-500">Min. Stock</label>
                     <p class="text-sm">{{ $item->is_stockable ? number_format($item->min_stock, 2) : '-' }}</p>
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500">Aktif</label>
+                    <label class="block text-xs font-medium text-gray-500">Active</label>
                     <p class="text-sm">
                         @if ($item->is_active)
-                            <span class="text-green-600 font-semibold">Ya</span>
+                            <span class="text-green-600 font-semibold">Yes</span>
                         @else
-                            <span class="text-red-600">Tidak</span>
+                            <span class="text-red-600">No</span>
                         @endif
                     </p>
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500">Stokable</label>
+                    <label class="block text-xs font-medium text-gray-500">Stockable</label>
                     <p class="text-sm">
                         @if ($item->is_stockable)
-                            <span class="text-green-600 font-semibold">Ya</span>
+                            <span class="text-green-600 font-semibold">Yes</span>
                         @else
                             <span class="text-gray-400">-</span>
                         @endif
@@ -92,35 +92,35 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-medium text-gray-500">Batch</label>
-                        <p class="text-sm">{{ $item->has_batch ? 'Ya' : 'Tidak' }}</p>
+                        <p class="text-sm">{{ $item->has_batch ? 'Yes' : 'No' }}</p>
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-500">Expiry</label>
-                        <p class="text-sm">{{ $item->has_expiry ? 'Ya' : 'Tidak' }}</p>
+                        <p class="text-sm">{{ $item->has_expiry ? 'Yes' : 'No' }}</p>
                     </div>
                 </div>
             @endif
 
             <div class="grid grid-cols-2 gap-4 text-xs text-gray-400">
                 <div>
-                    <label class="block text-xs font-medium text-gray-500">Dibuat</label>
+                    <label class="block text-xs font-medium text-gray-500">Created</label>
                     <p>{{ $item->created_at?->format('d M Y H:i') ?? '-' }}</p>
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500">Diubah</label>
+                    <label class="block text-xs font-medium text-gray-500">Updated</label>
                     <p>{{ $item->updated_at?->format('d M Y H:i') ?? '-' }}</p>
                 </div>
             </div>
         </div>
 
         <div class="flex gap-3 pt-4 border-t mt-4">
-            <button type="button" wire:click="edit"
+            <button type="button" wire:click="Edit"
                 class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
                 Edit
             </button>
             <button type="button" wire:click="$dispatch('close-overlay')"
                 class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">
-                Tutup
+                Close
             </button>
         </div>
     @endif

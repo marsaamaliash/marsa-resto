@@ -72,7 +72,7 @@ class StockLocationDetail extends Component
             ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
             ['label' => 'Resto', 'route' => 'dashboard.resto', 'color' => 'text-gray-800'],
             ['label' => 'Core Stock', 'route' => 'dashboard.resto.core-stock', 'color' => 'text-gray-800'],
-            ['label' => 'Stok per Lokasi', 'route' => 'dashboard.resto.stock-location', 'color' => 'text-gray-800'],
+            ['label' => 'Stock per Location', 'route' => 'dashboard.resto.stock-location', 'color' => 'text-gray-800'],
             ['label' => $this->location?->name ?? 'Detail', 'color' => 'text-gray-900 font-semibold'],
         ];
 
@@ -203,7 +203,7 @@ class StockLocationDetail extends Component
     public function exportSelected()
     {
         if (empty($this->selectedItems)) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Pilih data terlebih dahulu'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Please select data first'];
 
             return null;
         }
@@ -219,7 +219,7 @@ class StockLocationDetail extends Component
         $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet;
         $ws = $spreadsheet->getActiveSheet();
 
-        $ws->fromArray([['Item', 'SKU', 'Kategori', 'Qty Available', 'Qty Reserved', 'Qty In Transit', 'Qty Waste']], null, 'A1');
+        $ws->fromArray([['Item', 'SKU', 'Category', 'Qty Available', 'Qty Reserved', 'Qty In Transit', 'Qty Waste']], null, 'A1');
 
         $row = 2;
         foreach ($data as $item) {

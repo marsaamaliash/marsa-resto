@@ -79,16 +79,16 @@ class VendorTable extends Component
 
     public array $availableColumns = [
         ['key' => 'id', 'label' => 'ID', 'default' => true],
-        ['key' => 'code', 'label' => 'Kode', 'default' => true],
-        ['key' => 'name', 'label' => 'Nama', 'default' => true],
+        ['key' => 'code', 'label' => 'Code', 'default' => true],
+        ['key' => 'name', 'label' => 'Name', 'default' => true],
         ['key' => 'email', 'label' => 'Email', 'default' => true],
         ['key' => 'pic', 'label' => 'PIC', 'default' => true],
-        ['key' => 'no_telp', 'label' => 'Telepon', 'default' => true],
+        ['key' => 'no_telp', 'label' => 'Phone', 'default' => true],
         ['key' => 'default_terms', 'label' => 'Terms', 'default' => true],
         ['key' => 'status', 'label' => 'Status', 'default' => true],
-        ['key' => 'is_active', 'label' => 'Aktif', 'default' => true],
-        ['key' => 'created_at', 'label' => 'Dibuat', 'default' => false],
-        ['key' => 'updated_at', 'label' => 'Diubah', 'default' => false],
+        ['key' => 'is_active', 'label' => 'Active', 'default' => true],
+        ['key' => 'created_at', 'label' => 'Created', 'default' => false],
+        ['key' => 'updated_at', 'label' => 'Updated', 'default' => false],
     ];
 
     protected $queryString = [
@@ -277,7 +277,7 @@ class VendorTable extends Component
     public function exportSelected()
     {
         if (empty($this->selectedItems)) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Pilih data terlebih dahulu'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Please select data first'];
 
             return null;
         }
@@ -293,13 +293,13 @@ class VendorTable extends Component
         $spreadsheet = new Spreadsheet;
         $ws = $spreadsheet->getActiveSheet();
 
-        $headers = ['ID', 'Kode', 'Nama', 'Email', 'PIC', 'Telepon', 'Terms', 'Status', 'Aktif', 'Dibuat'];
+        $headers = ['ID', 'Code', 'Name', 'Email', 'PIC', 'Phone', 'Terms', 'Status', 'Active', 'Created'];
         $ws->fromArray([$headers], null, 'A1');
 
         $termsLabels = [
             'cash' => 'Cash',
-            '7_hari' => '7 Hari',
-            '30_hari' => '30 Hari',
+            '7_hari' => '7 Days',
+            '30_hari' => '30 Days',
         ];
 
         $row = 2;
@@ -315,7 +315,7 @@ class VendorTable extends Component
                 $item->no_telp ?? '-',
                 $termsLabels[$item->default_terms] ?? '-',
                 $status,
-                $item->is_active ? 'Ya' : 'Tidak',
+                $item->is_active ? 'Yes' : 'No',
                 $item->created_at?->format('Y-m-d H:i:s') ?? '',
             ], null, 'A'.$row++);
         }
@@ -335,7 +335,7 @@ class VendorTable extends Component
     public function openCreate(): void
     {
         if (! $this->canCreate) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin create.'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to create.'];
 
             return;
         }
@@ -356,7 +356,7 @@ class VendorTable extends Component
     public function openEdit(string $id): void
     {
         if (! $this->canUpdate) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin update.'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to update.'];
 
             return;
         }
@@ -368,7 +368,7 @@ class VendorTable extends Component
     public function openApprove(string $id): void
     {
         if (! $this->canApprove) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin approve.'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to approve.'];
 
             return;
         }
@@ -381,7 +381,7 @@ class VendorTable extends Component
     public function openReject(string $id): void
     {
         if (! $this->canApprove) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin reject.'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to reject.'];
 
             return;
         }
@@ -399,7 +399,7 @@ class VendorTable extends Component
     public function approveVendor(): void
     {
         if (! $this->canApprove) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin approve.'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to approve.'];
 
             return;
         }
@@ -407,13 +407,13 @@ class VendorTable extends Component
         $vendor = Rst_MasterVendor::withTrashed()->find($this->actionOverlayId);
 
         if (! $vendor) {
-            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data tidak ditemukan.'];
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data not found.'];
 
             return;
         }
 
         if ($vendor->status !== 'requested') {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Hanya vendor dengan status Requested yang bisa di-approve.'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Only vendors with Requested status can be approved.'];
 
             return;
         }
@@ -423,14 +423,14 @@ class VendorTable extends Component
             'rejection_reason' => null,
         ]);
 
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Vendor berhasil di-approve.'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Vendor approved successfully.'];
         $this->closeActionOverlay();
     }
 
     public function rejectVendor(): void
     {
         if (! $this->canApprove) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin reject.'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to reject.'];
 
             return;
         }
@@ -442,13 +442,13 @@ class VendorTable extends Component
         $vendor = Rst_MasterVendor::withTrashed()->find($this->actionOverlayId);
 
         if (! $vendor) {
-            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data tidak ditemukan.'];
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data not found.'];
 
             return;
         }
 
         if ($vendor->status !== 'requested') {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Hanya vendor dengan status Requested yang bisa di-reject.'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Only vendors with Requested status can be rejected.'];
 
             return;
         }
@@ -458,14 +458,14 @@ class VendorTable extends Component
             'rejection_reason' => $this->actionReason,
         ]);
 
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Vendor berhasil di-reject.'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Vendor rejected successfully.'];
         $this->closeActionOverlay();
     }
 
     public function deleteItem(string $id): void
     {
         if (! $this->canDelete) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin delete.'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to delete.'];
 
             return;
         }
@@ -473,20 +473,20 @@ class VendorTable extends Component
         $item = Rst_MasterVendor::withTrashed()->find($id);
 
         if (! $item) {
-            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data tidak ditemukan.'];
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data not found.'];
 
             return;
         }
 
         $item->delete();
 
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data berhasil dihapus.'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data deleted successfully.'];
     }
 
     public function restoreItem(string $id): void
     {
         if (! $this->canDelete) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin restore.'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to restore.'];
 
             return;
         }
@@ -494,14 +494,14 @@ class VendorTable extends Component
         $item = Rst_MasterVendor::onlyTrashed()->find($id);
 
         if (! $item) {
-            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data tidak ditemukan.'];
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data not found.'];
 
             return;
         }
 
         $item->restore();
 
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data berhasil di-restore.'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data restored successfully.'];
     }
 
     public function closeOverlay(): void
@@ -519,14 +519,14 @@ class VendorTable extends Component
     public function handleCreated(?string $id = null): void
     {
         $this->closeOverlay();
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data berhasil ditambahkan.'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data added successfully.'];
     }
 
     #[On('vendor-updated')]
     public function handleUpdated(?string $id = null): void
     {
         $this->closeOverlay();
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data berhasil diperbarui.'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data updated successfully.'];
     }
 
     #[On('vendor-open-edit')]
@@ -538,19 +538,19 @@ class VendorTable extends Component
     protected function filter1Options(): array
     {
         return [
-            '' => '-- Semua Terms --',
+            '' => '-- All Terms --',
             'cash' => 'Cash',
-            '7_hari' => '7 Hari',
-            '30_hari' => '30 Hari',
+            '7_hari' => '7 Days',
+            '30_hari' => '30 Days',
         ];
     }
 
     protected function filter2Options(): array
     {
         return [
-            '' => '-- Semua Aktif --',
-            '1' => 'Aktif',
-            '0' => 'Nonaktif',
+            '' => '-- All Active --',
+            '1' => 'Active',
+            '0' => 'Inactive',
         ];
     }
 

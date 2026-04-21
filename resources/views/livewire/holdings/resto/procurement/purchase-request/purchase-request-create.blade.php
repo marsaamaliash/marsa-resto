@@ -1,4 +1,4 @@
-<x-ui.sccr-card transparent wire:key="purchase-request-create" class="h-full min-h-0 flex flex-col">
+﻿<x-ui.sccr-card transparent wire:key="purchase-request-create" class="h-full min-h-0 flex flex-col">
 
     {{-- ================= HEADER ================= --}}
     <div class="relative px-8 py-6 bg-blue-600/80 rounded-b-3xl shadow-lg overflow-hidden">
@@ -8,7 +8,7 @@
                     {{ $isEditMode ? 'Edit Purchase Request' : 'Buat Purchase Request Baru' }}
                 </h1>
                 <p class="text-blue-100 text-sm">
-                    {{ $isEditMode ? 'Revisi Purchase Request yang sudah ada' : 'Pilih stok kritis atau tambah item lain untuk dibeli' }}
+                    {{ $isEditMode ? 'Revisi Purchase Request yang sudah ada' : 'Select stok kritis atau Add Item lain untuk dibeli' }}
                 </p>
             </div>
         </div>
@@ -24,22 +24,22 @@
 
             {{-- LOCATION SELECTION --}}
             <div class="bg-white rounded-xl shadow border p-6">
-                <h2 class="text-lg font-bold text-gray-800 mb-4">Lokasi Request</h2>
+                <h2 class="text-lg font-bold text-gray-800 mb-4">Location Request</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-1">
-                            Lokasi <span class="text-red-500">*</span>
+                            Location <span class="text-red-500">*</span>
                         </label>
                         <select wire:model.live="selectedLocationId"
                             class="w-full border-gray-300 rounded-md shadow-sm"
                             {{ $isEditMode ? 'disabled' : '' }}>
-                            <option value="0">-- Pilih Lokasi --</option>
+                            <option value="0">-- Select Location --</option>
                             @foreach ($this->locations as $loc)
                                 <option value="{{ $loc['id'] }}">{{ $loc['name'] }}</option>
                             @endforeach
                         </select>
                         @if ($isEditMode)
-                            <p class="text-xs text-gray-500 mt-1">Lokasi tidak dapat diubah saat revisi.</p>
+                            <p class="text-xs text-gray-500 mt-1">Location No dapat Updated saat revisi.</p>
                         @endif
                     </div>
 
@@ -54,11 +54,11 @@
 
                 <div class="mt-4">
                     <label class="block text-sm font-bold text-gray-700 mb-1">
-                        Catatan PR
+                        Notes PR
                     </label>
                     <textarea wire:model="notes" rows="2"
                         class="w-full border-gray-300 rounded-md shadow-sm"
-                        placeholder="Catatan umum untuk PR ini..."></textarea>
+                        placeholder="Notes umum untuk PR ini..."></textarea>
                 </div>
             </div>
 
@@ -83,7 +83,7 @@
                             class="px-6 py-3 text-sm font-bold {{ !$showCriticalTab ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-50' }}">
                             <span class="flex items-center gap-2">
                                 <x-ui.sccr-icon name="plus-circle" :size="16" />
-                                Tambah Item Lain
+                                Add Item Lain
                                 @if (count($additionalItems) > 0)
                                     <span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full">
                                         {{ count($additionalItems) }}
@@ -106,15 +106,15 @@
                             @if (count($criticalItems) === 0)
                                 <div class="text-center py-10 bg-gray-50 rounded-lg">
                                     <x-ui.sccr-icon name="check-circle" :size="48" class="text-green-500 mx-auto mb-3" />
-                                    <p class="text-gray-600 font-medium">Tidak ada stok kritis di lokasi ini</p>
-                                    <p class="text-sm text-gray-500 mt-1">Semua item memiliki stok di atas minimum</p>
+                                    <p class="text-gray-600 font-medium">No critical stock at this location</p>
+                                    <p class="text-sm text-gray-500 mt-1">All item memiliki stok di atas minimum</p>
                                 </div>
                             @else
                                 <div class="overflow-x-auto">
                                     <table class="min-w-full divide-y divide-gray-200">
                                         <thead class="bg-gray-50">
                                             <tr>
-                                                <th class="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase">Pilih</th>
+                                                <th class="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase">Select</th>
                                                 <th wire:click="sortBy('item_name')" class="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase cursor-pointer hover:bg-gray-100">
                                                     Item {!! $sortField === 'item_name' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                                                 </th>
@@ -129,7 +129,7 @@
                                                 </th>
                                                 <th class="px-3 py-3 text-center text-xs font-bold text-gray-500 uppercase">Status</th>
                                                 <th class="px-3 py-3 text-center text-xs font-bold text-gray-500 uppercase">Qty Order</th>
-                                                <th class="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase">Catatan</th>
+                                                <th class="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase">Notes</th>
                                             </tr>
                                         </thead>
                                         <tbody class="divide-y divide-gray-200 bg-white">
@@ -197,7 +197,7 @@
                                                             <input type="text"
                                                                 wire:model="selectedCriticalItems.{{ $item['id'] }}.notes"
                                                                 class="w-full border-gray-300 rounded-md text-sm"
-                                                                placeholder="Catatan item...">
+                                                                placeholder="Notes item...">
                                                         @else
                                                             <span class="text-sm text-gray-400">-</span>
                                                         @endif
@@ -214,24 +214,24 @@
                     @else
                         <div class="p-6">
                             <div class="flex justify-between items-center mb-4">
-                                <h3 class="text-lg font-bold text-gray-800">Daftar Item Tersedia (Non-Kritis)</h3>
+                                <h3 class="text-lg font-bold text-gray-800">Daftar Item Available (Non-Kritis)</h3>
                                 <p class="text-sm text-gray-600">
-                                    Pilih item tambahan yang ingin dipesan
+                                    Select item tambahan yang ingin dipesan
                                 </p>
                             </div>
 
                             @if (count($this->availableItems) === 0)
                                 <div class="text-center py-10 bg-gray-50 rounded-lg">
                                     <x-ui.sccr-icon name="inbox" :size="48" class="text-gray-400 mx-auto mb-3" />
-                                    <p class="text-gray-600 font-medium">Tidak ada item tersedia</p>
-                                    <p class="text-sm text-gray-500 mt-1">Semua item mungkin sudah dipilih atau tidak ada data</p>
+                                    <p class="text-gray-600 font-medium">No items available</p>
+                                    <p class="text-sm text-gray-500 mt-1">All items may already be selected or no data available</p>
                                 </div>
                             @else
                                 <div class="overflow-x-auto">
                                     <table class="min-w-full divide-y divide-gray-200">
                                         <thead class="bg-gray-50">
                                             <tr>
-                                                <th class="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase">Pilih</th>
+                                                <th class="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase">Select</th>
                                                 <th wire:click="sortBy('item_name')" class="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase cursor-pointer hover:bg-gray-100">
                                                     Item {!! $sortField === 'item_name' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                                                 </th>
@@ -245,7 +245,7 @@
                                                     Selisih {!! $sortField === 'selisih' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                                                 </th>
                                                 <th class="px-3 py-3 text-center text-xs font-bold text-gray-500 uppercase">Qty Order</th>
-                                                <th class="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase">Catatan</th>
+                                                <th class="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase">Notes</th>
                                             </tr>
                                         </thead>
                                         <tbody class="divide-y divide-gray-200 bg-white">
@@ -301,7 +301,7 @@
                                                             <input type="text"
                                                                 wire:model="additionalItems.{{ $selectedIndex }}.notes"
                                                                 class="w-full border-gray-300 rounded-md text-sm"
-                                                                placeholder="Catatan item...">
+                                                                placeholder="Notes item...">
                                                         @else
                                                             <span class="text-sm text-gray-400">-</span>
                                                         @endif
@@ -330,7 +330,7 @@
                         <div class="flex gap-3">
                             <x-ui.sccr-button type="button" wire:click="cancel"
                                 class="bg-gray-500 text-white hover:bg-gray-600">
-                                Batal
+                                Cancel
                             </x-ui.sccr-button>
 
                             <x-ui.sccr-button type="button" wire:click="submitToRM"
@@ -344,8 +344,8 @@
                 {{-- NO LOCATION SELECTED --}}
                 <div class="bg-yellow-50 rounded-xl shadow border border-yellow-200 p-8 text-center">
                     <x-ui.sccr-icon name="map-pin" :size="48" class="text-yellow-500 mx-auto mb-3" />
-                    <h3 class="text-lg font-bold text-gray-800 mb-2">Pilih Lokasi Terlebih Dahulu</h3>
-                    <p class="text-gray-600">Silakan pilih lokasi untuk melihat daftar stok kritis</p>
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">Select Location Terlebih Dahulu</h3>
+                    <p class="text-gray-600">Silakan Select Location untuk melihat daftar stok kritis</p>
                 </div>
             @endif
 

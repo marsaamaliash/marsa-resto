@@ -35,8 +35,8 @@ class KonversiSatuanCreate extends Component
     protected function messages(): array
     {
         return [
-            'from_uom_id.different' => 'Dari Satuan harus berbeda dengan Ke Satuan',
-            'to_uom_id.different' => 'Ke Satuan harus berbeda dengan Dari Satuan',
+            'from_uom_id.different' => 'From Unit must be different from To Unit',
+            'to_uom_id.different' => 'To Unit must be different from From Unit',
         ];
     }
 
@@ -50,7 +50,7 @@ class KonversiSatuanCreate extends Component
             ->exists();
 
         if ($exists) {
-            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Konversi sudah ada untuk kombinasi ini'];
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Conversion already exists for this combination'];
 
             return;
         }
@@ -79,7 +79,7 @@ class KonversiSatuanCreate extends Component
             ->exists();
 
         if ($exists) {
-            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Konversi sudah ada untuk kombinasi ini'];
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Conversion already exists for this combination'];
 
             return;
         }
@@ -93,7 +93,7 @@ class KonversiSatuanCreate extends Component
             'is_active' => false,
         ]);
 
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Draft Konversi Satuan berhasil disimpan'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Unit conversion draft saved successfully'];
 
         $this->dispatch('konversi-satuan-created');
         $this->dispatch('konversi-satuan-overlay-close');

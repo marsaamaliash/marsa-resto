@@ -1,4 +1,4 @@
-<x-ui.sccr-card transparent wire:key="stock-item" class="h-full min-h-0 flex flex-col">
+﻿<x-ui.sccr-card transparent wire:key="stock-item" class="h-full min-h-0 flex flex-col">
 
     {{-- ================= HEADER ================= --}}
     <div class="relative px-8 py-6 bg-blue-600/80 rounded-b-3xl shadow-lg overflow-hidden">
@@ -14,7 +14,7 @@
         <div class="mt-4 flex justify-between items-center text-sm">
             <x-ui.sccr-breadcrumb :items="$breadcrumbs" />
             <div class="text-white">
-                Menampilkan <span class="font-bold text-black">{{ $data->total() }}</span> dari <span class="font-bold text-black">{{ $totalAll }}</span> data
+                Showing <span class="font-bold text-black">{{ $data->total() }}</span> of <span class="font-bold text-black">{{ $totalAll }}</span> data
             </div>
         </div>
     </div>
@@ -30,13 +30,13 @@
                     <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">
                         Nama / SKU
                     </span>
-                    <x-ui.sccr-input name="search" wire:model="search" placeholder="Ketik lalu enter..."
+                    <x-ui.sccr-input name="search" wire:model="search" placeholder="Type and press enter..."
                         class="w-64" />
                 </div>
 
-                {{-- FILTER 1: Kategori --}}
+                {{-- FILTER 1: Category --}}
                 <div class="relative top-1">
-                    <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">Kategori</span>
+                    <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">Category</span>
                     <x-ui.sccr-select name="filter1" wire:model.live="filter1" :options="$filter1Options" class="w-40" />
                 </div>
 
@@ -44,8 +44,8 @@
                 <div class="flex flex-wrap items-center gap-1">
                     <x-ui.sccr-button type="submit" variant="primary"
                         class="bg-gray-900 text-gray-100 hover:bg-gray-400">
-                        <x-ui.sccr-icon name="cari" :size="20" />
-                        Cari
+                        <x-ui.sccr-icon name="Search" :size="20" />
+                        Search
                     </x-ui.sccr-button>
 
                     <x-ui.sccr-button type="button" wire:click="clearFilters"
@@ -114,7 +114,7 @@
                             </th>
 
                             <th class="px-4 py-3 text-left text-xs font-bold">
-                                Kategori
+                                Category
                             </th>
 
                             <th wire:click="sortBy('total_available')"
@@ -132,9 +132,9 @@
                                 Qty In Transit {!! $sortField === 'total_in_transit' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                             </th>
 
-                            <th wire:click="sortBy('total_waste')"
+                            <th wire:click="sortBy('total_Waste')"
                                 class="px-4 py-3 text-right text-xs font-bold cursor-pointer">
-                                Qty Waste {!! $sortField === 'total_waste' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                                Waste Qty {!! $sortField === 'total_Waste' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                             </th>
 
 
@@ -143,7 +143,7 @@
                             </th>
 
                             <th class="px-4 py-3 text-left text-xs font-bold">
-                                Satuan
+                                Unit
                             </th>
                         </tr>
                     </thead>
@@ -187,7 +187,7 @@
 
 
                                 <td class="px-4 py-2 text-right text-sm font-mono">
-                                    {{ number_format($item->total_waste, 2) }}
+                                    {{ number_format($item->total_Waste, 2) }}
                                 </td>
 
                                 <td class="px-4 py-2 text-right text-sm font-mono font-bold">
@@ -201,7 +201,7 @@
                         @empty
                             <tr>
                                 <td colspan="10" class="py-10 text-center text-gray-400 italic">
-                                    Data tidak ditemukan
+                                    No data found
                                 </td>
                             </tr>
                         @endforelse
@@ -213,7 +213,7 @@
             <div
                 class="flex-none px-6 py-3 border-t bg-white flex flex-col md:flex-row justify-between items-center gap-3">
                 <div class="text-sm text-gray-600 flex items-center">
-                    <span class="font-bold text-gray-800 mr-1">{{ count($selectedItems) }}</span> item dipilih
+                    <span class="font-bold text-gray-800 mr-1">{{ count($selectedItems) }}</span> items selected
                 </div>
 
                 <div>

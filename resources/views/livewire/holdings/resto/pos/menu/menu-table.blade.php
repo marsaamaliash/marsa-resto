@@ -1,4 +1,4 @@
-<x-ui.sccr-card transparent wire:key="menu-table" class="h-full min-h-0 flex flex-col">
+﻿<x-ui.sccr-card transparent wire:key="Menu-table" class="h-full min-h-0 flex flex-col">
 
     {{-- ================= HEADER ================= --}}
     <div class="relative px-8 py-6 bg-indigo-600/80 rounded-b-3xl shadow-lg overflow-hidden">
@@ -6,7 +6,7 @@
             <div>
                 <h1 class="text-3xl font-bold text-white">Master Menu</h1>
                 <p class="text-indigo-100 text-sm">
-                    Manajemen Menu Restoran & Resep
+                    Manajemen Menu Restoran & Recipe
                 </p>
             </div>
         </div>
@@ -14,7 +14,7 @@
         <div class="mt-4 flex justify-between items-center text-sm">
             <x-ui.sccr-breadcrumb :items="$breadcrumbs" />
             <div class="text-white">
-                Menampilkan <span class="font-bold text-black">{{ $data->total() }}</span> dari <span class="font-bold text-black">{{ $totalAll }}</span> data
+                Showing <span class="font-bold text-black">{{ $data->total() }}</span> of <span class="font-bold text-black">{{ $totalAll }}</span> data
             </div>
         </div>
     </div>
@@ -28,15 +28,15 @@
                 {{-- SEARCH INPUT --}}
                 <div class="relative top-1">
                     <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">
-                        Nama / Kategori
+                        Nama / Category
                     </span>
-                    <x-ui.sccr-input name="search" wire:model="search" placeholder="Ketik lalu enter..."
+                    <x-ui.sccr-input name="search" wire:model="search" placeholder="Type and press enter..."
                         class="w-64" />
                 </div>
 
                 {{-- FILTER 1: Category --}}
                 <div class="relative top-1">
-                    <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">Kategori</span>
+                    <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">Category</span>
                     <x-ui.sccr-select name="filter1" wire:model.live="filter1" :options="$filter1Options"
                         class="w-40" />
                 </div>
@@ -52,8 +52,8 @@
                 <div class="flex flex-wrap items-center gap-1">
                     <x-ui.sccr-button type="submit" variant="primary"
                         class="bg-gray-900 text-gray-100 hover:bg-gray-400">
-                        <x-ui.sccr-icon name="cari" :size="20" />
-                        Cari
+                        <x-ui.sccr-icon name="Search" :size="20" />
+                        Search
                     </x-ui.sccr-button>
 
                     <x-ui.sccr-button type="button" wire:click="clearFilters"
@@ -106,7 +106,7 @@
 
                             <th wire:click="sortBy('category')"
                                 class="px-4 py-3 text-left text-xs font-bold cursor-pointer">
-                                Kategori {!! $sortField === 'category' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                                Category {!! $sortField === 'category' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                             </th>
 
                             <th wire:click="sortBy('price')"
@@ -115,17 +115,17 @@
                             </th>
 
                             <th class="px-4 py-3 text-center text-xs font-bold">
-                                Status Resep
+                                Status Recipe
                             </th>
 
                             <th wire:click="sortBy('is_active')"
                                 class="px-4 py-3 text-center text-xs font-bold cursor-pointer">
-                                Aktif {!! $sortField === 'is_active' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                                Active {!! $sortField === 'is_active' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                             </th>
 
                             {{-- ACTIONS HEADER --}}
                             <th class="px-4 py-3 text-center text-xs font-bold">
-                                Aksi
+                                Actions
                             </th>
                         </tr>
                     </thead>
@@ -162,36 +162,36 @@
                                     @php
                                         $recipe = $item->recipe;
                                         $hasActiveRecipe = $recipe && $recipe->is_active;
-                                        $hasActiveVersion = $hasActiveRecipe && $recipe->activeVersion;
+                                        $hasactiveVersion = $hasActiveRecipe && $recipe->activeVersion;
                                     @endphp
                                     
                                     @if ($item->recipe_id && $recipe)
-                                        @if ($hasActiveVersion)
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800" title="Resep Aktif - V{{ $recipe->activeVersion->version_no }}">
+                                        @if ($hasactiveVersion)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800" title="Recipe Active - V{{ $recipe->activeVersion->version_no }}">
                                                 <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
                                                 V{{ $recipe->activeVersion->version_no }}
                                             </span>
                                         @elseif ($hasActiveRecipe)
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800" title="Resep Aktif tapi belum ada versi">
-                                                Aktif
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800" title="Recipe Active tapi Not Yet Version">
+                                                Active
                                             </span>
                                         @else
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600" title="Resep Nonaktif">
-                                                Nonaktif
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600" title="Recipe Inactive">
+                                                Inactive
                                             </span>
                                         @endif
                                     @else
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-600" title="Belum punya resep">
-                                            Belum Ada
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-600" title="Not Yet punya Recipe">
+                                            Not Yet
                                         </span>
                                     @endif
                                 </td>
 
                                 <td class="px-4 py-2 text-center text-sm">
                                     @if ($item['is_active'])
-                                        <span class="text-green-600 font-semibold">Ya</span>
+                                        <span class="text-green-600 font-semibold">Yes</span>
                                     @else
-                                        <span class="text-red-600">Tidak</span>
+                                        <span class="text-red-600">No</span>
                                     @endif
                                 </td>
 
@@ -209,7 +209,7 @@
                         @empty
                             <tr>
                                 <td colspan="8" class="py-10 text-center text-gray-400 italic">
-                                    Data tidak ditemukan
+                                    No data found
                                 </td>
                             </tr>
                         @endforelse
@@ -221,7 +221,7 @@
             <div
                 class="flex-none px-6 py-3 border-t bg-white flex flex-col md:flex-row justify-between items-center gap-3">
                 <div class="text-sm text-gray-600 flex items-center">
-                    <span class="font-bold text-gray-800 mr-1">{{ count($selectedItems) }}</span> item dipilih
+                    <span class="font-bold text-gray-800 mr-1">{{ count($selectedItems) }}</span> items selected
                 </div>
 
                 <div>

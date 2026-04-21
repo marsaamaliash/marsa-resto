@@ -104,7 +104,7 @@ class ItemEdit extends Component
             'type' => $this->type,
         ]);
 
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Item berhasil diperbarui'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Item updated successfully'];
 
         $this->dispatch('item-updated');
         $this->dispatch('item-overlay-close');
@@ -140,7 +140,7 @@ class ItemEdit extends Component
             'type' => $this->type,
         ]);
 
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Draft item berhasil disimpan'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Item draft saved successfully'];
 
         $this->dispatch('item-updated');
         $this->dispatch('item-overlay-close');

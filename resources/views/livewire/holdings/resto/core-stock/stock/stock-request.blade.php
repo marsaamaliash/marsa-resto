@@ -1,4 +1,4 @@
-<x-ui.sccr-card transparent wire:key="stock-request" class="h-full min-h-0 flex flex-col">
+﻿<x-ui.sccr-card transparent wire:key="stock-request" class="h-full min-h-0 flex flex-col">
 
     {{-- ================= HEADER ================= --}}
     <div class="relative px-8 py-6 bg-purple-600/80 rounded-b-3xl shadow-lg overflow-hidden">
@@ -14,7 +14,7 @@
         <div class="mt-4 flex justify-between items-center text-sm">
             <x-ui.sccr-breadcrumb :items="$breadcrumbs" />
             <div class="text-white">
-                Menampilkan <span class="font-bold text-black">{{ $data->total() }}</span> dari <span class="font-bold text-black">{{ $totalAll }}</span> data
+                Showing <span class="font-bold text-black">{{ $data->total() }}</span> of <span class="font-bold text-black">{{ $totalAll }}</span> data
             </div>
         </div>
     </div>
@@ -28,7 +28,7 @@
                 {{-- SEARCH INPUT --}}
                 <div class="relative top-1">
                     <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">
-                        Cari
+                        Search
                     </span>
                     <x-ui.sccr-input name="search" wire:model="search" placeholder="PIC/Action/Comment..."
                         class="w-64" />
@@ -50,8 +50,8 @@
                 <div class="flex flex-wrap items-center gap-1">
                     <x-ui.sccr-button type="submit" variant="primary"
                         class="bg-gray-900 text-gray-100 hover:bg-gray-400">
-                        <x-ui.sccr-icon name="cari" :size="20" />
-                        Cari
+                        <x-ui.sccr-icon name="Search" :size="20" />
+                        Search
                     </x-ui.sccr-button>
 
                     <x-ui.sccr-button type="button" wire:click="clearFilters"
@@ -252,7 +252,7 @@
                         @empty
                             <tr>
                                 <td colspan="11" class="py-10 text-center text-gray-400 italic">
-                                    Data tidak ditemukan
+                                    No data found
                                 </td>
                             </tr>
                         @endforelse
@@ -264,7 +264,7 @@
             <div
                 class="flex-none px-6 py-3 border-t bg-white flex flex-col md:flex-row justify-between items-center gap-3">
                 <div class="text-sm text-gray-600 flex items-center">
-                    <span class="font-bold text-gray-800 mr-1">{{ count($selectedItems) }}</span> item dipilih
+                    <span class="font-bold text-gray-800 mr-1">{{ count($selectedItems) }}</span> items selected
                 </div>
 
                 <div>

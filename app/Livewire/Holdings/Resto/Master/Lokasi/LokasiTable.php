@@ -67,14 +67,14 @@ class LokasiTable extends Component
 
     public array $availableColumns = [
         ['key' => 'id', 'label' => 'ID', 'default' => true],
-        ['key' => 'code', 'label' => 'Kode', 'default' => true],
-        ['key' => 'name', 'label' => 'Nama', 'default' => true],
-        ['key' => 'type', 'label' => 'Tipe', 'default' => true],
+        ['key' => 'code', 'label' => 'Code', 'default' => true],
+        ['key' => 'name', 'label' => 'Name', 'default' => true],
+        ['key' => 'type', 'label' => 'Type', 'default' => true],
         ['key' => 'pic_name', 'label' => 'PIC', 'default' => true],
-        ['key' => 'notes', 'label' => 'Catatan', 'default' => false],
-        ['key' => 'is_active', 'label' => 'Aktif', 'default' => true],
-        ['key' => 'created_at', 'label' => 'Dibuat', 'default' => false],
-        ['key' => 'updated_at', 'label' => 'Diubah', 'default' => false],
+        ['key' => 'notes', 'label' => 'Notes', 'default' => false],
+        ['key' => 'is_active', 'label' => 'Active', 'default' => true],
+        ['key' => 'created_at', 'label' => 'Created', 'default' => false],
+        ['key' => 'updated_at', 'label' => 'Updated', 'default' => false],
     ];
 
     protected $queryString = [
@@ -104,7 +104,7 @@ class LokasiTable extends Component
             ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
             ['label' => 'Resto', 'route' => 'dashboard.resto', 'color' => 'text-gray-800'],
             ['label' => 'Master Data', 'route' => 'dashboard.resto.master', 'color' => 'text-gray-900 font-semibold'],
-            ['label' => 'Lokasi', 'color' => 'text-gray-900 font-semibold'],
+            ['label' => 'Location', 'color' => 'text-gray-900 font-semibold'],
         ];
 
         $this->syncCaps();
@@ -254,7 +254,7 @@ class LokasiTable extends Component
     public function exportSelected()
     {
         if (empty($this->selectedItems)) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Pilih data terlebih dahulu'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Please select data first'];
 
             return null;
         }
@@ -270,7 +270,7 @@ class LokasiTable extends Component
         $spreadsheet = new Spreadsheet;
         $ws = $spreadsheet->getActiveSheet();
 
-        $headers = ['ID', 'Kode', 'Nama', 'Tipe', 'PIC', 'Catatan', 'Aktif', 'Status', 'Dibuat'];
+        $headers = ['ID', 'Code', 'Name', 'Type', 'PIC', 'Notes', 'Active', 'Status', 'Created'];
         $ws->fromArray([$headers], null, 'A1');
 
         $typeLabels = [
@@ -289,7 +289,7 @@ class LokasiTable extends Component
                 $typeLabels[$item->type] ?? $item->type,
                 $item->pic_name ?? '-',
                 $item->notes ?? '-',
-                $item->is_active ? 'Ya' : 'Tidak',
+                $item->is_active ? 'Yes' : 'No',
                 $item->deleted_at ? 'Deleted' : 'Active',
                 $item->created_at?->format('Y-m-d H:i:s') ?? '',
             ], null, 'A'.$row++);
@@ -310,7 +310,7 @@ class LokasiTable extends Component
     public function openCreate(): void
     {
         if (! $this->canCreate) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin create.'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to create.'];
 
             return;
         }
@@ -331,7 +331,7 @@ class LokasiTable extends Component
     public function openEdit(string $id): void
     {
         if (! $this->canUpdate) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin update.'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to update.'];
 
             return;
         }
@@ -343,7 +343,7 @@ class LokasiTable extends Component
     public function deleteItem(string $id): void
     {
         if (! $this->canDelete) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin delete.'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to delete.'];
 
             return;
         }
@@ -351,7 +351,7 @@ class LokasiTable extends Component
         $item = Rst_MasterLokasi::withTrashed()->find($id);
 
         if (! $item) {
-            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data tidak ditemukan.'];
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data not found.'];
 
             return;
         }
@@ -362,7 +362,7 @@ class LokasiTable extends Component
     public function restoreItem(string $id): void
     {
         if (! $this->canDelete) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin restore.'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to restore.'];
 
             return;
         }
@@ -370,7 +370,7 @@ class LokasiTable extends Component
         $item = Rst_MasterLokasi::onlyTrashed()->find($id);
 
         if (! $item) {
-            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data tidak ditemukan.'];
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data not found.'];
 
             return;
         }
@@ -393,14 +393,14 @@ class LokasiTable extends Component
     public function handleCreated(?string $id = null): void
     {
         $this->closeOverlay();
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data berhasil ditambahkan.'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data added successfully.'];
     }
 
     #[On('lokasi-updated')]
     public function handleUpdated(?string $id = null): void
     {
         $this->closeOverlay();
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data berhasil diperbarui.'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data updated successfully.'];
     }
 
     #[On('lokasi-open-edit')]
@@ -412,7 +412,7 @@ class LokasiTable extends Component
     protected function filter1Options(): array
     {
         return [
-            '' => '-- Semua Tipe --',
+            '' => '-- All Types --',
             'warehouse' => 'Warehouse',
             'kitchen' => 'Kitchen',
             'outlet' => 'Outlet',
@@ -423,9 +423,9 @@ class LokasiTable extends Component
     protected function filter2Options(): array
     {
         return [
-            '' => '-- Semua Status --',
-            '1' => 'Aktif',
-            '0' => 'Nonaktif',
+            '' => '-- All Status --',
+            '1' => 'Active',
+            '0' => 'Inactive',
         ];
     }
 
