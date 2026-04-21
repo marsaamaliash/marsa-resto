@@ -1,12 +1,12 @@
-﻿<x-ui.sccr-card transparent wire:key="purchase-request-table" class="h-full min-h-0 flex flex-col">
+<x-ui.sccr-card transparent wire:key="direct-order-table" class="h-full min-h-0 flex flex-col">
 
     {{-- ================= HEADER ================= --}}
     <div class="relative px-8 py-6 bg-blue-600/80 rounded-b-3xl shadow-lg overflow-hidden">
         <div class="flex justify-between items-start">
             <div>
-                <h1 class="text-3xl font-bold text-white">Purchase Request</h1>
+                <h1 class="text-3xl font-bold text-white">Direct Order</h1>
                 <p class="text-blue-100 text-sm">
-                    Pengajuan pembelian barang (PR) dengan multi-level approval
+                    Kelola Direct Order untuk kebutuhan mendadak
                 </p>
             </div>
         </div>
@@ -14,7 +14,7 @@
         <div class="mt-4 flex justify-between items-center text-sm">
             <x-ui.sccr-breadcrumb :items="$breadcrumbs" />
             <div class="text-white">
-                Menampilkan <span class="font-bold text-black">{{ $data->total() }}</span> dari <span class="font-bold text-black">{{ $totalAll }}</span> data
+                Menampilkan <span class="font-bold text-black">{{ $data->total() }}</span> data
             </div>
         </div>
     </div>
@@ -31,7 +31,7 @@
                         Cari
                     </span>
                     <x-ui.sccr-input name="search" wire:model="search"
-                        placeholder="PR Number, Lokasi, Item..." class="w-72" />
+                        placeholder="DO Number, Pembeli, Lokasi..." class="w-72" />
                 </div>
 
                 {{-- FILTER 1: Status --}}
@@ -105,28 +105,28 @@
                                 <input type="checkbox" wire:model.live="selectAll" class="rounded border-gray-300">
                             </th>
 
-                            {{-- PR Number --}}
-                            <th wire:click="sortBy('pr_number')"
+                            {{-- DO Number --}}
+                            <th wire:click="sortBy('do_number')"
                                 class="px-3 py-3 text-left text-xs font-bold cursor-pointer">
-                                PR Number {!! $sortField === 'pr_number' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                                DO Number {!! $sortField === 'do_number' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                             </th>
 
-                            {{-- Request Date --}}
-                            <th wire:click="sortBy('requested_at')"
+                            {{-- Purchase Date --}}
+                            <th wire:click="sortBy('purchase_date')"
                                 class="px-3 py-3 text-left text-xs font-bold cursor-pointer">
-                                Tanggal {!! $sortField === 'requested_at' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                                Tanggal {!! $sortField === 'purchase_date' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                             </th>
 
                             {{-- Location --}}
-                            <th wire:click="sortBy('requester_location_id')"
+                            <th wire:click="sortBy('location_id')"
                                 class="px-3 py-3 text-left text-xs font-bold cursor-pointer">
-                                Lokasi {!! $sortField === 'requester_location_id' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                                Lokasi {!! $sortField === 'location_id' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                             </th>
 
-                            {{-- Requester --}}
-                            <th wire:click="sortBy('requested_by')"
+                            {{-- Purchaser --}}
+                            <th wire:click="sortBy('purchaser_name')"
                                 class="px-3 py-3 text-left text-xs font-bold cursor-pointer">
-                                Requester {!! $sortField === 'requested_by' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                                Pembeli {!! $sortField === 'purchaser_name' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                             </th>
 
                             {{-- Status --}}
@@ -135,12 +135,17 @@
                                 Status {!! $sortField === 'status' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                             </th>
 
-                            {{-- Total Items --}}
-                            <th class="px-3 py-3 text-center text-xs font-bold">
-                                Items
+                            {{-- Total Amount --}}
+                            <th wire:click="sortBy('total_amount')"
+                                class="px-3 py-3 text-right text-xs font-bold cursor-pointer">
+                                Total {!! $sortField === 'total_amount' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                             </th>
 
-                            
+                            {{-- Payment By --}}
+                            <th wire:click="sortBy('payment_by')"
+                                class="px-3 py-3 text-center text-xs font-bold cursor-pointer">
+                                Payment {!! $sortField === 'payment_by' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                            </th>
 
                             {{-- Created At --}}
                             <th wire:click="sortBy('created_at')"
@@ -165,15 +170,13 @@
                             </th>
 
                             {{-- Actions --}}
-                            {{-- Actions --}}
-                            {{-- Actions --}}
                             <th class="px-4 py-3 text-center text-xs font-bold">
                                 <div class="flex items-center justify-center gap-2">
                                     <span>Aksi</span>
 
                                     @if ($canCreate)
                                         <x-ui.sccr-button type="button" variant="icon-circle" wire:click="openCreateFromCritical"
-                                            class="w-8 h-8 hover:scale-105" title="Buat PR dari Stok Kritis">
+                                            class="w-8 h-8 hover:scale-105" title="Buat DO Baru">
                                             <x-ui.sccr-icon name="plus" :size="18" />
                                         </x-ui.sccr-button>
                                     @endif
@@ -191,24 +194,24 @@
                                         class="rounded border-gray-300">
                                 </td>
 
-                                {{-- PR Number --}}
+                                {{-- DO Number --}}
                                 <td class="px-3 py-2 font-mono text-sm font-semibold text-blue-700">
-                                    {{ $item['pr_number'] ?? '-' }}
+                                    {{ $item['do_number'] ?? '-' }}
                                 </td>
 
-                                {{-- Request Date --}}
+                                {{-- Purchase Date --}}
                                 <td class="px-3 py-2 text-sm">
-                                    {{ $item['requested_at'] ? \Carbon\Carbon::parse($item['requested_at'])->format('d/m/Y H:i') : '-' }}
+                                    {{ $item['purchase_date'] ? \Carbon\Carbon::parse($item['purchase_date'])->format('d/m/Y') : '-' }}
                                 </td>
 
                                 {{-- Location --}}
                                 <td class="px-3 py-2 text-sm">
-                                    {{ $item->requesterLocation?->name ?? '-' }}
+                                    {{ $item->location?->name ?? '-' }}
                                 </td>
 
-                                {{-- Requester --}}
+                                {{-- Purchaser --}}
                                 <td class="px-3 py-2 text-sm">
-                                    {{ $item['requested_by'] ?? '-' }}
+                                    {{ $item['purchaser_name'] ?? '-' }}
                                 </td>
 
                                 {{-- Status --}}
@@ -238,14 +241,17 @@
                                     </span>
                                 </td>
 
-                                {{-- Total Items --}}
-                                <td class="px-3 py-2 text-center text-sm">
-                                    <span class="font-semibold">{{ $item->items->count() }}</span>
-                                    @if ($item->items->where('is_critical', true)->count() > 0)
-                                        <span class="text-red-600 text-xs" title="Stok Kritis">
-                                            ({{ $item->items->where('is_critical', true)->count() }} kritis)
-                                        </span>
-                                    @endif
+                                {{-- Total Amount --}}
+                                <td class="px-3 py-2 text-right text-sm font-semibold">
+                                    Rp {{ number_format($item['total_amount'] ?? 0, 2, ',', '.') }}
+                                </td>
+
+                                {{-- Payment By --}}
+                                <td class="px-3 py-2 text-center">
+                                    <span class="px-2 py-0.5 rounded text-xs font-semibold
+                                        {{ $item['payment_by'] === 'holding' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800' }}">
+                                        {{ ucfirst($item['payment_by'] ?? '-') }}
+                                    </span>
                                 </td>
 
                                 
@@ -274,14 +280,14 @@
                                 <td class="px-3 py-2 text-center">
                                     <div class="flex justify-center gap-2">
                                         {{-- View Detail --}}
-                                        <a href="{{ route('dashboard.resto.purchase-request.detail', $item['id']) }}"
+                                        <a href="{{ route('dashboard.resto.direct-order.detail', $item['id']) }}"
                                             class="text-gray-700 hover:scale-125" title="Detail">
                                             <x-ui.sccr-icon name="eye" :size="18" />
                                         </a>
 
-                                        {{-- Edit/Revise --}}
+                                        {{-- Edit --}}
                                         @if ($item->canBeEdited() && ($canCreate || $canUpdate))
-                                            <a href="{{ route('dashboard.resto.purchase-request.detail', $item['id']) }}?mode=edit"
+                                            <a href="{{ route('dashboard.resto.direct-order.detail', $item['id']) }}?mode=edit"
                                                 class="text-blue-600 hover:scale-125" title="Edit">
                                                 <x-ui.sccr-icon name="edit" :size="18" />
                                             </a>
@@ -290,7 +296,7 @@
                                         {{-- Submit to RM --}}
                                         @if ($item->canBeEdited() && $canCreate)
                                             <x-ui.sccr-button type="button" variant="icon"
-                                                wire:click="submitDraftPRToRM({{ $item['id'] }})"
+                                                wire:click="submitDraftDOToRM({{ $item['id'] }})"
                                                 class="text-orange-600 hover:scale-125" title="Submit to RM">
                                                 <x-ui.sccr-icon name="send" :size="18" />
                                             </x-ui.sccr-button>
@@ -341,9 +347,9 @@
                                 {{-- Delete --}}
                                 @if ($item->canBeEdited() && $canDelete)
                                     <x-ui.sccr-button type="button" variant="icon"
-                                        wire:click="deletePR('{{ $item['id'] }}')"
+                                        wire:click="deleteDO('{{ $item['id'] }}')"
                                         class="text-red-600 hover:scale-125"
-                                        wire:confirm="Yakin ingin menghapus PR {{ $item['pr_number'] }}?"
+                                        wire:confirm="Yakin ingin menghapus DO {{ $item['do_number'] }}?"
                                         title="Hapus">
                                         <x-ui.sccr-icon name="trash" :size="18" />
                                     </x-ui.sccr-button>
@@ -386,10 +392,10 @@
             <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden" wire:click.stop>
                 @php
                     $modalTitle = match($actionOverlayMode) {
-                        'approve_rm' => 'Approve PR (Restaurant Manager)',
-                        'approve_spv' => 'Approve PR (Supervisor)',
-                        'reject' => 'Reject PR',
-                        'revise' => 'Request Revise PR',
+                        'approve_rm' => 'Approve DO (Restaurant Manager)',
+                        'approve_spv' => 'Approve DO (Supervisor)',
+                        'reject' => 'Reject DO',
+                        'revise' => 'Request Revise DO',
                         default => 'Action',
                     };
                     $modalColor = match($actionOverlayMode) {
@@ -439,7 +445,7 @@
                             Approve
                         </x-ui.sccr-button>
                     @elseif ($actionOverlayMode === 'reject')
-                        <x-ui.sccr-button type="button" wire:click="rejectPR"
+                        <x-ui.sccr-button type="button" wire:click="rejectDO"
                             class="bg-red-600 text-white hover:bg-red-700">
                             Reject
                         </x-ui.sccr-button>

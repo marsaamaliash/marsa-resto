@@ -300,7 +300,7 @@
                                     @if ($editOrderId)
                                         Tambah ke Order
                                     @else
-                                        Kirim ke Dapur
+                                        Submit
                                     @endif
                                 </button>
                             </div>
@@ -342,11 +342,11 @@
             <div class="flex gap-3">
                 <button type="button" @click="showConfirmModal = false"
                     class="flex-1 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-xl transition-colors">
-                    Batal
+                    Cancel
                 </button>
                 <button type="button" @click="submitOrder()"
                     class="flex-1 py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl transition-colors">
-                    Kirim
+                    Submit
                 </button>
             </div>
         </div>
@@ -363,11 +363,11 @@
             <div class="flex gap-3">
                 <button type="button" @click="showNoteModal = false"
                     class="flex-1 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-xl transition-colors">
-                    Batal
+                    Cancel
                 </button>
                 <button type="button" @click="saveNote()"
                     class="flex-1 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-xl transition-colors">
-                    Simpan
+                    Save
                 </button>
             </div>
         </div>

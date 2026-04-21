@@ -22,9 +22,13 @@ class PurchaseRequestDetail extends Component
 
     public bool $canEdit = false;
 
-    public ?string $actionModal = null;
+    public bool $showRejectModal = false;
 
-    public string $actionNotes = '';
+    public bool $showReviseModal = false;
+
+    public string $rejectReason = '';
+
+    public string $reviseReason = '';
 
     public function mount(int $id): void
     {
@@ -68,20 +72,28 @@ class PurchaseRequestDetail extends Component
 
     public function openActionModal(string $action): void
     {
-        $this->actionModal = $action;
-        $this->actionNotes = '';
+        if ($action === 'reject') {
+            $this->showRejectModal = true;
+            $this->rejectReason = '';
+        } elseif ($action === 'revise') {
+            $this->showReviseModal = true;
+            $this->reviseReason = '';
+        }
     }
 
     public function closeActionModal(): void
     {
-        $this->reset('actionModal', 'actionNotes');
+        $this->showRejectModal = false;
+        $this->showReviseModal = false;
+        $this->rejectReason = '';
+        $this->reviseReason = '';
     }
 
     public function approveByRM(): void
     {
         try {
-            $user = auth()->user()?->name ?? 'SYSTEM';
-            PurchaseRequestService::approveByRM($this->pr->id, $this->actionNotes, $user);
+            $user = auth()->user()?->username ?? 'SYSTEM';
+            PurchaseRequestService::approveByRM($this->pr->id, null, $user);
 
             $this->loadPR($this->pr->id);
             $this->closeActionModal();
@@ -91,11 +103,24 @@ class PurchaseRequestDetail extends Component
         }
     }
 
+    public function directApproveByRM(): void
+    {
+        try {
+            $user = auth()->user()?->username ?? 'SYSTEM';
+            PurchaseRequestService::approveByRM($this->pr->id, null, $user);
+
+            $this->loadPR($this->pr->id);
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Purchase Request berhasil diapprove oleh RM.'];
+        } catch (\Exception $e) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
+        }
+    }
+
     public function approveBySPV(): void
     {
         try {
-            $user = auth()->user()?->name ?? 'SYSTEM';
-            PurchaseRequestService::approveBySPV($this->pr->id, $this->actionNotes, $user);
+            $user = auth()->user()?->username ?? 'SYSTEM';
+            PurchaseRequestService::approveBySPV($this->pr->id, null, $user);
 
             $this->loadPR($this->pr->id);
             $this->closeActionModal();
@@ -105,17 +130,30 @@ class PurchaseRequestDetail extends Component
         }
     }
 
+    public function directApproveBySPV(): void
+    {
+        try {
+            $user = auth()->user()?->username ?? 'SYSTEM';
+            PurchaseRequestService::approveBySPV($this->pr->id, null, $user);
+
+            $this->loadPR($this->pr->id);
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Purchase Request berhasil diapprove oleh Supervisor.'];
+        } catch (\Exception $e) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
+        }
+    }
+
     public function rejectPR(): void
     {
         try {
-            if (empty($this->actionNotes)) {
+            if (empty($this->rejectReason)) {
                 throw new \Exception('Alasan reject wajib diisi.');
             }
 
             $level = $this->pr->status === 'pending_rm' ? 1 : 2;
-            $user = auth()->user()?->name ?? 'SYSTEM';
+            $user = auth()->user()?->username ?? 'SYSTEM';
 
-            PurchaseRequestService::reject($this->pr->id, $this->actionNotes, $level, $user);
+            PurchaseRequestService::reject($this->pr->id, $this->rejectReason, $level, $user);
 
             $this->loadPR($this->pr->id);
             $this->closeActionModal();
@@ -128,14 +166,14 @@ class PurchaseRequestDetail extends Component
     public function requestRevise(): void
     {
         try {
-            if (empty($this->actionNotes)) {
+            if (empty($this->reviseReason)) {
                 throw new \Exception('Alasan revise wajib diisi.');
             }
 
             $level = $this->pr->status === 'pending_rm' ? 1 : 2;
-            $user = auth()->user()?->name ?? 'SYSTEM';
+            $user = auth()->user()?->username ?? 'SYSTEM';
 
-            PurchaseRequestService::requestRevise($this->pr->id, $this->actionNotes, $level, $user);
+            PurchaseRequestService::requestRevise($this->pr->id, $this->reviseReason, $level, $user);
 
             $this->loadPR($this->pr->id);
             $this->closeActionModal();
@@ -152,7 +190,11 @@ class PurchaseRequestDetail extends Component
 
     public function edit(): void
     {
-        $this->redirectRoute('dashboard.resto.purchase-request.create', ['id' => $this->pr->id]);
+        if ($this->pr->isRevised()) {
+            $this->redirectRoute('dashboard.resto.purchase-request.revise', ['id' => $this->pr->id]);
+        } else {
+            $this->redirectRoute('dashboard.resto.purchase-request.edit', ['id' => $this->pr->id]);
+        }
     }
 
     public function render()

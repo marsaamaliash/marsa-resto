@@ -320,12 +320,32 @@ class PurchaseRequestCreate extends Component
         }
     }
 
+    public function saveDraft(): void
+    {
+        try {
+            $this->validateData();
+
+            if ($this->isEditMode && $this->editingPrId) {
+                $pr = $this->updateDraft();
+                $message = 'Purchase Request berhasil diperbarui.';
+            } else {
+                $pr = $this->createDraft();
+                $message = 'Purchase Request berhasil disimpan sebagai draft.';
+            }
+
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => $message];
+            $this->redirectRoute('dashboard.resto.purchase-request');
+        } catch (\Exception $e) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
+        }
+    }
+
     public function submitToRM(): void
     {
         try {
             $this->validateData();
 
-            $user = auth()->user()?->name ?? 'SYSTEM';
+            $user = auth()->user()?->username ?? 'SYSTEM';
 
             if ($this->isEditMode && $this->editingPrId) {
                 $pr = $this->updateDraft();
@@ -363,6 +383,7 @@ class PurchaseRequestCreate extends Component
                 'item_id' => $itemId,
                 'qty' => $data['qty'],
                 'notes' => $data['notes'] ?? null,
+                'is_critical' => true,
             ];
         }
 
@@ -371,10 +392,11 @@ class PurchaseRequestCreate extends Component
                 'item_id' => $item['id'],
                 'qty' => $item['qty'],
                 'notes' => $item['notes'] ?? null,
+                'is_critical' => false,
             ];
         }
 
-        $user = auth()->user()?->name ?? 'SYSTEM';
+        $user = auth()->user()?->username ?? 'SYSTEM';
 
         return PurchaseRequestService::createFromCritical(
             $this->selectedLocationId,
@@ -394,6 +416,7 @@ class PurchaseRequestCreate extends Component
                 'item_id' => $itemId,
                 'qty' => $data['qty'],
                 'notes' => $data['notes'] ?? null,
+                'is_critical' => true,
             ];
         }
 
@@ -402,10 +425,11 @@ class PurchaseRequestCreate extends Component
                 'item_id' => $item['id'],
                 'qty' => $item['qty'],
                 'notes' => $item['notes'] ?? null,
+                'is_critical' => false,
             ];
         }
 
-        return PurchaseRequestService::revisePR($this->editingPrId, $allItems, $this->notes, $this->requiredDate);
+        return PurchaseRequestService::updatePRItems($this->editingPrId, $allItems, $this->notes, $this->requiredDate);
     }
 
     public function cancel(): void

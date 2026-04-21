@@ -5,28 +5,31 @@ namespace App\Models\Holdings\Resto\Procurement;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Rst_PurchaseRequest extends Model
+class Rst_DirectOrder extends Model
 {
+    use SoftDeletes;
+
     protected $connection = 'sccr_resto';
 
-    protected $table = 'purchase_requests';
+    protected $table = 'direct_orders';
 
     protected $primaryKey = 'id';
 
     protected $guarded = [];
 
     protected $fillable = [
-        'pr_number',
-        'requester_location_id',
-        'vendor_name',
+        'do_number',
+        'location_id',
+        'purchaser_name',
+        'purchase_date',
+        'payment_by',
+        'proof_path',
+        'notes',
+        'total_amount',
         'status',
         'approval_level',
-        'notes',
-        'required_date',
-        'total_estimated_cost',
-        'requested_by',
-        'requested_at',
         'rm_approved_by',
         'rm_approved_at',
         'rm_notes',
@@ -46,28 +49,22 @@ class Rst_PurchaseRequest extends Model
     ];
 
     protected $casts = [
-        'requested_at' => 'datetime',
+        'purchase_date' => 'date',
         'rm_approved_at' => 'datetime',
         'spv_approved_at' => 'datetime',
         'rejected_at' => 'datetime',
         'revise_requested_at' => 'datetime',
-        'required_date' => 'date',
-        'total_estimated_cost' => 'decimal:2',
+        'total_amount' => 'decimal:2',
     ];
+
+    public function location(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Holdings\Resto\Master\Rst_MasterLokasi::class, 'location_id');
+    }
 
     public function items(): HasMany
     {
-        return $this->hasMany(Rst_PurchaseRequestItem::class, 'purchase_request_id');
-    }
-
-    public function purchaseOrders(): HasMany
-    {
-        return $this->hasMany(Rst_PurchaseOrder::class, 'purchase_request_id');
-    }
-
-    public function requesterLocation(): BelongsTo
-    {
-        return $this->belongsTo(\App\Models\Holdings\Resto\Master\Rst_MasterLokasi::class, 'requester_location_id');
+        return $this->hasMany(Rst_DirectOrderItem::class, 'direct_order_id');
     }
 
     public function isDraft(): bool

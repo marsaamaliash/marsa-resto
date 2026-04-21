@@ -1,18 +1,17 @@
 <?php
 
-namespace App\Livewire\Holdings\Resto\Procurement\PurchaseRequest;
+namespace App\Livewire\Holdings\Resto\Procurement\DirectOrder;
 
 use App\Models\Holdings\Resto\Master\Rst_MasterLokasi;
-use App\Models\Holdings\Resto\Procurement\Rst_PurchaseRequest;
-use App\Services\Resto\PurchaseRequestService;
+use App\Models\Holdings\Resto\Procurement\Rst_DirectOrder;
+use App\Services\Resto\DirectOrderService;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
-use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-class PurchaseRequestTable extends Component
+class DirectOrderTable extends Component
 {
     use WithPagination;
 
@@ -48,17 +47,16 @@ class PurchaseRequestTable extends Component
 
     public string $sortDirection = 'desc';
 
-    public int $totalAll = 0;
-
     protected array $allowedSortFields = [
         'id',
-        'pr_number',
-        'requester_location_id',
+        'do_number',
+        'location_id',
         'status',
         'approval_level',
-        'requested_by',
-        'requested_at',
-        'total_estimated_cost',
+        'purchaser_name',
+        'purchase_date',
+        'total_amount',
+        'payment_by',
         'created_at',
         'updated_at',
     ];
@@ -66,10 +64,6 @@ class PurchaseRequestTable extends Component
     public array $selectedItems = [];
 
     public bool $selectAll = false;
-
-    public ?string $overlayMode = null;
-
-    public ?string $overlayId = null;
 
     public ?string $actionOverlayMode = null;
 
@@ -92,12 +86,12 @@ class PurchaseRequestTable extends Component
     {
         $u = auth()->user();
 
-        $this->canCreate = (bool) ($u?->hasPermission('PURCHASE_REQUEST_CREATE') ?? false);
-        $this->canUpdate = (bool) ($u?->hasPermission('PURCHASE_REQUEST_UPDATE') ?? false);
-        $this->canDelete = (bool) ($u?->hasPermission('PURCHASE_REQUEST_DELETE') ?? false);
-        $this->canApproveRM = (bool) ($u?->hasPermission('PURCHASE_REQUEST_APPROVE_RM') ?? false);
-        $this->canApproveSPV = (bool) ($u?->hasPermission('PURCHASE_REQUEST_APPROVE_SPV') ?? false);
-        $this->canExport = (bool) ($u?->hasPermission('PURCHASE_REQUEST_EXPORT') ?? false);
+        $this->canCreate = (bool) ($u?->hasPermission('DIRECT_ORDER_CREATE') ?? false);
+        $this->canUpdate = (bool) ($u?->hasPermission('DIRECT_ORDER_UPDATE') ?? false);
+        $this->canDelete = (bool) ($u?->hasPermission('DIRECT_ORDER_DELETE') ?? false);
+        $this->canApproveRM = (bool) ($u?->hasPermission('DIRECT_ORDER_APPROVE_RM') ?? false);
+        $this->canApproveSPV = (bool) ($u?->hasPermission('DIRECT_ORDER_APPROVE_SPV') ?? false);
+        $this->canExport = (bool) ($u?->hasPermission('DIRECT_ORDER_EXPORT') ?? false);
         $this->canRevise = $this->canCreate;
 
         $this->canWrite = $this->canCreate || $this->canUpdate;
@@ -109,12 +103,10 @@ class PurchaseRequestTable extends Component
             ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
             ['label' => 'Resto', 'route' => 'dashboard.resto', 'color' => 'text-gray-800'],
             ['label' => 'Procurement', 'route' => 'dashboard.resto.procurement', 'color' => 'text-gray-800'],
-            ['label' => 'Purchase Request', 'color' => 'text-gray-900 font-semibold'],
+            ['label' => 'Direct Order', 'color' => 'text-gray-900 font-semibold'],
         ];
 
         $this->syncCaps();
-
-        $this->totalAll = Rst_PurchaseRequest::count();
     }
 
     public function hydrate(): void
@@ -124,15 +116,14 @@ class PurchaseRequestTable extends Component
 
     protected function dataQuery(): Collection
     {
-        $query = Rst_PurchaseRequest::with(['items.item', 'items.uom', 'requesterLocation']);
+        $query = Rst_DirectOrder::with(['items.item', 'items.uom', 'location']);
 
         if ($this->search !== '') {
             $search = $this->search;
             $query->where(function ($q) use ($search) {
-                $q->where('pr_number', 'like', "%{$search}%")
-                    ->orWhere('requested_by', 'like', "%{$search}%")
-                    ->orWhereHas('requesterLocation', fn ($lq) => $lq->where('name', 'like', "%{$search}%"))
-                    ->orWhereHas('items.item', fn ($iq) => $iq->where('name', 'like', "%{$search}%"));
+                $q->where('do_number', 'like', "%{$search}%")
+                    ->orWhere('purchaser_name', 'like', "%{$search}%")
+                    ->orWhereHas('location', fn ($lq) => $lq->where('name', 'like', "%{$search}%"));
             });
         }
 
@@ -141,7 +132,7 @@ class PurchaseRequestTable extends Component
         }
 
         if ($this->filterLocation !== '') {
-            $query->where('requester_location_id', $this->filterLocation);
+            $query->where('location_id', $this->filterLocation);
         }
 
         $field = in_array($this->sortField, $this->allowedSortFields) ? $this->sortField : 'created_at';
@@ -184,7 +175,7 @@ class PurchaseRequestTable extends Component
             $this->getPage()
         );
 
-        return view('livewire.holdings.resto.procurement.purchase-request.purchase-request-table', [
+        return view('livewire.holdings.resto.procurement.direct-order.direct-order-table', [
             'data' => $paginated,
         ])->layout('components.sccr-layout');
     }
@@ -217,12 +208,7 @@ class PurchaseRequestTable extends Component
 
     public function openCreateFromCritical(): void
     {
-        $this->redirectRoute('dashboard.resto.purchase-request.create');
-    }
-
-    public function openCreateBlank(): void
-    {
-        $this->redirectRoute('dashboard.resto.purchase-request.create');
+        $this->redirectRoute('dashboard.resto.direct-order.create');
     }
 
     public function openActionOverlay(string $mode, string $id, int $level = 0): void
@@ -241,23 +227,21 @@ class PurchaseRequestTable extends Component
     public function approveByRM(): void
     {
         try {
-            $user = auth()->user()?->username ?? 'SYSTEM';
-            PurchaseRequestService::approveByRM((int) $this->actionOverlayId, null, $user);
+            DirectOrderService::approveByRM((int) $this->actionOverlayId, null);
 
-            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Purchase Request berhasil diapprove oleh RM.'];
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Direct Order berhasil diapprove oleh RM.'];
             $this->closeActionOverlay();
         } catch (\Exception $e) {
             $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
         }
     }
 
-    public function directApproveByRM(int $prId): void
+    public function directApproveByRM(int $doId): void
     {
         try {
-            $user = auth()->user()?->username ?? 'SYSTEM';
-            PurchaseRequestService::approveByRM($prId, null, $user);
+            DirectOrderService::approveByRM($doId, null);
 
-            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Purchase Request berhasil diapprove oleh RM.'];
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Direct Order berhasil diapprove oleh RM.'];
         } catch (\Exception $e) {
             $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
         }
@@ -266,39 +250,36 @@ class PurchaseRequestTable extends Component
     public function approveBySPV(): void
     {
         try {
-            $user = auth()->user()?->username ?? 'SYSTEM';
-            PurchaseRequestService::approveBySPV((int) $this->actionOverlayId, null, $user);
+            DirectOrderService::approveBySPV((int) $this->actionOverlayId, null);
 
-            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Purchase Request berhasil diapprove oleh Supervisor.'];
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Direct Order berhasil diapprove oleh Supervisor.'];
             $this->closeActionOverlay();
         } catch (\Exception $e) {
             $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
         }
     }
 
-    public function directApproveBySPV(int $prId): void
+    public function directApproveBySPV(int $doId): void
     {
         try {
-            $user = auth()->user()?->username ?? 'SYSTEM';
-            PurchaseRequestService::approveBySPV($prId, null, $user);
+            DirectOrderService::approveBySPV($doId, null);
 
-            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Purchase Request berhasil diapprove oleh Supervisor.'];
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Direct Order berhasil diapprove oleh Supervisor.'];
         } catch (\Exception $e) {
             $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
         }
     }
 
-    public function rejectPR(): void
+    public function rejectDO(): void
     {
         try {
             if (empty($this->actionNotes)) {
                 throw new \Exception('Alasan reject wajib diisi.');
             }
 
-            $user = auth()->user()?->username ?? 'SYSTEM';
-            PurchaseRequestService::reject((int) $this->actionOverlayId, $this->actionNotes, $this->actionTargetLevel, $user);
+            DirectOrderService::reject((int) $this->actionOverlayId, $this->actionNotes);
 
-            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Purchase Request berhasil direject.'];
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Direct Order berhasil direject.'];
             $this->closeActionOverlay();
         } catch (\Exception $e) {
             $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
@@ -312,32 +293,41 @@ class PurchaseRequestTable extends Component
                 throw new \Exception('Alasan revise wajib diisi.');
             }
 
-            $user = auth()->user()?->username ?? 'SYSTEM';
-            PurchaseRequestService::requestRevise((int) $this->actionOverlayId, $this->actionNotes, $this->actionTargetLevel, $user);
+            DirectOrderService::requestRevision((int) $this->actionOverlayId, $this->actionNotes);
 
-            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Request revise berhasil dikirim ke Store Keeper.'];
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Request revise berhasil dikirim.'];
             $this->closeActionOverlay();
         } catch (\Exception $e) {
             $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
         }
     }
 
-    public function submitDraftPRToRM(int $prId): void
+    public function submitDraftDOToRM(int $doId): void
     {
         try {
-            PurchaseRequestService::submitToRM($prId);
+            DirectOrderService::submitForApproval($doId);
 
-            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Purchase Request berhasil disubmit ke Restaurant Manager.'];
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Direct Order berhasil disubmit ke Restaurant Manager.'];
         } catch (\Exception $e) {
             $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
         }
     }
 
-    public function deletePR(string $id): void
+    public function deleteDO(string $id): void
     {
         try {
-            PurchaseRequestService::deletePR((int) $id);
-            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Purchase Request berhasil dihapus.'];
+            $do = Rst_DirectOrder::find($id);
+
+            if (! $do) {
+                throw new \Exception('Direct Order tidak ditemukan.');
+            }
+
+            if (! $do->canBeEdited()) {
+                throw new \Exception('Hanya Direct Order draft atau revised yang bisa dihapus.');
+            }
+
+            $do->delete();
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Direct Order berhasil dihapus.'];
         } catch (\Exception $e) {
             $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
         }
@@ -346,7 +336,7 @@ class PurchaseRequestTable extends Component
     public function exportExcel(): StreamedResponse
     {
         $data = $this->dataQuery();
-        $filename = 'purchase_requests_'.now()->format('Ymd_His').'.csv';
+        $filename = 'direct_orders_'.now()->format('Ymd_His').'.csv';
 
         $headers = [
             'Content-Type' => 'text/csv',
@@ -359,30 +349,26 @@ class PurchaseRequestTable extends Component
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
 
             fputcsv($file, [
-                'PR Number',
-                'Tanggal Request',
+                'DO Number',
+                'Pembeli',
                 'Lokasi',
-                'Requester',
+                'Tanggal Beli',
                 'Status',
-                'Level',
-                'Total Items',
-                'Total Cost',
-                'Required Date',
-                'Notes',
+                'Total Amount',
+                'Payment By',
+                'Created At',
             ]);
 
-            foreach ($data as $pr) {
+            foreach ($data as $do) {
                 fputcsv($file, [
-                    $pr->pr_number,
-                    $pr->requested_at?->format('Y-m-d H:i') ?? '-',
-                    $pr->requesterLocation?->name ?? '-',
-                    $pr->requested_by ?? '-',
-                    $pr->status,
-                    $pr->approval_level,
-                    $pr->items->count(),
-                    number_format($pr->total_estimated_cost, 2),
-                    $pr->required_date?->format('Y-m-d') ?? '-',
-                    $pr->notes ?? '-',
+                    $do->do_number,
+                    $do->purchaser_name,
+                    $do->location?->name ?? '-',
+                    $do->purchase_date?->format('Y-m-d') ?? '-',
+                    $do->status,
+                    number_format($do->total_amount ?? 0, 2),
+                    $do->payment_by,
+                    $do->created_at?->format('Y-m-d H:i') ?? '-',
                 ]);
             }
 
@@ -392,7 +378,7 @@ class PurchaseRequestTable extends Component
         return response()->stream($callback, 200, $headers);
     }
 
-    #[On('refresh-purchase-request-table')]
+    #[\Livewire\Attributes\On('refresh-direct-order-table')]
     public function refresh(): void
     {
         $this->resetPage();
