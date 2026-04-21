@@ -275,6 +275,128 @@
                 @endif
             </div>
 
+            {{-- RECEIPT & PAYMENT STATUS --}}
+            @if ($po?->isApproved())
+                <div class="bg-white rounded-xl shadow border p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-base font-bold text-gray-800">Penerimaan & Pembayaran</h3>
+                        @if ($po->canReceiveGoods())
+                            <a href="{{ route('dashboard.resto.goods-receipt.create-from-po', $po->id) }}"
+                                class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-semibold">
+                                <x-ui.sccr-icon name="plus" :size="16" class="inline" />
+                                Buat Goods Receipt
+                            </a>
+                        @endif
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <span class="text-xs font-bold text-gray-500 uppercase">Received Status</span>
+                            <p>
+                                @php
+                                    $receivedStatusColor = match($po->received_status) {
+                                        'not_received' => 'bg-gray-100 text-gray-800',
+                                        'partial' => 'bg-yellow-100 text-yellow-800',
+                                        'fully_received' => 'bg-green-100 text-green-800',
+                                        default => 'bg-gray-100 text-gray-800',
+                                    };
+                                    $receivedStatusLabel = match($po->received_status) {
+                                        'not_received' => 'Not Received',
+                                        'partial' => 'Partial',
+                                        'fully_received' => 'Fully Received',
+                                        default => ucfirst($po->received_status),
+                                    };
+                                @endphp
+                                <span class="px-3 py-1 rounded text-sm font-semibold {{ $receivedStatusColor }}">
+                                    {{ $receivedStatusLabel }}
+                                </span>
+                            </p>
+                        </div>
+                        <div>
+                            <span class="text-xs font-bold text-gray-500 uppercase">Payment Status</span>
+                            <p>
+                                @php
+                                    $paymentStatusColor = match($po->payment_status) {
+                                        'unpaid' => 'bg-red-100 text-red-800',
+                                        'pending_finance' => 'bg-yellow-100 text-yellow-800',
+                                        'paid' => 'bg-green-100 text-green-800',
+                                        default => 'bg-gray-100 text-gray-800',
+                                    };
+                                    $paymentStatusLabel = match($po->payment_status) {
+                                        'unpaid' => 'Unpaid',
+                                        'pending_finance' => 'Pending Finance',
+                                        'paid' => 'Paid',
+                                        default => ucfirst($po->payment_status),
+                                    };
+                                @endphp
+                                <span class="px-3 py-1 rounded text-sm font-semibold {{ $paymentStatusColor }}">
+                                    {{ $paymentStatusLabel }}
+                                </span>
+                            </p>
+                        </div>
+                        <div>
+                            <span class="text-xs font-bold text-gray-500 uppercase">Invoice</span>
+                            <p class="text-sm font-mono">{{ $po->invoice_number ?? '-' }}</p>
+                        </div>
+                    </div>
+
+                    @if ($po->goodsReceipts->count() > 0)
+                        <div class="mt-4 pt-4 border-t">
+                            <h4 class="text-sm font-bold text-gray-700 mb-3">Goods Receipt History</h4>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full text-xs">
+                                    <thead class="bg-gray-50 border-b">
+                                        <tr>
+                                            <th class="px-3 py-2 text-left font-bold text-gray-700">Receipt Number</th>
+                                            <th class="px-3 py-2 text-center font-bold text-gray-700">Status</th>
+                                            <th class="px-3 py-2 text-center font-bold text-gray-700">Tanggal Terima</th>
+                                            <th class="px-3 py-2 text-center font-bold text-gray-700">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($po->goodsReceipts as $gr)
+                                            <tr class="border-b hover:bg-gray-50">
+                                                <td class="px-3 py-2 font-mono">{{ $gr->receipt_number }}</td>
+                                                <td class="px-3 py-2 text-center">
+                                                    @php
+                                                        $grStatusColor = match($gr->status) {
+                                                            'draft' => 'bg-gray-100 text-gray-800',
+                                                            'pending_rm' => 'bg-yellow-100 text-yellow-800',
+                                                            'pending_spv' => 'bg-blue-100 text-blue-800',
+                                                            'approved' => 'bg-green-100 text-green-800',
+                                                            'rejected' => 'bg-red-100 text-red-800',
+                                                            default => 'bg-gray-100 text-gray-800',
+                                                        };
+                                                        $grStatusLabel = match($gr->status) {
+                                                            'draft' => 'Draft',
+                                                            'pending_rm' => 'Pending RM',
+                                                            'pending_spv' => 'Pending SPV',
+                                                            'approved' => 'Approved',
+                                                            'rejected' => 'Rejected',
+                                                            default => ucfirst($gr->status),
+                                                        };
+                                                    @endphp
+                                                    <span class="px-2 py-0.5 rounded text-xs {{ $grStatusColor }}">
+                                                        {{ $grStatusLabel }}
+                                                    </span>
+                                                </td>
+                                                <td class="px-3 py-2 text-center">{{ $gr->received_at?->format('d/m/Y H:i') ?? '-' }}</td>
+                                                <td class="px-3 py-2 text-center">
+                                                    <a href="{{ route('dashboard.resto.goods-receipt.detail', $gr->id) }}"
+                                                        class="text-blue-600 hover:underline">
+                                                        Detail
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            @endif
+
             {{-- APPROVAL FLOW --}}
             <div class="bg-white rounded-xl shadow border p-6">
                 <h3 class="text-base font-bold text-gray-800 mb-4">Alur Approval</h3>

@@ -29,6 +29,11 @@ use App\Livewire\Holdings\Resto\Procurement\DashboardProcurement;
 use App\Livewire\Holdings\Resto\Procurement\DirectOrder\DirectOrderCreate;
 use App\Livewire\Holdings\Resto\Procurement\DirectOrder\DirectOrderDetail;
 use App\Livewire\Holdings\Resto\Procurement\DirectOrder\DirectOrderTable;
+use App\Livewire\Holdings\Resto\Procurement\GoodsReceipt\GoodsReceiptCreate;
+use App\Livewire\Holdings\Resto\Procurement\GoodsReceipt\GoodsReceiptDetail;
+use App\Livewire\Holdings\Resto\Procurement\GoodsReceipt\GoodsReceiptTable;
+use App\Livewire\Holdings\Resto\Procurement\Invoice\InvoiceDetail;
+use App\Livewire\Holdings\Resto\Procurement\Invoice\InvoiceTable;
 use App\Livewire\Holdings\Resto\Procurement\PurchaseOrder\PurchaseOrderCreate;
 use App\Livewire\Holdings\Resto\Procurement\PurchaseOrder\PurchaseOrderDetail;
 use App\Livewire\Holdings\Resto\Procurement\PurchaseOrder\PurchaseOrderTable;
@@ -99,6 +104,15 @@ Route::prefix('dashboard/resto')
         Route::get('/direct-order', DirectOrderTable::class)->name('direct-order');
         Route::get('/direct-order/create', DirectOrderCreate::class)->name('direct-order.create');
         Route::get('/direct-order/{id}', DirectOrderDetail::class)->name('direct-order.detail');
+
+        Route::get('/goods-receipt', GoodsReceiptTable::class)->name('goods-receipt');
+        Route::get('/goods-receipt/create', GoodsReceiptCreate::class)->name('goods-receipt.create');
+        Route::get('/goods-receipt/create/{poId}', GoodsReceiptCreate::class)->name('goods-receipt.create-from-po');
+        Route::get('/goods-receipt/{id}', GoodsReceiptDetail::class)->name('goods-receipt.detail');
+
+        Route::get('/invoice', InvoiceTable::class)->name('invoice');
+        Route::get('/invoice/{id}', InvoiceDetail::class)->name('invoice.detail');
+
         Route::get('/resep/recipe', RecipeTable::class)->name('resep.recipe');
         Route::get('/resep/recipe/{id}', RecipeShow::class)->name('resep.recipe.detail');
         Route::get('/resep/production', ProductionOrderTable::class)->name('resep.production');
