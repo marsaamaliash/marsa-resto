@@ -42,6 +42,26 @@
                     <x-ui.sccr-select name="filter1" wire:model.live="filter1" :options="$filter1Options" class="w-40" />
                 </div>
 
+                {{-- FILTER 2: Type --}}
+                <div class="relative top-1">
+                    <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">
+                        Tipe
+                    </span>
+                    <x-ui.sccr-select name="filter2" wire:model.live="filter2" :options="$filter2Options" class="w-48" />
+                </div>
+
+                {{-- FILTER STATUS: Active/Deleted --}}
+                <div class="relative top-1">
+                    <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">
+                        Data
+                    </span>
+                    <select wire:model.live="filterStatus" class="border-gray-300 rounded-md text-sm w-28">
+                        <option value="">Semua</option>
+                        <option value="active">Active</option>
+                        <option value="deleted">Deleted</option>
+                    </select>
+                </div>
+
                 {{-- ACTION BUTTONS --}}
                 <div class="flex flex-wrap items-center gap-1">
                     <x-ui.sccr-button type="submit" variant="primary"
@@ -54,6 +74,26 @@
                         class="bg-gray-800 text-gray-100 hover:bg-gray-400">
                         <x-ui.sccr-icon name="clear" :size="20" />
                         Clear
+                    </x-ui.sccr-button>
+
+                    {{-- Column Picker Toggle --}}
+                    <x-ui.sccr-button type="button" wire:click="toggleColumnPicker"
+                        class="bg-gray-700 text-gray-100 hover:bg-gray-400" title="Filter Kolom">
+                        <x-ui.sccr-icon name="filter" :size="20" />
+                        Kolom
+                    </x-ui.sccr-button>
+
+                    {{-- Export Buttons --}}
+                    <x-ui.sccr-button type="button" wire:click="exportFiltered"
+                        class="bg-green-600 text-gray-100 hover:bg-green-700" title="Export Filtered">
+                        <x-ui.sccr-icon name="download" :size="20" />
+                        Export
+                    </x-ui.sccr-button>
+
+                    <x-ui.sccr-button type="button" wire:click="exportSelected"
+                        class="bg-green-700 text-gray-100 hover:bg-green-800" title="Export Selected">
+                        <x-ui.sccr-icon name="download" :size="20" />
+                        Export Selected
                     </x-ui.sccr-button>
                 </div>
             </form>
@@ -73,6 +113,28 @@
             </div>
 
         </div>
+
+        {{-- Column Picker Dropdown --}}
+        @if ($showColumnPicker)
+            <div class="mt-2 p-3 bg-white border rounded-lg shadow-md">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-bold text-gray-700">Pilih Kolom yang Ditampilkan</span>
+                    <x-ui.sccr-button type="button" wire:click="resetColumns"
+                        class="bg-gray-200 text-gray-700 hover:bg-gray-300 text-xs">
+                        Reset
+                    </x-ui.sccr-button>
+                </div>
+                <div class="flex flex-wrap gap-4">
+                    @foreach ($availableColumns as $col)
+                        <label class="flex items-center gap-2 text-sm">
+                            <input type="checkbox" wire:model.live="columnVisibility.{{ $col['key'] }}"
+                                class="rounded border-gray-300">
+                            <span class="text-gray-700">{{ $col['label'] }}</span>
+                        </label>
+                    @endforeach
+                </div>
+            </div>
+        @endif
     </div>
 
     {{-- ================= TABLE (SCROLL AREA) ================= --}}
@@ -89,35 +151,67 @@
                                 <input type="checkbox" wire:model.live="selectAll" class="rounded border-gray-300">
                             </th>
 
-                            {{-- Reference Number --}}
-                            <th wire:click="sortBy('reference_number')"
-                                class="px-3 py-3 text-left text-xs font-bold cursor-pointer">
-                                Reference {!! $sortField === 'reference_number' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
-                            </th>
+                            @if ($columnVisibility['id'] ?? true)
+                                <th wire:click="sortBy('id')"
+                                    class="px-3 py-3 text-left text-xs font-bold cursor-pointer">
+                                    ID {!! $sortField === 'id' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                                </th>
+                            @endif
 
-                            {{-- From Location --}}
-                            <th wire:click="sortBy('from_location_id')"
-                                class="px-3 py-3 text-left text-xs font-bold cursor-pointer">
-                                From {!! $sortField === 'from_location_id' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
-                            </th>
+                            @if ($columnVisibility['reference_number'] ?? true)
+                                <th wire:click="sortBy('reference_number')"
+                                    class="px-3 py-3 text-left text-xs font-bold cursor-pointer">
+                                    Reference {!! $sortField === 'reference_number' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                                </th>
+                            @endif
 
-                            {{-- To Location --}}
-                            <th wire:click="sortBy('to_location_id')"
-                                class="px-3 py-3 text-left text-xs font-bold cursor-pointer">
-                                To {!! $sortField === 'to_location_id' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
-                            </th>
+                            @if ($columnVisibility['from_location_id'] ?? true)
+                                <th wire:click="sortBy('from_location_id')"
+                                    class="px-3 py-3 text-left text-xs font-bold cursor-pointer">
+                                    From {!! $sortField === 'from_location_id' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                                </th>
+                            @endif
 
-                            {{-- Status --}}
-                            <th wire:click="sortBy('status')"
-                                class="px-3 py-3 text-center text-xs font-bold cursor-pointer">
-                                Status {!! $sortField === 'status' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
-                            </th>
+                            @if ($columnVisibility['to_location_id'] ?? true)
+                                <th wire:click="sortBy('to_location_id')"
+                                    class="px-3 py-3 text-left text-xs font-bold cursor-pointer">
+                                    To {!! $sortField === 'to_location_id' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                                </th>
+                            @endif
 
-                            {{-- PIC --}}
-                            <th wire:click="sortBy('pic_name')"
-                                class="px-3 py-3 text-left text-xs font-bold cursor-pointer">
-                                PIC {!! $sortField === 'pic_name' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
-                            </th>
+                            @if ($columnVisibility['status'] ?? true)
+                                <th wire:click="sortBy('status')"
+                                    class="px-3 py-3 text-center text-xs font-bold cursor-pointer">
+                                    Status {!! $sortField === 'status' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                                </th>
+                            @endif
+
+                            @if ($columnVisibility['pic_name'] ?? true)
+                                <th wire:click="sortBy('pic_name')"
+                                    class="px-3 py-3 text-left text-xs font-bold cursor-pointer">
+                                    PIC {!! $sortField === 'pic_name' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                                </th>
+                            @endif
+
+                            @if ($columnVisibility['remark'] ?? false)
+                                <th class="px-3 py-3 text-left text-xs font-bold">
+                                    Remark
+                                </th>
+                            @endif
+
+                            @if ($columnVisibility['created_at'] ?? false)
+                                <th wire:click="sortBy('created_at')"
+                                    class="px-3 py-3 text-left text-xs font-bold cursor-pointer">
+                                    Created {!! $sortField === 'created_at' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                                </th>
+                            @endif
+
+                            @if ($columnVisibility['updated_at'] ?? false)
+                                <th wire:click="sortBy('updated_at')"
+                                    class="px-3 py-3 text-left text-xs font-bold cursor-pointer">
+                                    Updated {!! $sortField === 'updated_at' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                                </th>
+                            @endif
 
                             {{-- Actions --}}
                             <th class="px-4 py-3 text-center text-xs font-bold">
@@ -137,66 +231,140 @@
 
                     <tbody class="divide-y divide-gray-100 bg-gray-100">
                         @forelse ($data as $item)
-                            <tr class="hover:bg-gray-200 transition">
+                            <tr class="hover:bg-gray-200 transition {{ $item->deleted_at ? 'bg-red-50' : '' }}">
                                 {{-- ROW CHECKBOX --}}
                                 <td class="px-2 py-2 text-center">
                                     <input type="checkbox" value="{{ $item['id'] }}" wire:model.live="selectedItems"
                                         class="rounded border-gray-300">
                                 </td>
 
-                                {{-- Reference Number --}}
-                                <td class="px-3 py-2 font-mono text-sm font-semibold text-blue-700">
-                                    {{ $item['reference_number'] ?? '-' }}
-                                </td>
+                                @if ($columnVisibility['id'] ?? true)
+                                    <td class="px-3 py-2 text-sm font-mono">
+                                        {{ $item['id'] }}
+                                    </td>
+                                @endif
 
-                                {{-- From Location --}}
-                                <td class="px-3 py-2 text-sm">
-                                    {{ $item->fromLocation?->name ?? '-' }}
-                                </td>
+                                @if ($columnVisibility['reference_number'] ?? true)
+                                    {{-- Reference Number --}}
+                                    <td class="px-3 py-2 font-mono text-sm font-semibold text-blue-700">
+                                        {{ $item['reference_number'] ?? '-' }}
+                                    </td>
+                                @endif
 
-                                {{-- To Location --}}
-                                <td class="px-3 py-2 text-sm">
-                                    {{ $item->toLocation?->name ?? '-' }}
-                                </td>
+                                @if ($columnVisibility['from_location_id'] ?? true)
+                                    {{-- From Location --}}
+                                    <td class="px-3 py-2 text-sm">
+                                        {{ $item->fromLocation?->name ?? '-' }}
+                                    </td>
+                                @endif
 
-                                {{-- Status --}}
-                                <td class="px-3 py-2 text-center">
-                                    @if ($item['status'] === 'requested')
-                                        @php
-                                            $level = $item['approval_level'] ?? 0;
-                                            $levelNames = [0 => '', 1 => '> EC', 2 => '> RM', 3 => '> SPV'];
-                                        @endphp
-                                        <span
-                                            class="px-2 py-0.5 rounded bg-yellow-100 text-yellow-800 text-xs">Requested{{ $levelNames[$level] ?? '' }}</span>
-                                    @elseif($item['status'] === 'approved')
-                                        <span
-                                            class="px-2 py-0.5 rounded bg-green-100 text-green-800 text-xs">Approved</span>
-                                    @elseif($item['status'] === 'in_transit')
-                                        <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 text-xs">In
-                                            Transit</span>
-                                    @elseif($item['status'] === 'completed')
-                                        <span
-                                            class="px-2 py-0.5 rounded bg-gray-100 text-gray-800 text-xs">Completed</span>
-                                    @else
-                                        {{ $item['status'] }}
-                                    @endif
-                                </td>
+                                @if ($columnVisibility['to_location_id'] ?? true)
+                                    {{-- To Location --}}
+                                    <td class="px-3 py-2 text-sm">
+                                        {{ $item->toLocation?->name ?? '-' }}
+                                    </td>
+                                @endif
 
-                                {{-- PIC --}}
-                                <td class="px-3 py-2 text-sm">
-                                    {{ $item['pic_name'] ?? '-' }}
-                                </td>
+                                @if ($columnVisibility['status'] ?? true)
+                                    {{-- Status --}}
+                                    <td class="px-3 py-2 text-center">
+                                        @if ($item['status'] === 'draft')
+                                            <span class="px-2 py-0.5 rounded bg-gray-200 text-gray-700 text-xs">Draft</span>
+                                        @elseif ($item['status'] === 'requested')
+                                            @php
+                                                $level = $item['approval_level'] ?? 0;
+                                                $levelNames = [0 => '', 1 => '> EC', 2 => '> RM', 3 => '> SPV'];
+                                            @endphp
+                                            <span
+                                                class="px-2 py-0.5 rounded bg-yellow-100 text-yellow-800 text-xs">Requested{{ $levelNames[$level] ?? '' }}</span>
+                                        @elseif($item['status'] === 'approved')
+                                            <span
+                                                class="px-2 py-0.5 rounded bg-green-100 text-green-800 text-xs">Approved</span>
+                                        @elseif($item['status'] === 'in_transit')
+                                            <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 text-xs">In
+                                                Transit</span>
+                                        @elseif($item['status'] === 'completed')
+                                            <span
+                                                class="px-2 py-0.5 rounded bg-gray-100 text-gray-800 text-xs">Completed</span>
+                                        @elseif($item['status'] === 'rejected')
+                                            <span
+                                                class="px-2 py-0.5 rounded bg-red-100 text-red-800 text-xs">Rejected</span>
+                                        @elseif($item['status'] === 'cancelled')
+                                            <span
+                                                class="px-2 py-0.5 rounded bg-orange-100 text-orange-800 text-xs">Cancelled</span>
+                                        @elseif($item['status'] === 'failed')
+                                            <span
+                                                class="px-2 py-0.5 rounded bg-red-200 text-red-900 text-xs">Failed</span>
+                                        @else
+                                            {{ $item['status'] }}
+                                        @endif
+                                    </td>
+                                @endif
+
+                                @if ($columnVisibility['pic_name'] ?? true)
+                                    {{-- PIC --}}
+                                    <td class="px-3 py-2 text-sm">
+                                        {{ $item['pic_name'] ?? '-' }}
+                                    </td>
+                                @endif
+
+                                @if ($columnVisibility['remark'] ?? false)
+                                    <td class="px-3 py-2 text-sm">
+                                        {{ $item['remark'] ?? '-' }}
+                                    </td>
+                                @endif
+
+                                @if ($columnVisibility['created_at'] ?? false)
+                                    <td class="px-3 py-2 text-sm">
+                                        {{ $item['created_at']?->format('Y-m-d H:i') ?? '-' }}
+                                    </td>
+                                @endif
+
+                                @if ($columnVisibility['updated_at'] ?? false)
+                                    <td class="px-3 py-2 text-sm">
+                                        {{ $item['updated_at']?->format('Y-m-d H:i') ?? '-' }}
+                                    </td>
+                                @endif
 
                                 {{-- ROW ACTIONS --}}
                                 <td class="px-3 py-2 text-center">
                                     <div class="flex justify-center gap-2">
-                                        <a href="{{ route('dashboard.resto.movement-internal.detail', $item['id']) }}"
-                                            class="text-gray-700 hover:scale-125" title="Detail">
-                                            <x-ui.sccr-icon name="eye" :size="18" />
-                                        </a>
+                                        @if (! $item->deleted_at)
+                                            <a href="{{ route('dashboard.resto.movement-internal.detail', $item['id']) }}"
+                                                class="text-gray-700 hover:scale-125" title="Detail">
+                                                <x-ui.sccr-icon name="eye" :size="18" />
+                                            </a>
+
+                                            {{-- Clone --}}
+                                            @if ($canCreate)
+                                                <x-ui.sccr-button type="button" variant="icon"
+                                                    wire:click="cloneItem('{{ $item['id'] }}')"
+                                                    class="text-blue-600 hover:scale-125" title="Clone">
+                                                    <x-ui.sccr-icon name="copy" :size="18" />
+                                                </x-ui.sccr-button>
+                                            @endif
+
+                                            {{-- Delete --}}
+                                            @if ($canDelete)
+                                                <x-ui.sccr-button type="button" variant="icon"
+                                                    wire:click="deleteItem('{{ $item['id'] }}')"
+                                                    class="text-red-600 hover:scale-125" title="Hapus">
+                                                    <x-ui.sccr-icon name="trash" :size="18" />
+                                                </x-ui.sccr-button>
+                                            @endif
+                                        @else
+                                            {{-- Restore for deleted items --}}
+                                            @if ($canDelete)
+                                                <x-ui.sccr-button type="button" variant="icon"
+                                                    wire:click="restoreItem('{{ $item['id'] }}')"
+                                                    class="text-green-600 hover:scale-125" title="Restore">
+                                                    <x-ui.sccr-icon name="refresh" :size="18" />
+                                                </x-ui.sccr-button>
+                                            @endif
+                                        @endif
                                     </div>
 
-                                    @if ($item['status'] === 'requested')
+                                    @if (! $item->deleted_at && $item['status'] === 'requested')
                                         @php
                                             $approvalLevel = $item['approval_level'] ?? 0;
                                         @endphp
@@ -239,7 +407,7 @@
                                         @endif
                                     @endif
 
-                                    @if (in_array($item['status'], ['requested', 'approved']))
+                                    @if (! $item->deleted_at && in_array($item['status'], ['requested', 'approved']))
                                         <div class="flex justify-center gap-2">
                                             <x-ui.sccr-button type="button" variant="icon"
                                                 wire:click="openRejectOverlay('{{ $item['id'] }}')"
@@ -249,7 +417,7 @@
                                         </div>
                                     @endif
 
-                                    @if ($item['status'] === 'approved')
+                                    @if (! $item->deleted_at && $item['status'] === 'approved')
                                         @if ($canInTransit)
                                             <div class="flex justify-center gap-2">
                                                 <x-ui.sccr-button type="button" variant="icon"
@@ -262,7 +430,7 @@
                                         @endif
                                     @endif
 
-                                    @if ($item['status'] === 'in_transit')
+                                    @if (! $item->deleted_at && $item['status'] === 'in_transit')
                                         <div class="flex justify-center gap-2">
                                             <x-ui.sccr-button type="button" variant="icon"
                                                 wire:click="openReceiveOverlay('{{ $item['id'] }}')"
@@ -275,7 +443,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="py-10 text-center text-gray-400 italic">
+                                <td colspan="10" class="py-10 text-center text-gray-400 italic">
                                     Data tidak ditemukan
                                 </td>
                             </tr>

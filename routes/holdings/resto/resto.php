@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\CheckStockOpnameFreeze;
 use App\Livewire\Holdings\Resto\CoreStock\DashboardCoreStock;
 use App\Livewire\Holdings\Resto\CoreStock\Stock\StockItemTable;
 use App\Livewire\Holdings\Resto\CoreStock\Stock\StockLocationDetail;
@@ -7,6 +8,8 @@ use App\Livewire\Holdings\Resto\CoreStock\Stock\StockLocationTable;
 use App\Livewire\Holdings\Resto\CoreStock\Stock\StockMinimalTable;
 use App\Livewire\Holdings\Resto\CoreStock\Stock\StockMutationTable;
 use App\Livewire\Holdings\Resto\CoreStock\Stock\StockRequestTable;
+use App\Livewire\Holdings\Resto\CoreStock\StockOpname\StockOpnameDetail;
+use App\Livewire\Holdings\Resto\CoreStock\StockOpname\StockOpnameTable;
 use App\Livewire\Holdings\Resto\Master\DashboardMaster;
 use App\Livewire\Holdings\Resto\Master\Item\ItemTable;
 use App\Livewire\Holdings\Resto\Master\Kategori\KategoriTable;
@@ -84,8 +87,40 @@ Route::prefix('dashboard/resto')
         Route::get('/stock-mutation', StockMutationTable::class)->name('stock-mutation');
         Route::get('/stock-request', StockRequestTable::class)->name('stock-request');
 
-        Route::get('/movement-internal', MovementInternalTable::class)->name('movement-internal');
-        Route::get('/movement-internal/{id}', MovementInternalDetail::class)->name('movement-internal.detail');
+        Route::get('/stock-opname', StockOpnameTable::class)->name('stock-opname');
+        Route::get('/stock-opname/{id}', StockOpnameDetail::class)->name('stock-opname.detail');
+
+        Route::middleware(CheckStockOpnameFreeze::class)->group(function () {
+            Route::get('/menu-pos', MenuPage::class)->name('menu-pos');
+            Route::get('/employee-lunch', EmployeeLunch::class)->name('employee-lunch');
+            Route::get('/employee-lunch/report', EmployeeLunchReport::class)->name('employee-lunch.report');
+
+            Route::get('/chef', ChefKitchen::class)->name('chef');
+            Route::get('/orders', WaiterOrders::class)->name('orders');
+            Route::get('/cashier', Cashier::class)->name('cashier');
+
+            Route::get('/movement-internal', MovementInternalTable::class)->name('movement-internal');
+            Route::get('/movement-internal/{id}', MovementInternalDetail::class)->name('movement-internal.detail');
+
+            Route::get('/procurement', DashboardProcurement::class)->name('procurement');
+            Route::get('/purchase-request', PurchaseRequestTable::class)->name('purchase-request');
+            Route::get('/purchase-request/create', PurchaseRequestCreate::class)->name('purchase-request.create');
+            Route::get('/purchase-request/edit/{id}', PurchaseRequestCreate::class)->name('purchase-request.edit');
+            Route::get('/purchase-request/revise/{id}', PurchaseRequestCreate::class)->name('purchase-request.revise');
+            Route::get('/purchase-request/{id}', PurchaseRequestDetail::class)->name('purchase-request.detail');
+            Route::get('/purchase-order', PurchaseOrderTable::class)->name('purchase-order');
+            Route::get('/purchase-order/create', PurchaseOrderCreate::class)->name('purchase-order.create');
+            Route::get('/purchase-order/{id}', PurchaseOrderDetail::class)->name('purchase-order.detail');
+            Route::get('/direct-order', DirectOrderTable::class)->name('direct-order');
+            Route::get('/direct-order/create', DirectOrderCreate::class)->name('direct-order.create');
+            Route::get('/direct-order/{id}', DirectOrderDetail::class)->name('direct-order.detail');
+            Route::get('/resep/production', ProductionOrderTable::class)->name('resep.production');
+            Route::get('/resep/production/create', ProductionOrderCreate::class)->name('resep.production.create');
+            Route::get('/resep/production/{id}', ProductionOrderShow::class)->name('resep.production.detail');
+
+            Route::get('/stock-request', StockRequestTable::class)->name('stock-request');
+            Route::get('/repack', RepackTable::class)->name('repack');
+        });
 
         Route::get('/konversi-satuan', KonversiSatuanTable::class)->name('konversi-satuan');
         Route::get('/repack', RepackTable::class)->name('repack');
@@ -115,7 +150,4 @@ Route::prefix('dashboard/resto')
 
         Route::get('/resep/recipe', RecipeTable::class)->name('resep.recipe');
         Route::get('/resep/recipe/{id}', RecipeShow::class)->name('resep.recipe.detail');
-        Route::get('/resep/production', ProductionOrderTable::class)->name('resep.production');
-        Route::get('/resep/production/create', ProductionOrderCreate::class)->name('resep.production.create');
-        Route::get('/resep/production/{id}', ProductionOrderShow::class)->name('resep.production.detail');
     });
