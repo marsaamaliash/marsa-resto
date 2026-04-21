@@ -15,13 +15,7 @@ class Rst_MasterVendor extends Model
 
     protected $primaryKey = 'id';
 
-    protected $fillable = [
-        'name',
-        'code',
-        'no_telp',
-        'address',
-        'is_active',
-    ];
+    protected $guarded = [];
 
     protected $casts = [
         'is_active' => 'boolean',

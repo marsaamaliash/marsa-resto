@@ -258,8 +258,8 @@ class PurchaseRequestService
                 'notes' => $notes ?? $pr->notes,
                 'requested_by' => $requesterName ?? $pr->requested_by,
                 'requested_at' => now(),
+                // 3. Gunakan $requiredDate dari inputan, kalau kosong baru pakai dari database/default
                 'required_date' => $requiredDate ?? $pr->required_date ?? now()->addDays(7),
-                'updated_by' => auth()->user()?->username,
             ]);
             $pr->save();
 
