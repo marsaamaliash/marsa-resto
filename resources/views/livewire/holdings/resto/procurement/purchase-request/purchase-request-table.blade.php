@@ -1,4 +1,4 @@
-﻿<x-ui.sccr-card transparent wire:key="purchase-request-table" class="h-full min-h-0 flex flex-col">
+<x-ui.sccr-card transparent wire:key="purchase-request-table" class="h-full min-h-0 flex flex-col">
 
     {{-- ================= HEADER ================= --}}
     <div class="relative px-8 py-6 bg-blue-600/80 rounded-b-3xl shadow-lg overflow-hidden">
@@ -248,29 +248,29 @@
                                     @endif
                                 </td>
 
-                                
+                                 
 
-                        {{-- Created At --}}
-                        <td class="px-3 py-2 text-sm text-gray-600">
-                            {{ $item->created_at?->format('d/m/Y H:i') ?? '-' }}
-                        </td>
+                                {{-- Created At --}}
+                                <td class="px-3 py-2 text-sm text-gray-600">
+                                    {{ $item->created_at?->format('d/m/Y H:i') ?? '-' }}
+                                </td>
 
-                        {{-- Created By --}}
-                        <td class="px-3 py-2 text-sm text-gray-600">
-                            {{ $item['created_by'] ?? '-' }}
-                        </td>
+                                {{-- Created By --}}
+                                <td class="px-3 py-2 text-sm text-gray-600">
+                                    {{ $item['created_by'] ?? '-' }}
+                                </td>
 
-                        {{-- Updated At --}}
-                        <td class="px-3 py-2 text-sm text-gray-600">
-                            {{ $item->updated_at?->format('d/m/Y H:i') ?? '-' }}
-                        </td>
+                                {{-- Updated At --}}
+                                <td class="px-3 py-2 text-sm text-gray-600">
+                                    {{ $item->updated_at?->format('d/m/Y H:i') ?? '-' }}
+                                </td>
 
-                        {{-- Updated By --}}
-                        <td class="px-3 py-2 text-sm text-gray-600">
-                            {{ $item['updated_by'] ?? '-' }}
-                        </td>
+                                {{-- Updated By --}}
+                                <td class="px-3 py-2 text-sm text-gray-600">
+                                    {{ $item['updated_by'] ?? '-' }}
+                                </td>
 
-                        {{-- ROW ACTIONS --}}
+                                {{-- ROW ACTIONS --}}
                                 <td class="px-3 py-2 text-center">
                                     <div class="flex justify-center gap-2">
                                         {{-- View Detail --}}
@@ -338,19 +338,19 @@
                                             </x-ui.sccr-button>
                                         @endif
 
-                                {{-- Delete --}}
-                                @if ($item->canBeEdited() && $canDelete)
-                                    <x-ui.sccr-button type="button" variant="icon"
-                                        wire:click="deletePR('{{ $item['id'] }}')"
-                                        class="text-red-600 hover:scale-125"
-                                        wire:confirm="Yakin ingin menghapus PR {{ $item['pr_number'] }}?"
-                                        title="Hapus">
-                                        <x-ui.sccr-icon name="trash" :size="18" />
-                                    </x-ui.sccr-button>
-                                @endif
-                            </div>
-                        </td>
-                    </tr>
+                                        {{-- Delete --}}
+                                        @if ($item->canBeEdited() && $canDelete)
+                                            <x-ui.sccr-button type="button" variant="icon"
+                                                wire:click="deletePR('{{ $item['id'] }}')"
+                                                class="text-red-600 hover:scale-125"
+                                                wire:confirm="Yakin ingin menghapus PR {{ $item['pr_number'] }}?"
+                                                title="Hapus">
+                                                <x-ui.sccr-icon name="trash" :size="18" />
+                                            </x-ui.sccr-button>
+                                        @endif
+                                    </div>
+                                </td>
+                            </tr>
                 @empty
                     <tr>
                         <td colspan="13" class="py-10 text-center text-gray-400 italic">

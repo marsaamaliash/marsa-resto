@@ -5,6 +5,7 @@ namespace App\Services\Resto;
 use App\Models\Holdings\Resto\CoreStock\Rst_StockBalance;
 use App\Models\Holdings\Resto\CoreStock\Rst_StockMutation;
 use App\Models\Holdings\Resto\CoreStock\Rst_StockOpname;
+use App\Models\Holdings\Resto\CoreStock\Rst_StockOpnameAdjustment;
 use App\Models\Holdings\Resto\CoreStock\Rst_StockOpnameFreeze;
 use App\Models\Holdings\Resto\CoreStock\Rst_StockOpnameItem;
 use App\Models\Holdings\Resto\Master\Rst_MasterItem;
@@ -105,6 +106,46 @@ class StockOpnameService
         });
     }
 
+    public static function saveAdjustments(
+        int $opnameId,
+        array $adjustments
+    ): void {
+        DB::transaction(function () use ($opnameId, $adjustments) {
+            Rst_StockOpnameAdjustment::where('stock_opname_id', $opnameId)->delete();
+
+            foreach ($adjustments as $adj) {
+                $opnameItem = Rst_StockOpnameItem::where('stock_opname_id', $opnameId)
+                    ->where('item_id', $adj['item_id'])
+                    ->first();
+
+                if (! $opnameItem) {
+                    continue;
+                }
+
+                $newPhysicalQty = (float) $adj['physical_qty'];
+                $newDifference = $newPhysicalQty - $opnameItem->system_qty;
+                $newStatus = abs($newDifference) < 0.001 ? 'match' : ($newDifference > 0 ? 'surplus' : 'deficit');
+
+                Rst_StockOpnameAdjustment::create([
+                    'stock_opname_id' => $opnameId,
+                    'item_id' => $adj['item_id'],
+                    'location_id' => $opnameItem->location_id,
+                    'uom_id' => $opnameItem->uom_id,
+                    'system_qty' => $opnameItem->system_qty,
+                    'physical_qty' => $newPhysicalQty,
+                    'difference' => $newDifference,
+                    'status' => $newStatus,
+                    'remark' => $adj['remark'] ?? null,
+                ]);
+            }
+        });
+    }
+
+    public static function hasAdjustments(int $opnameId): bool
+    {
+        return Rst_StockOpnameAdjustment::where('stock_opname_id', $opnameId)->exists();
+    }
+
     public static function submitOpname(int $opnameId): Rst_StockOpname
     {
         return DB::transaction(function () use ($opnameId) {
@@ -176,15 +217,15 @@ class StockOpnameService
                 throw new \Exception('Semua approval harus diselesaikan terlebih dahulu.');
             }
 
-            $opnameItems = Rst_StockOpnameItem::where('stock_opname_id', $opnameId)->get();
+            $adjustments = Rst_StockOpnameAdjustment::where('stock_opname_id', $opnameId)->get();
 
-            foreach ($opnameItems as $opnameItem) {
-                if (abs($opnameItem->difference) < 0.001) {
+            foreach ($adjustments as $adj) {
+                if (abs($adj->difference) < 0.001) {
                     continue;
                 }
 
-                $balance = Rst_StockBalance::where('item_id', $opnameItem->item_id)
-                    ->where('location_id', $opnameItem->location_id)
+                $balance = Rst_StockBalance::where('item_id', $adj->item_id)
+                    ->where('location_id', $adj->location_id)
                     ->first();
 
                 if (! $balance) {
@@ -192,22 +233,22 @@ class StockOpnameService
                 }
 
                 $beforeQty = $balance->qty_available;
-                $balance->qty_available = $opnameItem->physical_qty;
+                $balance->qty_available = $adj->physical_qty;
                 $balance->save();
 
                 $afterQty = $balance->qty_available;
 
                 Rst_StockMutation::create([
-                    'item_id' => $opnameItem->item_id,
-                    'location_id' => $opnameItem->location_id,
-                    'uom_id' => $opnameItem->uom_id,
-                    'type' => $opnameItem->difference > 0 ? 'in' : 'out',
+                    'item_id' => $adj->item_id,
+                    'location_id' => $adj->location_id,
+                    'uom_id' => $adj->uom_id,
+                    'type' => $adj->difference > 0 ? 'in' : 'out',
                     'reference_number' => $opname->reference_number,
-                    'qty' => abs($opnameItem->difference),
+                    'qty' => abs($adj->difference),
                     'qty_before' => $beforeQty,
                     'qty_after' => $afterQty,
-                    'from_location_id' => $opnameItem->location_id,
-                    'to_location_id' => $opnameItem->location_id,
+                    'from_location_id' => $adj->location_id,
+                    'to_location_id' => $adj->location_id,
                     'user_id' => 'SYSTEM',
                     'notes' => "Stock adjustment from opname #{$opname->id}",
                 ]);

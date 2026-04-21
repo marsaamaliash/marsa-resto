@@ -209,6 +209,8 @@ class PurchaseRequestTable extends Component
             $this->sortField = $field;
             $this->sortDirection = 'asc';
         }
+
+        $this->resetPage();
     }
 
     public function openCreateFromCritical(): void

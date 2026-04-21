@@ -3,7 +3,6 @@
 namespace App\Livewire\Holdings\Resto\CoreStock\StockOpname;
 
 use App\Models\Holdings\Resto\CoreStock\Rst_StockOpname;
-use App\Models\Holdings\Resto\CoreStock\Rst_StockOpnameItem;
 use App\Services\Resto\StockOpnameService;
 use Livewire\Component;
 
@@ -32,6 +31,24 @@ class StockOpnameDetail extends Component
             ['label' => 'Stock Opname', 'route' => 'dashboard.resto.stock-opname', 'color' => 'text-gray-800'],
             ['label' => 'Detail', 'color' => 'text-gray-900 font-semibold'],
         ];
+
+        $detail = $this->getDetailData();
+        if ($detail) {
+            $this->adjustmentLocked = StockOpnameService::hasAdjustments($detail->id);
+
+            if ($this->adjustmentLocked) {
+                $this->adjustmentItems = $detail->adjustments->map(fn ($adj) => [
+                    'item_id' => $adj->item_id,
+                    'item_name' => $adj->item?->name ?? '-',
+                    'system_qty' => $adj->system_qty,
+                    'physical_qty' => $adj->physical_qty,
+                    'difference' => $adj->difference,
+                    'status' => $adj->status,
+                    'uom' => $adj->uom?->symbols ?? '',
+                    'remark' => $adj->remark ?? '',
+                ])->toArray();
+            }
+        }
     }
 
     public function getDetailData(): ?Rst_StockOpname
@@ -40,7 +57,7 @@ class StockOpnameDetail extends Component
             return null;
         }
 
-        return Rst_StockOpname::with(['location', 'items.item', 'items.uom'])
+        return Rst_StockOpname::with(['location', 'items.item', 'items.uom', 'adjustments.item', 'adjustments.uom'])
             ->find($this->id);
     }
 
@@ -48,13 +65,11 @@ class StockOpnameDetail extends Component
     {
         $this->showAdjustmentForm = ! $this->showAdjustmentForm;
 
-        if ($this->showAdjustmentForm) {
+        if ($this->showAdjustmentForm && ! $this->adjustmentLocked) {
             $detail = $this->getDetailData();
             if ($detail) {
-                $this->adjustmentLocked = $detail['status'] !== 'draft';
-
                 $this->adjustmentItems = $detail->items->map(fn ($item) => [
-                    'id' => $item->id,
+                    'item_id' => $item->item_id,
                     'item_name' => $item->item?->name ?? '-',
                     'system_qty' => $item->system_qty,
                     'physical_qty' => $item->physical_qty,
@@ -62,7 +77,6 @@ class StockOpnameDetail extends Component
                     'status' => $item->status,
                     'uom' => $item->uom?->symbols ?? '',
                     'remark' => $item->remark ?? '',
-                    'confirmed' => $item->status !== 'match',
                 ])->toArray();
             }
         }
@@ -83,32 +97,39 @@ class StockOpnameDetail extends Component
             return;
         }
 
+        $itemsToSave = [];
         foreach ($this->adjustmentItems as $adjItem) {
-            if (! $adjItem['confirmed']) {
-                continue;
+            if ($adjItem['item_id'] > 0) {
+                $itemsToSave[] = [
+                    'item_id' => $adjItem['item_id'],
+                    'physical_qty' => (float) $adjItem['physical_qty'],
+                    'remark' => $adjItem['remark'] ?? null,
+                ];
             }
-
-            $opnameItem = Rst_StockOpnameItem::find($adjItem['id']);
-            if (! $opnameItem) {
-                continue;
-            }
-
-            $newPhysicalQty = (float) $adjItem['physical_qty'];
-            $newDifference = $newPhysicalQty - $opnameItem->system_qty;
-            $newStatus = abs($newDifference) < 0.001 ? 'match' : ($newDifference > 0 ? 'surplus' : 'deficit');
-
-            $opnameItem->physical_qty = $newPhysicalQty;
-            $opnameItem->difference = $newDifference;
-            $opnameItem->status = $newStatus;
-            if (isset($adjItem['remark'])) {
-                $opnameItem->remark = $adjItem['remark'];
-            }
-            $opnameItem->save();
         }
 
-        $this->adjustmentLocked = true;
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Adjustment berhasil disimpan.'];
-        $this->showAdjustmentForm = false;
+        try {
+            StockOpnameService::saveAdjustments((int) $detail->id, $itemsToSave);
+
+            $this->adjustmentLocked = true;
+            $this->showAdjustmentForm = false;
+
+            $detail->refresh();
+            $this->adjustmentItems = $detail->adjustments->map(fn ($adj) => [
+                'item_id' => $adj->item_id,
+                'item_name' => $adj->item?->name ?? '-',
+                'system_qty' => $adj->system_qty,
+                'physical_qty' => $adj->physical_qty,
+                'difference' => $adj->difference,
+                'status' => $adj->status,
+                'uom' => $adj->uom?->symbols ?? '',
+                'remark' => $adj->remark ?? '',
+            ])->toArray();
+
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Adjustment berhasil disimpan.'];
+        } catch (\Exception $e) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
+        }
     }
 
     public function excChefCanApprove(string $id): void
@@ -228,7 +249,7 @@ class StockOpnameDetail extends Component
 
         try {
             StockOpnameService::submitOpname((int) $id);
-            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Stock Opname disubmit & lokasi di-freeze.'];
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Stock Opname disubmit untuk approval.'];
         } catch (\Exception $e) {
             $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
         }
