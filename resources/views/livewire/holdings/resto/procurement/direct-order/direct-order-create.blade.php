@@ -36,7 +36,6 @@
                         <label class="block text-sm font-bold text-gray-700 mb-2">Pembeli</label>
                         <input type="text" value="{{ auth()->user()?->username ?? '-' }}" disabled
                             class="w-full border-gray-300 rounded-md shadow-sm bg-gray-100 cursor-not-allowed">
-                        <p class="text-xs text-gray-500 mt-1">Otomatis dari user yang login.</p>
                     </div>
 
                     <div>

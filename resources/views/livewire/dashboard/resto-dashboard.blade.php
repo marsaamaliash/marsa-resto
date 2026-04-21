@@ -161,21 +161,21 @@
                 <span class="text-3xl mb-1">📋</span>
                 <span class="text-white text-sm font-semibold">PO</span>
             </a>
-            <div class="flex flex-col items-center justify-center rounded-2xl shadow-lg h-36 bg-gray-300 opacity-60 cursor-not-allowed">
+            <a href="{{ route('dashboard.resto.goods-receipt') }}"
+                class="flex flex-col items-center justify-center rounded-2xl shadow-lg h-36 bg-teal-500 hover:bg-teal-600 transform hover:scale-105 transition duration-300">
                 <span class="text-3xl mb-1">📥</span>
-                <span class="text-gray-600 text-sm font-semibold">Goods Receipt</span>
-                <span class="text-gray-500 text-xs mt-1">Segera Hadir</span>
-            </div>
+                <span class="text-white text-sm font-semibold">Goods Receipt</span>
+            </a>
             <a href="{{ route('dashboard.resto.direct-order') }}"
                 class="flex flex-col items-center justify-center rounded-2xl shadow-lg h-36 bg-teal-500 hover:bg-teal-600 transform hover:scale-105 transition duration-300">
                 <span class="text-3xl mb-1"></span>
                 <span class="text-white text-sm font-semibold">DO</span>
             </a>
-            <div class="flex flex-col items-center justify-center rounded-2xl shadow-lg h-36 bg-gray-300 opacity-60 cursor-not-allowed">
+            <a href="{{ route('dashboard.resto.invoice') }}"
+                class="flex flex-col items-center justify-center rounded-2xl shadow-lg h-36 bg-teal-500 hover:bg-teal-600 transform hover:scale-105 transition duration-300">
                 <span class="text-3xl mb-1">💳</span>
-                <span class="text-gray-600 text-sm font-semibold">Invoice Vendor</span>
-                <span class="text-gray-500 text-xs mt-1">Segera Hadir</span>
-            </div>
+                <span class="text-white text-sm font-semibold">Invoice Vendor</span>
+            </a>
             {{-- ==================== RECIPE & PRODUCTION ==================== --}}
             <div class="col-span-full mt-6">
                 <h2 class="text-xl font-bold text-gray-800 border-b-2 border-green-500 pb-2 mb-4">Recipe & Production</h2>

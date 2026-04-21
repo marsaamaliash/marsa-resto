@@ -1,17 +1,16 @@
 <?php
 
-namespace App\Livewire\Holdings\Resto\Procurement\PurchaseOrder;
+namespace App\Livewire\Holdings\Resto\Procurement\GoodsReceipt;
 
 use App\Models\Holdings\Resto\Master\Rst_MasterLokasi;
-use App\Models\Holdings\Resto\Procurement\Rst_PurchaseOrder;
-use App\Services\Resto\PurchaseOrderService;
+use App\Models\Holdings\Resto\Procurement\Rst_GoodsReceipt;
+use App\Services\Resto\GoodsReceiptService;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
-class PurchaseOrderTable extends Component
+class GoodsReceiptTable extends Component
 {
     use WithPagination;
 
@@ -33,8 +32,6 @@ class PurchaseOrderTable extends Component
 
     public bool $canExport = false;
 
-    public bool $canRevise = false;
-
     public string $search = '';
 
     public string $filterStatus = '';
@@ -49,13 +46,11 @@ class PurchaseOrderTable extends Component
 
     protected array $allowedSortFields = [
         'id',
-        'po_number',
+        'receipt_number',
         'location_id',
         'status',
         'approval_level',
-        'vendor_name',
-        'total_amount',
-        'payment_by',
+        'received_at',
         'created_at',
         'updated_at',
     ];
@@ -85,13 +80,12 @@ class PurchaseOrderTable extends Component
     {
         $u = auth()->user();
 
-        $this->canCreate = (bool) ($u?->hasPermission('PURCHASE_ORDER_CREATE') ?? false);
-        $this->canUpdate = (bool) ($u?->hasPermission('PURCHASE_ORDER_UPDATE') ?? false);
-        $this->canDelete = (bool) ($u?->hasPermission('PURCHASE_ORDER_DELETE') ?? false);
-        $this->canApproveRM = (bool) ($u?->hasPermission('PURCHASE_ORDER_APPROVE_RM') ?? false);
-        $this->canApproveSPV = (bool) ($u?->hasPermission('PURCHASE_ORDER_APPROVE_SPV') ?? false);
-        $this->canExport = (bool) ($u?->hasPermission('PURCHASE_ORDER_EXPORT') ?? false);
-        $this->canRevise = $this->canCreate;
+        $this->canCreate = (bool) ($u?->hasPermission('GOODS_RECEIPT_CREATE') ?? false);
+        $this->canUpdate = (bool) ($u?->hasPermission('GOODS_RECEIPT_UPDATE') ?? false);
+        $this->canDelete = (bool) ($u?->hasPermission('GOODS_RECEIPT_DELETE') ?? false);
+        $this->canApproveRM = (bool) ($u?->hasPermission('GOODS_RECEIPT_APPROVE_RM') ?? false);
+        $this->canApproveSPV = (bool) ($u?->hasPermission('GOODS_RECEIPT_APPROVE_SPV') ?? false);
+        $this->canExport = (bool) ($u?->hasPermission('GOODS_RECEIPT_EXPORT') ?? false);
 
         $this->canWrite = $this->canCreate || $this->canUpdate;
     }
@@ -102,7 +96,7 @@ class PurchaseOrderTable extends Component
             ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
             ['label' => 'Resto', 'route' => 'dashboard.resto', 'color' => 'text-gray-800'],
             ['label' => 'Procurement', 'route' => 'dashboard.resto.procurement', 'color' => 'text-gray-800'],
-            ['label' => 'Purchase Order', 'color' => 'text-gray-900 font-semibold'],
+            ['label' => 'Goods Receipt', 'color' => 'text-gray-900 font-semibold'],
         ];
 
         $this->syncCaps();
@@ -115,14 +109,14 @@ class PurchaseOrderTable extends Component
 
     protected function dataQuery(): Collection
     {
-        $query = Rst_PurchaseOrder::with(['items.item', 'items.uom', 'purchaseRequest', 'vendor', 'location', 'goodsReceipts']);
+        $query = Rst_GoodsReceipt::with(['purchaseOrder', 'location', 'receivedBy', 'items.item']);
 
         if ($this->search !== '') {
             $search = $this->search;
             $query->where(function ($q) use ($search) {
-                $q->where('po_number', 'like', "%{$search}%")
-                    ->orWhere('vendor_name', 'like', "%{$search}%")
-                    ->orWhereHas('purchaseRequest', fn ($lq) => $lq->where('pr_number', 'like', "%{$search}%"))
+                $q->where('receipt_number', 'like', "%{$search}%")
+                    ->orWhereHas('purchaseOrder', fn ($lq) => $lq->where('po_number', 'like', "%{$search}%")
+                        ->orWhere('vendor_name', 'like', "%{$search}%"))
                     ->orWhereHas('location', fn ($lq) => $lq->where('name', 'like', "%{$search}%"));
             });
         }
@@ -150,7 +144,6 @@ class PurchaseOrderTable extends Component
             'pending_spv' => 'Pending SPV',
             'approved' => 'Approved',
             'rejected' => 'Rejected',
-            'revised' => 'Revised',
         ];
     }
 
@@ -175,7 +168,7 @@ class PurchaseOrderTable extends Component
             $this->getPage()
         );
 
-        return view('livewire.holdings.resto.procurement.purchase-order.purchase-order-table', [
+        return view('livewire.holdings.resto.procurement.goods-receipt.goods-receipt-table', [
             'data' => $paginated,
         ])->layout('components.sccr-layout');
     }
@@ -206,9 +199,9 @@ class PurchaseOrderTable extends Component
         }
     }
 
-    public function openCreateFromCritical(): void
+    public function openCreateFromPO(): void
     {
-        $this->redirectRoute('dashboard.resto.purchase-order.create');
+        $this->redirectRoute('dashboard.resto.goods-receipt.create');
     }
 
     public function openActionOverlay(string $mode, string $id, int $level = 0): void
@@ -227,21 +220,21 @@ class PurchaseOrderTable extends Component
     public function approveByRM(): void
     {
         try {
-            PurchaseOrderService::approveByRM((int) $this->actionOverlayId, null);
+            GoodsReceiptService::approveByRM((int) $this->actionOverlayId, null);
 
-            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Purchase Order berhasil diapprove oleh RM.'];
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Goods Receipt berhasil diapprove oleh RM.'];
             $this->closeActionOverlay();
         } catch (\Exception $e) {
             $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
         }
     }
 
-    public function directApproveByRM(int $poId): void
+    public function directApproveByRM(int $grId): void
     {
         try {
-            PurchaseOrderService::approveByRM($poId, null);
+            GoodsReceiptService::approveByRM($grId, null);
 
-            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Purchase Order berhasil diapprove oleh RM.'];
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Goods Receipt berhasil diapprove oleh RM.'];
         } catch (\Exception $e) {
             $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
         }
@@ -250,135 +243,74 @@ class PurchaseOrderTable extends Component
     public function approveBySPV(): void
     {
         try {
-            PurchaseOrderService::approveBySPV((int) $this->actionOverlayId, null);
+            GoodsReceiptService::approveBySPV((int) $this->actionOverlayId, null);
 
-            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Purchase Order berhasil diapprove oleh Supervisor.'];
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Goods Receipt berhasil diapprove oleh Supervisor. Stok telah diperbarui.'];
             $this->closeActionOverlay();
         } catch (\Exception $e) {
             $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
         }
     }
 
-    public function directApproveBySPV(int $poId): void
+    public function directApproveBySPV(int $grId): void
     {
         try {
-            PurchaseOrderService::approveBySPV($poId, null);
+            GoodsReceiptService::approveBySPV($grId, null);
 
-            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Purchase Order berhasil diapprove oleh Supervisor.'];
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Goods Receipt berhasil diapprove oleh Supervisor. Stok telah diperbarui.'];
         } catch (\Exception $e) {
             $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
         }
     }
 
-    public function rejectPO(): void
+    public function rejectGR(): void
     {
         try {
             if (empty($this->actionNotes)) {
                 throw new \Exception('Alasan reject wajib diisi.');
             }
 
-            PurchaseOrderService::reject((int) $this->actionOverlayId, $this->actionNotes);
+            GoodsReceiptService::reject((int) $this->actionOverlayId, $this->actionNotes);
 
-            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Purchase Order berhasil direject.'];
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Goods Receipt berhasil direject.'];
             $this->closeActionOverlay();
         } catch (\Exception $e) {
             $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
         }
     }
 
-    public function requestRevise(): void
+    public function submitDraftGRToRM(int $grId): void
     {
         try {
-            if (empty($this->actionNotes)) {
-                throw new \Exception('Alasan revise wajib diisi.');
-            }
+            GoodsReceiptService::submitForApproval($grId);
 
-            PurchaseOrderService::requestRevision((int) $this->actionOverlayId, $this->actionNotes);
-
-            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Request revise berhasil dikirim.'];
-            $this->closeActionOverlay();
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Goods Receipt berhasil disubmit ke Restaurant Manager.'];
         } catch (\Exception $e) {
             $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
         }
     }
 
-    public function submitDraftPOToRM(int $poId): void
+    public function deleteGR(string $id): void
     {
         try {
-            PurchaseOrderService::submitForApproval($poId);
+            $gr = Rst_GoodsReceipt::find($id);
 
-            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Purchase Order berhasil disubmit ke Restaurant Manager.'];
+            if (! $gr) {
+                throw new \Exception('Goods Receipt tidak ditemukan.');
+            }
+
+            if (! $gr->canBeEdited()) {
+                throw new \Exception('Hanya Goods Receipt draft atau rejected yang bisa dihapus.');
+            }
+
+            $gr->delete();
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Goods Receipt berhasil dihapus.'];
         } catch (\Exception $e) {
             $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
         }
     }
 
-    public function deletePO(string $id): void
-    {
-        try {
-            $po = Rst_PurchaseOrder::find($id);
-
-            if (! $po) {
-                throw new \Exception('PO tidak ditemukan.');
-            }
-
-            if (! $po->canBeEdited()) {
-                throw new \Exception('Hanya PO draft atau revised yang bisa dihapus.');
-            }
-
-            $po->delete();
-            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Purchase Order berhasil dihapus.'];
-        } catch (\Exception $e) {
-            $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
-        }
-    }
-
-    public function exportExcel(): StreamedResponse
-    {
-        $data = $this->dataQuery();
-        $filename = 'purchase_orders_'.now()->format('Ymd_His').'.csv';
-
-        $headers = [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
-            'Cache-Control' => 'no-cache',
-        ];
-
-        $callback = function () use ($data) {
-            $file = fopen('php://output', 'w');
-            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
-
-            fputcsv($file, [
-                'PO Number',
-                'PR Number',
-                'Vendor',
-                'Lokasi',
-                'Status',
-                'Total Amount',
-                'Payment By',
-                'Created At',
-            ]);
-
-            foreach ($data as $po) {
-                fputcsv($file, [
-                    $po->po_number,
-                    $po->purchaseRequest?->pr_number ?? '-',
-                    $po->vendor_name,
-                    $po->location?->name ?? '-',
-                    $po->status,
-                    number_format($po->total_amount ?? 0, 2),
-                    $po->payment_by,
-                    $po->created_at?->format('Y-m-d H:i') ?? '-',
-                ]);
-            }
-
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
-    }
-
-    #[\Livewire\Attributes\On('refresh-purchase-order-table')]
+    #[\Livewire\Attributes\On('refresh-goods-receipt-table')]
     public function refresh(): void
     {
         $this->resetPage();

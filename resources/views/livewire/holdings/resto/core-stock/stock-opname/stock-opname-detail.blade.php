@@ -94,7 +94,7 @@
                     <div class="mb-4">
                         <div class="flex items-center justify-between mb-3">
                             <h3 class="font-bold text-lg text-gray-800">Items</h3>
-                            @if ($detail->items->some(fn ($i) => $i['status'] !== 'match') && ! $adjustmentLocked)
+                            @if ($detail->items->contains(fn ($i) => $i['status'] !== 'match') && ! $adjustmentLocked)
                                 <x-ui.sccr-button type="button" wire:click="toggleAdjustmentForm"
                                     class="bg-amber-500 text-white hover:bg-amber-600">
                                     <x-ui.sccr-icon name="edit" :size="18" />
