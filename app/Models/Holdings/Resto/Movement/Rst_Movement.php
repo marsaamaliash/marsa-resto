@@ -5,9 +5,12 @@ namespace App\Models\Holdings\Resto\Movement;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Rst_Movement extends Model
 {
+    use SoftDeletes;
+
     protected $connection = 'sccr_resto';
 
     protected $table = 'movements';

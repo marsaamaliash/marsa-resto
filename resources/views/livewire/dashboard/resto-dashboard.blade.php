@@ -137,11 +137,11 @@
                 <span class="text-3xl mb-1">🚚</span>
                 <span class="text-white text-sm font-semibold">Stock Movement</span>
             </a>
-            <div class="flex flex-col items-center justify-center rounded-2xl shadow-lg h-36 bg-gray-300 opacity-60 cursor-not-allowed">
+            <a href="{{ route('dashboard.resto.stock-opname') }}"
+                class="flex flex-col items-center justify-center rounded-2xl shadow-lg h-36 bg-green-600 hover:bg-green-700 transform hover:scale-105 transition duration-300">
                 <span class="text-3xl mb-1">📝</span>
-                <span class="text-gray-600 text-sm font-semibold">Stock Opname</span>
-                <span class="text-gray-500 text-xs mt-1">Segera Hadir</span>
-            </div>
+                <span class="text-white text-sm font-semibold">Stock Opname</span>
+            </a>
             <div class="flex flex-col items-center justify-center rounded-2xl shadow-lg h-36 bg-gray-300 opacity-60 cursor-not-allowed">
                 <span class="text-3xl mb-1">🗑️</span>
                 <span class="text-gray-600 text-sm font-semibold">Waste</span>
@@ -180,12 +180,13 @@
             <div class="col-span-full mt-6">
                 <h2 class="text-xl font-bold text-gray-800 border-b-2 border-green-500 pb-2 mb-4">Recipe & Production</h2>
             </div>
-            <a href="{{ route('dashboard.resto.resep-menu') }}"
+            <a href="{{ route('dashboard.resto.repack') }}"
                 class="flex flex-col items-center justify-center rounded-2xl shadow-lg h-36 bg-green-500 hover:bg-green-600 transform hover:scale-105 transition duration-300">
-                <span class="text-3xl mb-1">📖</span>
-                <span class="text-white text-sm font-semibold">Resep Menu</span>
+                <span class="text-3xl mb-1">📦</span>
+                <span class="text-white text-sm font-semibold">Repack</span>
             </a>
-            <a href="{{ route('dashboard.resto.resep.recipe') }}"
+            <a href=
+            "{{ route('dashboard.resto.resep.recipe') }}"
                 class="flex flex-col items-center justify-center rounded-2xl shadow-lg h-36 bg-green-500 hover:bg-green-600 transform hover:scale-105 transition duration-300">
                 <span class="text-3xl mb-1">🧪</span>
                 <span class="text-white text-sm font-semibold">Resep Semi-Finished</span>
@@ -203,6 +204,11 @@
                 class="flex flex-col items-center justify-center rounded-2xl shadow-lg h-36 bg-green-500 hover:bg-green-600 transform hover:scale-105 transition duration-300">
                 <span class="text-3xl mb-1"></span>
                 <span class="text-white text-sm font-semibold">HJP</span>
+            </a>
+              <a href="{{ route('dashboard.resto.menu') }}"
+                class="flex flex-col items-center justify-center rounded-2xl shadow-lg h-36 bg-green-500 hover:bg-green-600 transform hover:scale-105 transition duration-300">
+                <span class="text-3xl mb-1">📋</span>
+                <span class="text-white text-sm font-semibold">Master Menu</span>
             </a>
             {{-- ==================== LAPORAN ==================== --}}
             <div class="col-span-full mt-6">
@@ -271,11 +277,7 @@
                 <span class="text-3xl mb-1">💲</span>
                 <span class="text-white text-sm font-semibold">Costing & Finance Hooks</span>
             </a>
-            <a href="{{ route('dashboard.resto.menu') }}"
-                class="flex flex-col items-center justify-center rounded-2xl shadow-lg h-36 bg-green-500 hover:bg-green-600 transform hover:scale-105 transition duration-300">
-                <span class="text-3xl mb-1">📋</span>
-                <span class="text-white text-sm font-semibold">Master Menu</span>
-            </a>
+          
         </div>
     </div>
 </div>

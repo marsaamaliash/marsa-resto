@@ -12,6 +12,8 @@ use Illuminate\Support\Collection;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class MovementInternalTable extends Component
 {
@@ -44,6 +46,8 @@ class MovementInternalTable extends Component
     public string $filter1 = '';
 
     public string $filter2 = '';
+
+    public string $filterStatus = '';
 
     public int $perPage = 10;
 
@@ -94,10 +98,27 @@ class MovementInternalTable extends Component
 
     public array $createItems = [];
 
+    public bool $showColumnPicker = false;
+
+    public array $columnVisibility = [];
+
+    public array $availableColumns = [
+        ['key' => 'id', 'label' => 'ID', 'default' => true],
+        ['key' => 'reference_number', 'label' => 'Reference', 'default' => true],
+        ['key' => 'from_location_id', 'label' => 'From', 'default' => true],
+        ['key' => 'to_location_id', 'label' => 'To', 'default' => true],
+        ['key' => 'status', 'label' => 'Status', 'default' => true],
+        ['key' => 'pic_name', 'label' => 'PIC', 'default' => true],
+        ['key' => 'remark', 'label' => 'Remark', 'default' => false],
+        ['key' => 'created_at', 'label' => 'Created', 'default' => false],
+        ['key' => 'updated_at', 'label' => 'Updated', 'default' => false],
+    ];
+
     protected $queryString = [
         'search' => ['except' => ''],
         'filter1' => ['except' => ''],
         'filter2' => ['except' => ''],
+        'filterStatus' => ['except' => ''],
         'perPage' => ['except' => 10],
         'sortField' => ['except' => 'created_at'],
         'sortDirection' => ['except' => 'desc'],
@@ -129,6 +150,10 @@ class MovementInternalTable extends Component
         ];
 
         $this->syncCaps();
+
+        foreach ($this->availableColumns as $col) {
+            $this->columnVisibility[$col['key']] = $col['default'];
+        }
     }
 
     public function hydrate(): void
@@ -138,7 +163,11 @@ class MovementInternalTable extends Component
 
     protected function dataQuery(): Collection
     {
-        $query = Rst_Movement::with(['items.item', 'items.uom', 'fromLocation', 'toLocation']);
+        $query = Rst_Movement::withTrashed()->with(['items.item', 'items.uom', 'fromLocation', 'toLocation']);
+
+        if ($this->filterStatus === 'deleted') {
+            $query->onlyTrashed();
+        }
 
         if ($this->search !== '') {
             $search = $this->search;
@@ -216,7 +245,7 @@ class MovementInternalTable extends Component
 
     public function clearFilters(): void
     {
-        $this->reset(['search', 'filter1', 'filter2']);
+        $this->reset(['search', 'filter1', 'filter2', 'filterStatus']);
         $this->applyFilter();
     }
 
@@ -678,11 +707,14 @@ class MovementInternalTable extends Component
     {
         return [
             '' => '-- Semua Status --',
+            'draft' => 'Draft',
             'requested' => 'Requested',
             'approved' => 'Approved',
             'in_transit' => 'In Transit',
             'completed' => 'Completed',
             'rejected' => 'Rejected',
+            'cancelled' => 'Cancelled',
+            'failed' => 'Failed',
         ];
     }
 
@@ -692,6 +724,152 @@ class MovementInternalTable extends Component
             '' => '-- Semua Tipe --',
             'internal_transfer' => 'Internal Transfer',
         ];
+    }
+
+    public function toggleColumnPicker(): void
+    {
+        $this->showColumnPicker = ! $this->showColumnPicker;
+    }
+
+    public function resetColumns(): void
+    {
+        foreach ($this->availableColumns as $col) {
+            $this->columnVisibility[$col['key']] = $col['default'];
+        }
+    }
+
+    public function deleteItem(string $id): void
+    {
+        if (! $this->canDelete) {
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin delete.'];
+
+            return;
+        }
+
+        $item = Rst_Movement::withTrashed()->find($id);
+
+        if (! $item) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data tidak ditemukan.'];
+
+            return;
+        }
+
+        $item->delete();
+
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Movement berhasil dihapus.'];
+    }
+
+    public function restoreItem(string $id): void
+    {
+        if (! $this->canDelete) {
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin restore.'];
+
+            return;
+        }
+
+        $item = Rst_Movement::onlyTrashed()->find($id);
+
+        if (! $item) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data tidak ditemukan.'];
+
+            return;
+        }
+
+        $item->restore();
+
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Movement berhasil di-restore.'];
+    }
+
+    public function cloneItem(string $id): void
+    {
+        if (! $this->canCreate) {
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin clone.'];
+
+            return;
+        }
+
+        $original = Rst_Movement::with('items')->find($id);
+
+        if (! $original) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data tidak ditemukan.'];
+
+            return;
+        }
+
+        $clone = $original->replicate();
+        $clone->reference_number = \App\Services\Resto\ReferenceNumberService::generateMovementNumber();
+        $clone->status = 'requested';
+        $clone->approval_level = 0;
+        $clone->exc_chef_approved_by = null;
+        $clone->exc_chef_approved_at = null;
+        $clone->rm_approved_by = null;
+        $clone->rm_approved_at = null;
+        $clone->spv_approved_by = null;
+        $clone->spv_approved_at = null;
+        $clone->save();
+
+        foreach ($original->items as $item) {
+            $cloneItem = $item->replicate();
+            $cloneItem->movement_id = $clone->id;
+            $cloneItem->save();
+        }
+
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Movement berhasil di-clone.'];
+    }
+
+    public function exportFiltered()
+    {
+        $data = $this->dataQuery();
+
+        return $this->generateExcel($data, 'Filtered');
+    }
+
+    public function exportSelected()
+    {
+        if (empty($this->selectedItems)) {
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Pilih data terlebih dahulu'];
+
+            return null;
+        }
+
+        $ids = array_values(array_unique(array_map('strval', $this->selectedItems)));
+        $data = Rst_Movement::withTrashed()->whereIn('id', $ids)->get();
+
+        return $this->generateExcel($data, 'Selected');
+    }
+
+    private function generateExcel(Collection $data, string $type)
+    {
+        $spreadsheet = new Spreadsheet;
+        $ws = $spreadsheet->getActiveSheet();
+
+        $headers = ['ID', 'Reference No', 'From', 'To', 'Status', 'PIC', 'Remark', 'Created'];
+        $ws->fromArray([$headers], null, 'A1');
+
+        $row = 2;
+        foreach ($data as $item) {
+            $ws->fromArray([
+                $item->id,
+                $item->reference_number ?? '',
+                $item->fromLocation?->name ?? '-',
+                $item->toLocation?->name ?? '-',
+                $item->status,
+                $item->pic_name ?? '-',
+                $item->remark ?? '-',
+                $item->created_at?->format('Y-m-d H:i:s') ?? '',
+            ], null, 'A'.$row++);
+        }
+
+        foreach (range('A', 'H') as $col) {
+            $ws->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        $filename = "Movement_{$type}_".now()->format('Ymd_His').'.xlsx';
+
+        $tmp = tempnam(sys_get_temp_dir(), 'movement_');
+        (new Xlsx($spreadsheet))->save($tmp);
+
+        return response()->download($tmp, $filename)->deleteFileAfterSend(true);
     }
 
     public function render()
