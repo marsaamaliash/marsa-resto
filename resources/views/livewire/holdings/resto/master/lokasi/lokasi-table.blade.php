@@ -1,4 +1,4 @@
-﻿<x-ui.sccr-card transparent wire:key="Location" class="h-full min-h-0 flex flex-col">
+<x-ui.sccr-card transparent wire:key="Location" class="h-full min-h-0 flex flex-col">
 
     {{-- ================= HEADER ================= --}}
     <div class="relative px-8 py-6 bg-blue-600/80 rounded-b-3xl shadow-lg overflow-hidden">
@@ -372,7 +372,7 @@
                     <span class="text-xl leading-none">&#x2715;</span>
                 </x-ui.sccr-button>
 
-                @livewire('holdings.resto.master.Location.Location-create')
+                @livewire('holdings.resto.master.lokasi.lokasi-create')
             </div>
         </div>
     @endif
@@ -388,13 +388,13 @@
                     <span class="text-xl leading-none">&#x2715;</span>
                 </x-ui.sccr-button>
 
-                @livewire('holdings.resto.master.Location.Location-show', ['id' => $overlayId], key($overlayId))
+                @livewire('holdings.resto.master.lokasi.lokasi-show', ['id' => $overlayId], key($overlayId))
             </div>
         </div>
     @endif
 
     {{-- ================= OVERLAY: Edit ================= --}}
-    @if ($overlayMode === 'Edit' && $overlayId)
+    @if ($overlayMode === 'edit' && $overlayId)
         <div class="fixed inset-0 bg-black/40 z-40" wire:click="closeOverlay"></div>
 
         <div class="fixed inset-0 z-50 flex items-center justify-center px-6">
@@ -404,7 +404,7 @@
                     <span class="text-xl leading-none">&#x2715;</span>
                 </x-ui.sccr-button>
 
-                @livewire('holdings.resto.master.Location.Location-Edit', ['id' => $overlayId], key($overlayId))
+                @livewire('holdings.resto.master.lokasi.lokasi-edit', ['id' => $overlayId], key($overlayId))
             </div>
         </div>
     @endif

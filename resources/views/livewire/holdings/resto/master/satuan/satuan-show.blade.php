@@ -1,4 +1,4 @@
-﻿<div class="p-6">
+<div class="p-6">
     @if ($Unit)
         <h2 class="text-xl font-bold mb-4">Unit Detail</h2>
 
@@ -74,7 +74,7 @@
 
         <div class="flex gap-3 pt-4 border-t mt-4">
             @if (! $Unit->deleted_at)
-                <button type="button" wire:click="Edit"
+                <button type="button" wire:click="edit"
                     class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
                     Edit
                 </button>

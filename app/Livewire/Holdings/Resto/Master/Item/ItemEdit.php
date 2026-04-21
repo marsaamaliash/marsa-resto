@@ -148,7 +148,7 @@ class ItemEdit extends Component
 
     public function cancel(): void
     {
-        $this->dispatch('close-overlay');
+        $this->dispatch('item-overlay-close');
     }
 
     public function render()

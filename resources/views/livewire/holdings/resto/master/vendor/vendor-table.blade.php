@@ -1,4 +1,4 @@
-﻿<x-ui.sccr-card transparent wire:key="vendor" class="h-full min-h-0 flex flex-col">
+<x-ui.sccr-card transparent wire:key="vendor" class="h-full min-h-0 flex flex-col">
 
     {{-- ================= HEADER ================= --}}
     <div class="relative px-8 py-6 bg-blue-600/80 rounded-b-3xl shadow-lg overflow-hidden">
@@ -437,7 +437,7 @@
     @endif
 
     {{-- ================= OVERLAY: Edit ================= --}}
-    @if ($overlayMode === 'Edit' && $overlayId)
+    @if ($overlayMode === 'edit' && $overlayId)
         <div class="fixed inset-0 bg-black/40 z-40" wire:click="closeOverlay"></div>
 
         <div class="fixed inset-0 z-50 flex items-center justify-center px-6">
@@ -447,7 +447,7 @@
                     <span class="text-xl leading-none">&#x2715;</span>
                 </x-ui.sccr-button>
 
-                @livewire('holdings.resto.master.vendor.vendor-Edit', ['id' => $overlayId], key($overlayId))
+                @livewire('holdings.resto.master.vendor.vendor-edit', ['id' => $overlayId], key($overlayId))
             </div>
         </div>
     @endif

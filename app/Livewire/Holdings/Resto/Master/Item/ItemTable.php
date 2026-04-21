@@ -243,7 +243,7 @@ class ItemTable extends Component
 
     public function updated($property): void
     {
-        if (in_array($property, ['search', 'perPage', 'sortField', 'sortDirection'], true)) {
+        if (in_array($property, ['search', 'perPage', 'sortField', 'sortDirection', 'filter1', 'filter2', 'filterStatus'], true)) {
             $this->resetPage();
         }
     }

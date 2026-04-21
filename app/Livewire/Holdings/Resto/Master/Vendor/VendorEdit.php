@@ -115,7 +115,7 @@ class VendorEdit extends Component
 
     public function cancel(): void
     {
-        $this->dispatch('close-overlay');
+        $this->dispatch('vendor-overlay-close');
     }
 
     public function render()

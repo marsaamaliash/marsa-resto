@@ -136,7 +136,7 @@ class ItemCreate extends Component
 
     public function cancel(): void
     {
-        $this->dispatch('close-overlay');
+        $this->dispatch('item-overlay-close');
     }
 
     protected function resetForm(): void

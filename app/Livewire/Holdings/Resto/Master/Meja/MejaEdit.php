@@ -61,7 +61,7 @@ class MejaEdit extends Component
 
     public function cancel(): void
     {
-        $this->dispatch('close-overlay');
+        $this->dispatch('meja-overlay-close');
     }
 
     public function render()

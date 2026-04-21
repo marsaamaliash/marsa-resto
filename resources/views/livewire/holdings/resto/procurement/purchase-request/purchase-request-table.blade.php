@@ -272,14 +272,14 @@
                                 <td class="px-3 py-2 text-center">
                                     <div class="flex justify-center gap-2">
                                         {{-- View Detail --}}
-                                        <a href="{{ route('dashboard.resto.purchase-request.Detail', $item['id']) }}"
+                                        <a href="{{ route('dashboard.resto.purchase-request.detail', $item['id']) }}"
                                             class="text-gray-700 hover:scale-125" title="Detail">
                                             <x-ui.sccr-icon name="eye" :size="18" />
                                         </a>
 
                                         {{-- Edit/Revise --}}
                                         @if ($item->canBeEdited() && ($canCreate || $canUpdate))
-                                            <a href="{{ route('dashboard.resto.purchase-request.Detail', $item['id']) }}?mode=Edit"
+                                            <a href="{{ route('dashboard.resto.purchase-request.detail', $item['id']) }}?mode=Edit"
                                                 class="text-blue-600 hover:scale-125" title="Edit">
                                                 <x-ui.sccr-icon name="Edit" :size="18" />
                                             </a>

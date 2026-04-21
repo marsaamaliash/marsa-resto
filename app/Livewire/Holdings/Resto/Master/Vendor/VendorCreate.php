@@ -104,7 +104,7 @@ class VendorCreate extends Component
 
     public function cancel(): void
     {
-        $this->dispatch('close-overlay');
+        $this->dispatch('vendor-overlay-close');
     }
 
     protected function resetForm(): void

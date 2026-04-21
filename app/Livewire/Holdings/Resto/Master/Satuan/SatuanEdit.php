@@ -79,7 +79,7 @@ class SatuanEdit extends Component
 
     public function cancel(): void
     {
-        $this->dispatch('close-overlay');
+        $this->dispatch('satuan-overlay-close');
     }
 
     public function render()

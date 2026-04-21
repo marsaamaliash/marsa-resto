@@ -6,7 +6,6 @@ use App\Models\Holdings\Resto\CoreStock\Rst_RequestActivity;
 use App\Models\Holdings\Resto\CoreStock\Rst_StockBalance;
 use App\Models\Holdings\Resto\CoreStock\Rst_StockMutation;
 use App\Models\Holdings\Resto\Master\Rst_MasterItem;
-use App\Models\Holdings\Resto\Master\Rst_MasterKategori;
 use App\Models\Holdings\Resto\Master\Rst_MasterLokasi;
 use App\Models\Holdings\Resto\Movement\Rst_Movement;
 use App\Models\Holdings\Resto\Movement\Rst_MovementItem;
@@ -1083,7 +1082,7 @@ class MovementInternalTable extends Component
             ], null, 'A'.$row++);
         }
 
-        $filename = "StockMovement_".now()->format('Ymd_His').'.xlsx';
+        $filename = 'StockMovement_'.now()->format('Ymd_His').'.xlsx';
 
         $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
         $tmp = tempnam(sys_get_temp_dir(), 'stockmovement_');

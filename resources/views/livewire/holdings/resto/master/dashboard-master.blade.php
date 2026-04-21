@@ -1,4 +1,4 @@
-﻿<div>
+<div>
     <div class="relative px-8 py-6 bg-yellow-500/60 rounded-b-3xl shadow-lg overflow-hidden">
         <div class="flex justify-between items-start">
             <div>
@@ -29,7 +29,7 @@
                 </span>
             </a>
 
-            <a href="{{ route('dashboard.resto.Category') }}"
+            <a href="{{ route('dashboard.resto.kategori') }}"
                 class="flex items-center justify-center rounded-2xl shadow-lg h-40 bg-green-500 hover:bg-green-600 transform hover:scale-105 transition duration-300">
 
                 <span class="text-white text-lg font-semibold">
@@ -37,7 +37,7 @@
                 </span>
             </a>
 
-            <a href="{{ route('dashboard.resto.Unit') }}"
+            <a href="{{ route('dashboard.resto.satuan') }}"
                 class="flex items-center justify-center rounded-2xl shadow-lg h-40 bg-green-500 hover:bg-green-600 transform hover:scale-105 transition duration-300">
                 <span class="text-white text-lg font-semibold">
                     Unit
@@ -52,7 +52,7 @@
                 </span>
             </a>
 
-            <a href="{{ route('dashboard.resto.Location') }}"
+            <a href="{{ route('dashboard.resto.lokasi') }}"
                 class="flex items-center justify-center rounded-2xl shadow-lg h-40 bg-green-500 hover:bg-green-600 transform hover:scale-105 transition duration-300">
 
                 <span class="text-white text-lg font-semibold">
