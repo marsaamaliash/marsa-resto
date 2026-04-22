@@ -104,6 +104,24 @@ class MovementInternalTable extends Component
 
     public array $createItems = [];
 
+    public string $createRequestNumber = '';
+
+    public string $createRequestDate = '';
+
+    public int $editFromLocationId = 0;
+
+    public int $editToLocationId = 0;
+
+    public string $editPicName = '';
+
+    public string $editRemark = '';
+
+    public string $editRequestNumber = '';
+
+    public string $editRequestDate = '';
+
+    public array $editItems = [];
+
     public bool $showColumnPicker = false;
 
     public array $columnVisibility = [];
@@ -1191,8 +1209,8 @@ class MovementInternalTable extends Component
 
     public function toggleColumn(string $column): void
     {
-        if (isset($this->visibleColumns[$column])) {
-            $this->visibleColumns[$column] = ! $this->visibleColumns[$column];
+        if (isset($this->columnVisibility[$column])) {
+            $this->columnVisibility[$column] = ! $this->columnVisibility[$column];
         }
     }
 

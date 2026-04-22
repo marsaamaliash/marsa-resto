@@ -22,7 +22,7 @@
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label class="block text-xs font-medium text-gray-500">Email</label>
-                    <p class="text-sm">{{ $vendor->Email ?? '-' }}</p>
+                    <p class="text-sm">{{ $vendor->email ?? '-' }}</p>
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-500">PIC</label>
@@ -114,7 +114,7 @@
                     Edit
                 </button>
             @endif
-            <button type="button" wire:click="$dispatch('close-overlay')"
+            <button type="button" wire:click="$dispatch('vendor-overlay-close')"
                 class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">
                 Close
             </button>

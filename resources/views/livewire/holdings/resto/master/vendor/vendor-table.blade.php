@@ -168,7 +168,7 @@
                                 </th>
                             @endif
 
-                            @if ($columnVisibility['Email'])
+                            @if ($columnVisibility['email'])
                                 <th class="px-4 py-3 text-left text-xs font-bold">Email</th>
                             @endif
 
@@ -256,9 +256,9 @@
                                     </td>
                                 @endif
 
-                                @if ($columnVisibility['Email'])
+                                @if ($columnVisibility['email'])
                                     <td class="px-4 py-2 text-sm">
-                                        {{ $item['Email'] ?? '-' }}
+                                        {{ $item['email'] ?? '-' }}
                                     </td>
                                 @endif
 

@@ -368,7 +368,7 @@
                                             $approvalLevel = $item['approval_level'] ?? 0;
                                         @endphp
 
-                                            @if ($ApprovalLevel == 0)
+                                            @if ($approvalLevel == 0)
                                                 @if ($canApproveExcChef || $canApprove)
                                                     <div class="flex justify-center gap-2 mt-1">
                                                         <x-ui.sccr-button type="button" variant="icon"
@@ -381,7 +381,7 @@
                                                 @endif
                                             @endif
 
-                                            @if ($ApprovalLevel == 1)
+                                            @if ($approvalLevel == 1)
                                                 @if ($canApproveRM || $canApprove)
                                                     <div class="flex justify-center gap-2 mt-1">
                                                         <x-ui.sccr-button type="button" variant="icon"
@@ -393,7 +393,7 @@
                                                 @endif
                                             @endif
 
-                                            @if ($ApprovalLevel == 2)
+                                            @if ($approvalLevel == 2)
                                                 @if ($canApproveSPV || $canApprove)
                                                     <div class="flex justify-center gap-2 mt-1">
                                                         <x-ui.sccr-button type="button" variant="icon"

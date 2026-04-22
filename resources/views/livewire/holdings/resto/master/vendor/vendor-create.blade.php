@@ -1,4 +1,4 @@
-﻿<div class="p-6">
+<div class="p-6">
     <h2 class="text-xl font-bold mb-4">Add Vendor</h2>
 
     <form wire:submit.prevent="store" class="space-y-4">
@@ -26,10 +26,10 @@
 
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Email <span class="text-red-500">*</span></label>
-            <input type="Email" wire:model.defer="Email"
+            <input type="email" wire:model.defer="email"
                 class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 placeholder="e.g. vendor@company.com">
-            @error('Email')
+            @error('email')
                 <span class="text-red-600 text-sm">{{ $message }}</span>
             @enderror
         </div>
