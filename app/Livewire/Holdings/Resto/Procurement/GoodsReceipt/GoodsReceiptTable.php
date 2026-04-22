@@ -109,7 +109,8 @@ class GoodsReceiptTable extends Component
 
     protected function dataQuery(): Collection
     {
-        $query = Rst_GoodsReceipt::with(['purchaseOrder', 'location', 'receivedBy', 'items.item']);
+        $query = Rst_GoodsReceipt::with(['purchaseOrder', 'location', 'receivedBy', 'items.item'])
+            ->whereHas('purchaseOrder', fn ($q) => $q->where('status', 'approved'));
 
         if ($this->search !== '') {
             $search = $this->search;
