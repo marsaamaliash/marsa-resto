@@ -598,22 +598,27 @@
                                     </thead>
                                     <tbody class="divide-y divide-gray-200 bg-white">
                                         @foreach($createItems as $index => $item)
-                                            <tr>
-                                                <td class="px-3 py-2">
-                                                    <select wire:model="createItems.{{ $index }}.item_id" class="w-full border-gray-300 rounded-md text-sm">
+                                            <tr wire:key="create-row-{{ $index }}-{{ $createItems[$index]['item_id'] ?? 0 }}">
+                                                <td class="px-3 py-2" wire:key="create-td-item-{{ $index }}-{{ $createFromLocationId }}">
+                                                    <select wire:model.live="createItems.{{ $index }}.item_id"
+                                                        class="w-full border-gray-300 rounded-md text-sm">
                                                         <option value="0">-- Select Item --</option>
                                                         @foreach($this->getCreateAvailableItems() as $availItem)
                                                             <option value="{{ $availItem['id'] }}">
-                                                                {{ $availItem['name'] }} ({{ $availItem['sku'] }})
+                                                                {{ $availItem['name'] }} ({{ $availItem['sku'] }}) - Stok: {{ number_format($availItem['available_qty'], 2) }}
                                                             </option>
                                                         @endforeach
                                                     </select>
                                                 </td>
                                                 <td class="px-3 py-2 text-center text-sm font-mono text-gray-500">
-                                                    @php
-                                                        $selectedAvail = collect($this->getCreateAvailableItems())->firstWhere('id', $item['item_id']);
-                                                    @endphp
-                                                    {{ $selectedAvail ? number_format($selectedAvail['available_qty'], 2) : '-' }}
+                                                    @if($createItems[$index]['item_id'] > 0)
+                                                        @php
+                                                            $selectedAvail = collect($this->getCreateAvailableItems())->firstWhere('id', $createItems[$index]['item_id']);
+                                                        @endphp
+                                                        {{ $selectedAvail ? number_format($selectedAvail['available_qty'], 2) : '-' }}
+                                                    @else
+                                                        -
+                                                    @endif
                                                 </td>
                                                 <td class="px-3 py-2">
                                                     <input type="number" step="0.01" min="0.01" wire:model="createItems.{{ $index }}.qty" class="w-full border-gray-300 rounded-md text-sm text-right" placeholder="0">
@@ -723,22 +728,27 @@
                                     </thead>
                                     <tbody class="divide-y divide-gray-200 bg-white">
                                         @foreach($editItems as $index => $item)
-                                            <tr>
-                                                <td class="px-3 py-2">
-                                                    <select wire:model="editItems.{{ $index }}.item_id" class="w-full border-gray-300 rounded-md text-sm">
+                                            <tr wire:key="edit-row-{{ $index }}-{{ $editItems[$index]['item_id'] ?? 0 }}">
+                                                <td class="px-3 py-2" wire:key="edit-td-item-{{ $index }}-{{ $editFromLocationId }}">
+                                                    <select wire:model.live="editItems.{{ $index }}.item_id"
+                                                        class="w-full border-gray-300 rounded-md text-sm">
                                                         <option value="0">-- Select Item --</option>
                                                         @foreach($this->getEditAvailableItems() as $availItem)
                                                             <option value="{{ $availItem['id'] }}">
-                                                                {{ $availItem['name'] }} ({{ $availItem['sku'] }})
+                                                                {{ $availItem['name'] }} ({{ $availItem['sku'] }}) - Stok: {{ number_format($availItem['available_qty'], 2) }}
                                                             </option>
                                                         @endforeach
                                                     </select>
                                                 </td>
                                                 <td class="px-3 py-2 text-center text-sm font-mono text-gray-500">
-                                                    @php
-                                                        $selectedAvail = collect($this->getEditAvailableItems())->firstWhere('id', $item['item_id']);
-                                                    @endphp
-                                                    {{ $selectedAvail ? number_format($selectedAvail['available_qty'], 2) : '-' }}
+                                                    @if($editItems[$index]['item_id'] > 0)
+                                                        @php
+                                                            $selectedAvail = collect($this->getEditAvailableItems())->firstWhere('id', $editItems[$index]['item_id']);
+                                                        @endphp
+                                                        {{ $selectedAvail ? number_format($selectedAvail['available_qty'], 2) : '-' }}
+                                                    @else
+                                                        -
+                                                    @endif
                                                 </td>
                                                 <td class="px-3 py-2">
                                                     <input type="number" step="0.01" min="0.01" wire:model="editItems.{{ $index }}.qty" class="w-full border-gray-300 rounded-md text-sm text-right" placeholder="0">

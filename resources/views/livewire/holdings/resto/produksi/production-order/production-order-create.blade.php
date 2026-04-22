@@ -1,4 +1,4 @@
-﻿<div class="p-6">
+<div class="p-6">
     <h2 class="text-xl font-bold mb-4">Create Production Order</h2>
 
     <form wire:submit.prevent="store" class="space-y-4">
@@ -19,14 +19,14 @@
 
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Recipe version <span class="text-red-500">*</span></label>
-                <select wire:model.defer="recipe_Versionon_id"
+                <select wire:model.defer="recipe_version_id"
                     class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     <option value="">-- Select version --</option>
-                    @foreach ($Versionons as $version)
+                    @foreach ($versions as $version)
                         <option value="{{ $version['value'] }}">{{ $version['label'] }}</option>
                     @endforeach
                 </select>
-                @error('recipe_Versionon_id')
+                @error('recipe_version_id')
                     <span class="text-red-600 text-sm">{{ $message }}</span>
                 @enderror
             </div>
@@ -49,14 +49,14 @@
 
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Output Location <span class="text-red-500">*</span></label>
-                <select wire:model.defer="Output_location_id"
+                <select wire:model.defer="output_location_id"
                     class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     <option value="">-- Select Location --</option>
                     @foreach ($locations as $loc)
                         <option value="{{ $loc['value'] }}">{{ $loc['label'] }}</option>
                     @endforeach
                 </select>
-                @error('Output_location_id')
+                @error('output_location_id')
                     <span class="text-red-600 text-sm">{{ $message }}</span>
                 @enderror
             </div>
@@ -65,24 +65,24 @@
         <div class="grid grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Planned Output Qty <span class="text-red-500">*</span></label>
-                <input type="number" step="0.000001" min="0" wire:model.defer="planned_Output_qty"
+                <input type="number" step="0.000001" min="0" wire:model.defer="planned_output_qty"
                     class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                     placeholder="0">
-                @error('planned_Output_qty')
+                @error('planned_output_qty')
                     <span class="text-red-600 text-sm">{{ $message }}</span>
                 @enderror
             </div>
 
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Unit Output</label>
-                <select wire:model.defer="Output_uom_id"
+                <select wire:model.defer="output_uom_id"
                     class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     <option value="">-- Select Unit --</option>
                     @foreach ($uoms as $uom)
-                        <option value="{{ $uom['value'] }}" {{ $uom['value'] == $Output_uom_id ? 'selected' : '' }}>{{ $uom['label'] }}</option>
+                        <option value="{{ $uom['value'] }}" {{ $uom['value'] == $output_uom_id ? 'selected' : '' }}>{{ $uom['label'] }}</option>
                     @endforeach
                 </select>
-                @error('Output_uom_id')
+                @error('output_uom_id')
                     <span class="text-red-600 text-sm">{{ $message }}</span>
                 @enderror
             </div>

@@ -178,7 +178,7 @@
                                                 @elseif($mutation['type'] === 'unreserved')
                                                     <span
                                                         class="px-2 py-0.5 rounded bg-gray-100 text-gray-800 text-xs">UNR</span>
-                                                @elseif($mutation['type'] === 'Waste')
+                                                @elseif($mutation['type'] === 'waste')
                                                     <span
                                                         class="px-2 py-0.5 rounded bg-red-100 text-red-800 text-xs">Waste</span>
                                                 @else

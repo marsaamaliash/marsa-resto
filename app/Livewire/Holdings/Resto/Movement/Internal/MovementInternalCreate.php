@@ -24,14 +24,11 @@ class MovementInternalCreate extends Component
 
     public array $toLocations = [];
 
-    public array $availableItems = [];
-
     public array $toast = ['show' => false, 'type' => 'success', 'message' => ''];
 
     public function mount(): void
     {
         $this->loadLocations();
-        $this->loadAvailableItems();
         $this->addItemRow();
     }
 
@@ -52,21 +49,35 @@ class MovementInternalCreate extends Component
             ->toArray();
     }
 
-    private function loadAvailableItems(): void
+    public function getAvailableItemsProperty(): array
     {
-        $this->availableItems = Rst_MasterItem::where('is_stockable', true)
+        $items = Rst_MasterItem::where('is_stockable', true)
             ->where('is_active', true)
             ->orderBy('name')
-            ->get()
-            ->map(fn ($item) => [
+            ->get();
+
+        $result = $items->map(function ($item) {
+            $availableQty = 0;
+
+            if ($this->from_location_id > 0) {
+                $balance = Rst_StockBalance::where('item_id', $item->id)
+                    ->where('location_id', $this->from_location_id)
+                    ->first();
+                $availableQty = $balance?->qty_available ?? 0;
+            }
+
+            return [
                 'id' => $item->id,
                 'name' => $item->name,
                 'sku' => $item->sku,
                 'uom_id' => $item->uom_id,
                 'uom_name' => $item->uom?->name ?? '',
                 'uom_symbols' => $item->uom?->symbols ?? '',
-            ])
-            ->toArray();
+                'available_qty' => $availableQty,
+            ];
+        })->toArray();
+
+        return $result;
     }
 
     public function addItemRow(): void
@@ -88,7 +99,7 @@ class MovementInternalCreate extends Component
         }
     }
 
-    public function onFromLocationChanged(): void
+    public function updatedFromLocationId(): void
     {
         $this->updateAvailableStock();
     }

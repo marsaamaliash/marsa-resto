@@ -1,4 +1,4 @@
-﻿<div class="p-6">
+<div class="p-6">
     <h2 class="text-xl font-bold mb-4">Edit Category</h2>
 
     <form wire:submit.prevent="update" class="space-y-4">

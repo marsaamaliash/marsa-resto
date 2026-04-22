@@ -1,4 +1,4 @@
-﻿<x-ui.sccr-card transparent wire:key="stock-item" class="h-full min-h-0 flex flex-col">
+<x-ui.sccr-card transparent wire:key="stock-item" class="h-full min-h-0 flex flex-col">
 
     {{-- ================= HEADER ================= --}}
     <div class="relative px-8 py-6 bg-blue-600/80 rounded-b-3xl shadow-lg overflow-hidden">
@@ -132,9 +132,9 @@
                                 Qty In Transit {!! $sortField === 'total_in_transit' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                             </th>
 
-                            <th wire:click="sortBy('total_Waste')"
+                            <th wire:click="sortBy('total_waste')"
                                 class="px-4 py-3 text-right text-xs font-bold cursor-pointer">
-                                Waste Qty {!! $sortField === 'total_Waste' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                                Waste Qty {!! $sortField === 'total_waste' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                             </th>
 
 
@@ -187,7 +187,7 @@
 
 
                                 <td class="px-4 py-2 text-right text-sm font-mono">
-                                    {{ number_format($item->total_Waste, 2) }}
+                                    {{ number_format($item->total_waste, 2) }}
                                 </td>
 
                                 <td class="px-4 py-2 text-right text-sm font-mono font-bold">

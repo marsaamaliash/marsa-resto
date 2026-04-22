@@ -1,4 +1,4 @@
-﻿<div class="p-6">
+<div class="p-6">
     <h2 class="text-xl font-bold mb-4">Edit Recipe</h2>
 
     <form wire:submit.prevent="update" class="space-y-4">
@@ -26,7 +26,7 @@
                 <label class="block text-sm font-medium text-gray-700 mb-1">Recipe Type <span class="text-red-500">*</span></label>
                 <select wire:model.defer="recipe_type"
                     class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                    <option value="Menu">Menu (Final)</option>
+                    <option value="menu">Menu (Final)</option>
                     <option value="preparation">Preparation (Bumbu Base)</option>
                     <option value="additional">Additional (Bundling)</option>
                 </select>
@@ -49,14 +49,14 @@
         <div class="grid grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Output Item <span class="text-red-500">*</span></label>
-                <select wire:model.defer="Output_item_id"
+                <select wire:model.defer="output_item_id"
                     class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     <option value="">-- Select Item --</option>
                     @foreach ($items as $item)
-                        <option value="{{ $item['value'] }}" {{ $item['value'] == $Output_item_id ? 'selected' : '' }}>{{ $item['label'] }}</option>
+                        <option value="{{ $item['value'] }}" {{ $item['value'] == $output_item_id ? 'selected' : '' }}>{{ $item['label'] }}</option>
                     @endforeach
                 </select>
-                @error('Output_item_id')
+                @error('output_item_id')
                     <span class="text-red-600 text-sm">{{ $message }}</span>
                 @enderror
             </div>

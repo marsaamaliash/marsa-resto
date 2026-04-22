@@ -1,4 +1,4 @@
-﻿<x-ui.sccr-card transparent wire:key="stock-mutation" class="h-full min-h-0 flex flex-col">
+<x-ui.sccr-card transparent wire:key="stock-mutation" class="h-full min-h-0 flex flex-col">
 
     {{-- ================= HEADER ================= --}}
     <div class="relative px-8 py-6 bg-blue-600/80 rounded-b-3xl shadow-lg overflow-hidden">
@@ -178,7 +178,7 @@
                                     'reserve' => 'bg-yellow-100 text-yellow-800 border-yellow-200',
                                     'unreserve' => 'bg-gray-100 text-gray-800 border-gray-200',
                                     'consume' => 'bg-pink-100 text-pink-800 border-pink-200',
-                                    'Waste' => 'bg-red-200 text-red-900 border-red-300',
+                                    'waste' => 'bg-red-200 text-red-900 border-red-300',
                                 ];
                                 $typeLabels = [
                                     'in' => 'IN',
@@ -189,7 +189,7 @@
                                     'reserve' => 'RSV',
                                     'unreserve' => 'UNRSV',
                                     'consume' => 'CNSM',
-                                    'Waste' => 'WSTE',
+                                    'waste' => 'WSTE',
                                 ];
                                 $badgeClass = $typeColors[$item->type] ?? 'bg-gray-100 text-gray-800';
                                 $typeLabel = $typeLabels[$item->type] ?? $item->type;

@@ -1,11 +1,11 @@
-﻿<div class="p-6">
+<div class="p-6">
     <h2 class="text-xl font-bold mb-4">Request Movement: Gudang → Dapur</h2>
 
     <form wire:submit.prevent="store" class="space-y-4">
         <div class="grid grid-cols-3 gap-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Dari Gudang <span class="text-red-500">*</span></label>
-                <select wire:model.defer="from_location_id" wire:change="onFromLocationChanged"
+                <select wire:model.live="from_location_id"
                     class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     <option value="0">-- Select Gudang --</option>
                     @foreach ($fromLocations as $loc)
@@ -63,13 +63,14 @@
                         @foreach($items as $index => $item)
                             <tr>
                                 <td class="px-3 py-2">
-                                    <select wire:model.defer="items.{{ $index }}.item_id" 
+                                    <select wire:model="items.{{ $index }}.item_id"
                                         wire:change="onItemChanged({{ $index }})"
+                                        wire:key="item-select-{{ $index }}-{{ $from_location_id }}"
                                         class="w-full border-gray-300 rounded-md text-sm focus:border-blue-500 focus:ring-blue-500">
                                         <option value="0">-- Select Item --</option>
-                                        @foreach($availableItems as $availItem)
+                                        @foreach($this->availableItems as $availItem)
                                             <option value="{{ $availItem['id'] }}">
-                                                {{ $availItem['name'] }} ({{ $availItem['sku'] }})
+                                                {{ $availItem['name'] }} ({{ $availItem['sku'] }}) - Stok: {{ number_format($availItem['available_qty'], 2) }}
                                             </option>
                                         @endforeach
                                     </select>
@@ -80,19 +81,19 @@
                                     @endif
                                 </td>
                                 <td class="px-3 py-2">
-                                    <input type="number" step="0.01" min="0.01" 
+                                    <input type="number" step="0.01" min="0.01"
                                         wire:model.defer="items.{{ $index }}.qty"
                                         class="w-full border-gray-300 rounded-md text-sm text-right focus:border-blue-500 focus:ring-blue-500"
                                         placeholder="0">
                                 </td>
                                 <td class="px-3 py-2 text-center text-sm">
-                                    @php
-                                        $selectedItem = collect($availableItems)->firstWhere('id', $item['item_id']);
-                                    @endphp
+                                        @php
+                                            $selectedItem = collect($this->availableItems)->firstWhere('id', $item['item_id']);
+                                        @endphp
                                     {{ $selectedItem['uom_symbols'] ?? '-' }}
                                 </td>
                                 <td class="px-3 py-2">
-                                    <input type="text" 
+                                    <input type="text"
                                         wire:model.defer="items.{{ $index }}.remark"
                                         class="w-full border-gray-300 rounded-md text-sm focus:border-blue-500 focus:ring-blue-500"
                                         placeholder="Notes">

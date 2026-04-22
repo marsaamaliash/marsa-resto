@@ -1128,20 +1128,22 @@ class MovementInternalTable extends Component
             return [];
         }
 
-        $items = Rst_StockBalance::where('location_id', $this->createFromLocationId)
+        $balances = Rst_StockBalance::where('location_id', $this->createFromLocationId)
             ->where('qty_available', '>', 0)
             ->with(['item', 'uom'])
-            ->get()
-            ->map(fn ($balance) => [
-                'id' => $balance->item_id,
-                'name' => $balance->item?->name ?? '-',
-                'sku' => $balance->item?->sku ?? '-',
-                'uom_symbols' => $balance->uom?->symbols ?? '-',
-                'available_qty' => $balance->qty_available,
-            ])
-            ->toArray();
+            ->orderBy('item_id')
+            ->get();
 
-        return $items;
+        $result = $balances->map(fn ($balance) => [
+            'id' => $balance->item_id,
+            'name' => $balance->item?->name ?? '-',
+            'sku' => $balance->item?->sku ?? '-',
+            'uom_id' => $balance->item?->uom_id ?? 0,
+            'uom_symbols' => $balance->uom?->symbols ?? '-',
+            'available_qty' => $balance->qty_available,
+        ])->toArray();
+
+        return $result;
     }
 
     public function getEditAvailableItems(): array
@@ -1150,20 +1152,22 @@ class MovementInternalTable extends Component
             return [];
         }
 
-        $items = Rst_StockBalance::where('location_id', $this->editFromLocationId)
+        $balances = Rst_StockBalance::where('location_id', $this->editFromLocationId)
             ->where('qty_available', '>', 0)
             ->with(['item', 'uom'])
-            ->get()
-            ->map(fn ($balance) => [
-                'id' => $balance->item_id,
-                'name' => $balance->item?->name ?? '-',
-                'sku' => $balance->item?->sku ?? '-',
-                'uom_symbols' => $balance->uom?->symbols ?? '-',
-                'available_qty' => $balance->qty_available,
-            ])
-            ->toArray();
+            ->orderBy('item_id')
+            ->get();
 
-        return $items;
+        $result = $balances->map(fn ($balance) => [
+            'id' => $balance->item_id,
+            'name' => $balance->item?->name ?? '-',
+            'sku' => $balance->item?->sku ?? '-',
+            'uom_id' => $balance->item?->uom_id ?? 0,
+            'uom_symbols' => $balance->uom?->symbols ?? '-',
+            'available_qty' => $balance->qty_available,
+        ])->toArray();
+
+        return $result;
     }
 
     #[On('movement-internal-2-overlay-close')]

@@ -1,4 +1,4 @@
-﻿<x-ui.sccr-card transparent wire:key="stock-request" class="h-full min-h-0 flex flex-col">
+<x-ui.sccr-card transparent wire:key="stock-request" class="h-full min-h-0 flex flex-col">
 
     {{-- ================= HEADER ================= --}}
     <div class="relative px-8 py-6 bg-purple-600/80 rounded-b-3xl shadow-lg overflow-hidden">

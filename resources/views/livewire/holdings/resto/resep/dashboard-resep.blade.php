@@ -1,4 +1,4 @@
-﻿<div>
+<div>
     <div class="relative px-8 py-6 bg-yellow-500/60 rounded-b-3xl shadow-lg overflow-hidden">
         <div class="flex justify-between items-start">
             <div>

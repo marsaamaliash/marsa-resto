@@ -118,7 +118,7 @@
                 class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
                 Edit
             </button>
-            <button type="button" wire:click="$dispatch('close-overlay')"
+            <button type="button" wire:click="$dispatch('item-overlay-close')"
                 class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">
                 Close
             </button>
