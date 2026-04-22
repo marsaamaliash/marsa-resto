@@ -111,12 +111,6 @@
                                 PR Number {!! $sortField === 'pr_number' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                             </th>
 
-                            {{-- Request Date --}}
-                            <th wire:click="sortBy('requested_at')"
-                                class="px-3 py-3 text-left text-xs font-bold cursor-pointer">
-                                Tanggal {!! $sortField === 'requested_at' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
-                            </th>
-
                             {{-- Location --}}
                             <th wire:click="sortBy('requester_location_id')"
                                 class="px-3 py-3 text-left text-xs font-bold cursor-pointer">
@@ -194,11 +188,6 @@
                                 {{-- PR Number --}}
                                 <td class="px-3 py-2 font-mono text-sm font-semibold text-blue-700">
                                     {{ $item['pr_number'] ?? '-' }}
-                                </td>
-
-                                {{-- Request Date --}}
-                                <td class="px-3 py-2 text-sm">
-                                    {{ $item['requested_at'] ? \Carbon\Carbon::parse($item['requested_at'])->format('d/m/Y H:i') : '-' }}
                                 </td>
 
                                 {{-- Location --}}

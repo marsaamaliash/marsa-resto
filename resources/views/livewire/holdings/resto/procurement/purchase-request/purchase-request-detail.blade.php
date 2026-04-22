@@ -51,10 +51,6 @@
                                 <dt class="font-semibold text-gray-700">Tanggal Request:</dt>
                                 <dd class="text-gray-600">{{ $pr?->requested_at?->format('d/m/Y H:i') ?? '-' }}</dd>
                             </div>
-                            <div class="flex justify-between">
-                                <dt class="font-semibold text-gray-700">Tanggal Dibutuhkan:</dt>
-                                <dd class="text-gray-600">{{ $pr?->required_date?->format('d/m/Y') ?? '-' }}</dd>
-                            </div>
                         </dl>
                     </div>
 

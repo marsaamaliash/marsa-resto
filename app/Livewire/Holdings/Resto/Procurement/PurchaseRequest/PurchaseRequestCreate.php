@@ -25,8 +25,6 @@ class PurchaseRequestCreate extends Component
 
     public string $notes = '';
 
-    public string $requiredDate = '';
-
     public bool $showCriticalTab = true;
 
     public ?int $editingPrId = null;
@@ -51,8 +49,6 @@ class PurchaseRequestCreate extends Component
             ['label' => $id ? 'Edit PR' : 'Buat PR Baru', 'color' => 'text-gray-900 font-semibold'],
         ];
 
-        $this->requiredDate = now()->addDays(7)->format('Y-m-d');
-
         if ($id) {
             $this->loadExistingPR($id);
         }
@@ -73,7 +69,6 @@ class PurchaseRequestCreate extends Component
         $this->isEditMode = true;
         $this->selectedLocationId = $pr->requester_location_id;
         $this->notes = $pr->notes ?? '';
-        $this->requiredDate = $pr->required_date?->format('Y-m-d') ?? now()->addDays(7)->format('Y-m-d');
 
         foreach ($pr->items as $item) {
             if ($item->is_critical) {
@@ -402,8 +397,7 @@ class PurchaseRequestCreate extends Component
             $this->selectedLocationId,
             $allItems,
             $this->notes,
-            $user,
-            $this->requiredDate
+            $user
         );
     }
 
@@ -429,7 +423,7 @@ class PurchaseRequestCreate extends Component
             ];
         }
 
-        return PurchaseRequestService::updatePRItems($this->editingPrId, $allItems, $this->notes, $this->requiredDate);
+        return PurchaseRequestService::updatePRItems($this->editingPrId, $allItems, $this->notes);
     }
 
     public function cancel(): void

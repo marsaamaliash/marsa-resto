@@ -365,7 +365,6 @@ class PurchaseRequestTable extends Component
                 'Level',
                 'Total Items',
                 'Total Cost',
-                'Required Date',
                 'Notes',
             ]);
 
@@ -379,7 +378,6 @@ class PurchaseRequestTable extends Component
                     $pr->approval_level,
                     $pr->items->count(),
                     number_format($pr->total_estimated_cost, 2),
-                    $pr->required_date?->format('Y-m-d') ?? '-',
                     $pr->notes ?? '-',
                 ]);
             }

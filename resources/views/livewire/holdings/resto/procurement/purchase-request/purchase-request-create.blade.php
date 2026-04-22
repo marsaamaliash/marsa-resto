@@ -35,27 +35,19 @@
             <div class="bg-white rounded-xl shadow border p-6">
                 <h2 class="text-lg font-bold text-gray-800 mb-4">Langkah 1: Informasi Lokasi & Request</h2>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">Lokasi <span class="text-red-500">*</span></label>
-                        <select wire:model.live="selectedLocationId"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            {{ $isEditMode ? 'disabled' : '' }}>
-                            <option value="0">-- Pilih Lokasi --</option>
-                            @foreach ($this->locations as $loc)
-                                <option value="{{ $loc['id'] }}">{{ $loc['name'] }}</option>
-                            @endforeach
-                        </select>
-                        @if ($isEditMode)
-                            <p class="text-xs text-gray-500 mt-1">Lokasi tidak dapat diubah saat revisi.</p>
-                        @endif
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">Tanggal Dibutuhkan</label>
-                        <input type="date" wire:model="requiredDate"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                    </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Lokasi <span class="text-red-500">*</span></label>
+                    <select wire:model.live="selectedLocationId"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        {{ $isEditMode ? 'disabled' : '' }}>
+                        <option value="0">-- Pilih Lokasi --</option>
+                        @foreach ($this->locations as $loc)
+                            <option value="{{ $loc['id'] }}">{{ $loc['name'] }}</option>
+                        @endforeach
+                    </select>
+                    @if ($isEditMode)
+                        <p class="text-xs text-gray-500 mt-1">Lokasi tidak dapat diubah saat revisi.</p>
+                    @endif
                 </div>
 
                 <div class="mt-4">
