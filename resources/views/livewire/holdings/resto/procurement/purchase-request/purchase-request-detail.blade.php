@@ -266,7 +266,7 @@
                         </a>
                         <div class="flex gap-2">
                             @if ($canEdit)
-                                <a href="{{ route('dashboard.resto.purchase-request.detail', $pr->id) }}?mode=edit"
+                                <a href="{{ $pr->isRevised() ? route('dashboard.resto.purchase-request.revise', $pr->id) : route('dashboard.resto.purchase-request.edit', $pr->id) }}"
                                     class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm font-semibold">
                                     {{ $pr->isRevised() ? 'Revisi PR' : 'Edit PR' }}
                                 </a>
