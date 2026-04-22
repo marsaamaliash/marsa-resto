@@ -49,7 +49,9 @@ class PurchaseOrderCreate extends Component
             ['label' => 'Create', 'color' => 'text-gray-900 font-semibold'],
         ];
 
-        $locs = Rst_MasterLokasi::where('is_active', true)->get();
+        $locs = Rst_MasterLokasi::where('is_active', true)
+            ->where('type', 'warehouse')
+            ->get();
         $this->locations = $locs->map(fn ($loc) => ['id' => $loc->id, 'name' => $loc->name])->toArray();
 
         if (! empty($this->locations)) {

@@ -62,7 +62,7 @@ class Rst_GoodsReceipt extends Model
 
     public function receivedBy(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\User::class, 'received_by');
+        return $this->belongsTo(\App\Models\Auth\AuthUser::class, 'received_by');
     }
 
     public function items(): HasMany
