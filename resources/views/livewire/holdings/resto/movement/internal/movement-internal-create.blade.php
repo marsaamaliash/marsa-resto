@@ -1,4 +1,4 @@
-<div class="p-6">
+﻿<div class="p-6">
     <h2 class="text-xl font-bold mb-4">Request Movement: Gudang → Dapur</h2>
 
     <form wire:submit.prevent="store" class="space-y-4">
@@ -7,7 +7,7 @@
                 <label class="block text-sm font-medium text-gray-700 mb-1">Dari Gudang <span class="text-red-500">*</span></label>
                 <select wire:model.defer="from_location_id" wire:change="onFromLocationChanged"
                     class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                    <option value="0">-- Pilih Gudang --</option>
+                    <option value="0">-- Select Gudang --</option>
                     @foreach ($fromLocations as $loc)
                         <option value="{{ $loc['id'] }}">{{ $loc['name'] }}</option>
                     @endforeach
@@ -21,7 +21,7 @@
                 <label class="block text-sm font-medium text-gray-700 mb-1">Ke Dapur <span class="text-red-500">*</span></label>
                 <select wire:model.defer="to_location_id"
                     class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                    <option value="0">-- Pilih Dapur --</option>
+                    <option value="0">-- Select Dapur --</option>
                     @foreach ($toLocations as $loc)
                         <option value="{{ $loc['id'] }}">{{ $loc['name'] }}</option>
                     @endforeach
@@ -44,7 +44,7 @@
                 <label class="block text-sm font-medium text-gray-700">Daftar Item</label>
                 <button type="button" wire:click="addItemRow"
                     class="text-sm text-blue-600 hover:text-blue-800 font-medium">
-                    + Tambah Item
+                    + Add Item
                 </button>
             </div>
 
@@ -54,9 +54,9 @@
                         <tr>
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Item</th>
                             <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase w-28">Qty</th>
-                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase w-20">Satuan</th>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Catatan</th>
-                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase w-12">Aksi</th>
+                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase w-20">Unit</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Notes</th>
+                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase w-12">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200 bg-white">
@@ -66,7 +66,7 @@
                                     <select wire:model.defer="items.{{ $index }}.item_id" 
                                         wire:change="onItemChanged({{ $index }})"
                                         class="w-full border-gray-300 rounded-md text-sm focus:border-blue-500 focus:ring-blue-500">
-                                        <option value="0">-- Pilih Item --</option>
+                                        <option value="0">-- Select Item --</option>
                                         @foreach($availableItems as $availItem)
                                             <option value="{{ $availItem['id'] }}">
                                                 {{ $availItem['name'] }} ({{ $availItem['sku'] }})
@@ -75,7 +75,7 @@
                                     </select>
                                     @if($item['item_id'] > 0 && $from_location_id > 0)
                                         <div class="text-xs text-gray-500 mt-1">
-                                            Tersedia: <span class="font-medium text-green-600">{{ number_format($item['available_qty'], 2) }}</span>
+                                            Available: <span class="font-medium text-green-600">{{ number_format($item['available_qty'], 2) }}</span>
                                         </div>
                                     @endif
                                 </td>
@@ -95,12 +95,12 @@
                                     <input type="text" 
                                         wire:model.defer="items.{{ $index }}.remark"
                                         class="w-full border-gray-300 rounded-md text-sm focus:border-blue-500 focus:ring-blue-500"
-                                        placeholder="Catatan">
+                                        placeholder="Notes">
                                 </td>
                                 <td class="px-3 py-2 text-center">
                                     @if(count($items) > 1)
                                         <button type="button" wire:click="removeItemRow({{ $index }})"
-                                            class="text-red-600 hover:text-red-800 text-sm" title="Hapus">
+                                            class="text-red-600 hover:text-red-800 text-sm" title="Delete">
                                             ✕
                                         </button>
                                     @endif
@@ -113,20 +113,20 @@
         </div>
 
         <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Catatan</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
                 <textarea wire:model.defer="remark" rows="2"
                 class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                placeholder="Catatan_opsional..."></textarea>
+                placeholder="Catatan_Optional..."></textarea>
         </div>
 
         <div class="flex gap-3 pt-4">
             <button type="submit"
                 class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                Simpan Request
+                Save Request
             </button>
             <button type="button" wire:click="cancel"
                 class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">
-                Batal
+                Cancel
             </button>
         </div>
     </form>

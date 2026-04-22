@@ -61,7 +61,7 @@ class LokasiEdit extends Component
 
     public function cancel(): void
     {
-        $this->dispatch('close-overlay');
+        $this->dispatch('lokasi-overlay-close');
     }
 
     public function render()

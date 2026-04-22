@@ -30,8 +30,8 @@ class VendorCreate extends Component
 
     public array $termsOptions = [
         ['value' => 'cash', 'label' => 'Cash'],
-        ['value' => '7_hari', 'label' => '7 Hari'],
-        ['value' => '30_hari', 'label' => '30 Hari'],
+        ['value' => '7_hari', 'label' => '7 Days'],
+        ['value' => '30_hari', 'label' => '30 Days'],
     ];
 
     public function store(): void
@@ -60,7 +60,7 @@ class VendorCreate extends Component
             'is_active' => $this->is_active,
         ]);
 
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Vendor berhasil ditambahkan'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Vendor added successfully'];
 
         $this->dispatch('vendor-created');
         $this->dispatch('vendor-overlay-close');
@@ -94,7 +94,7 @@ class VendorCreate extends Component
             'is_active' => false,
         ]);
 
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Draft vendor berhasil disimpan'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Vendor draft saved successfully'];
 
         $this->dispatch('vendor-created');
         $this->dispatch('vendor-overlay-close');
@@ -104,7 +104,7 @@ class VendorCreate extends Component
 
     public function cancel(): void
     {
-        $this->dispatch('close-overlay');
+        $this->dispatch('vendor-overlay-close');
     }
 
     protected function resetForm(): void

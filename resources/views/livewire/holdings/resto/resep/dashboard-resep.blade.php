@@ -1,9 +1,9 @@
-<div>
+﻿<div>
     <div class="relative px-8 py-6 bg-yellow-500/60 rounded-b-3xl shadow-lg overflow-hidden">
         <div class="flex justify-between items-start">
             <div>
-                <h1 class="text-3xl md:text-4xl font-bold mb-2">Resep</h1>
-                <p class="text-lg text-gray-800">Silakan pilih modul Resto yang ingin diakses</p>
+                <h1 class="text-3xl md:text-4xl font-bold mb-2">Recipe</h1>
+                <p class="text-lg text-gray-800">Silakan Select modul Resto yang ingin diakses</p>
             </div>
         </div>
 
@@ -21,11 +21,11 @@
 
             <!-- Card Master -->
             {{-- <a href="{{ route('dashboard.clinic') }}" --}}
-            <a href="{{ route('dashboard.resto.konversi-satuan') }}"
+            <a href="{{ route('dashboard.resto.konVersion-Unit') }}"
                 class="flex items-center justify-center rounded-2xl shadow-lg h-40 bg-green-500 hover:bg-green-600 transform hover:scale-105 transition duration-300">
 
                 <span class="text-white text-lg font-semibold">
-                    Konversi Satuan
+                    KonVersion Unit
                 </span>
             </a>
 
@@ -37,15 +37,15 @@
                 </span>
             </a>
 
-             <a href="{{ route('dashboard.resto.resep-menu') }}"
+             <a href="{{ route('dashboard.resto.Recipe-Menu') }}"
                 class="flex items-center justify-center rounded-2xl shadow-lg h-40 bg-green-500 hover:bg-green-600 transform hover:scale-105 transition duration-300">
 
                 <span class="text-white text-lg font-semibold">
-                    Resep Menu
+                    Menu Recipe
                 </span>
             </a>
 
-             <a href="{{ route('dashboard.resto.resep.recipe') }}"
+             <a href="{{ route('dashboard.resto.Recipe.recipe') }}"
                 class="flex items-center justify-center rounded-2xl shadow-lg h-40 bg-purple-500 hover:bg-purple-600 transform hover:scale-105 transition duration-300">
 
                 <span class="text-white text-lg font-semibold">
@@ -53,7 +53,7 @@
                 </span>
             </a>
 
-             <a href="{{ route('dashboard.resto.resep.production') }}"
+             <a href="{{ route('dashboard.resto.Recipe.production') }}"
                 class="flex items-center justify-center rounded-2xl shadow-lg h-40 bg-emerald-500 hover:bg-emerald-600 transform hover:scale-105 transition duration-300">
 
                 <span class="text-white text-lg font-semibold">

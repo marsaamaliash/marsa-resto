@@ -2,6 +2,7 @@
 
 namespace App\Models\Holdings\Resto\Procurement;
 
+use App\Traits\BelongsToBranch;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,6 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Rst_PurchaseOrder extends Model
 {
+    use BelongsToBranch;
     use SoftDeletes;
 
     protected $connection = 'sccr_resto';
@@ -20,6 +22,7 @@ class Rst_PurchaseOrder extends Model
     protected $guarded = [];
 
     protected $fillable = [
+        'branch_id',
         'po_number',
         'purchase_request_id',
         'vendor_id',
@@ -30,6 +33,12 @@ class Rst_PurchaseOrder extends Model
         'notes',
         'total_amount',
         'status',
+        'received_status',
+        'is_closed',
+        'payment_status',
+        'invoice_number',
+        'invoice_date',
+        'invoice_path',
         'approval_level',
         'rm_approved_by',
         'rm_approved_at',
@@ -54,6 +63,8 @@ class Rst_PurchaseOrder extends Model
         'spv_approved_at' => 'datetime',
         'rejected_at' => 'datetime',
         'revise_requested_at' => 'datetime',
+        'invoice_date' => 'date',
+        'is_closed' => 'boolean',
         'total_amount' => 'decimal:2',
     ];
 
@@ -75,6 +86,11 @@ class Rst_PurchaseOrder extends Model
     public function items(): HasMany
     {
         return $this->hasMany(Rst_PurchaseOrderItem::class, 'purchase_order_id');
+    }
+
+    public function goodsReceipts(): HasMany
+    {
+        return $this->hasMany(Rst_GoodsReceipt::class, 'purchase_order_id');
     }
 
     public function isDraft(): bool
@@ -110,6 +126,61 @@ class Rst_PurchaseOrder extends Model
     public function canBeEdited(): bool
     {
         return in_array($this->status, ['draft', 'revised']);
+    }
+
+    public function isNotReceived(): bool
+    {
+        return $this->received_status === 'not_received';
+    }
+
+    public function isPartiallyReceived(): bool
+    {
+        return $this->received_status === 'partial';
+    }
+
+    public function isFullyReceived(): bool
+    {
+        return $this->received_status === 'fully_received';
+    }
+
+    public function isUnpaid(): bool
+    {
+        return $this->payment_status === 'unpaid';
+    }
+
+    public function isPendingFinance(): bool
+    {
+        return $this->payment_status === 'pending_finance';
+    }
+
+    public function isPaid(): bool
+    {
+        return $this->payment_status === 'paid';
+    }
+
+    public function canReceiveGoods(): bool
+    {
+        return $this->isApproved() && ! $this->is_closed;
+    }
+
+    public function getReceivedStatusBadgeColor(): string
+    {
+        return match ($this->received_status) {
+            'not_received' => 'gray',
+            'partial' => 'yellow',
+            'fully_received' => 'green',
+            default => 'gray',
+        };
+    }
+
+    public function getPaymentStatusBadgeColor(): string
+    {
+        return match ($this->payment_status) {
+            'unpaid' => 'red',
+            'pending_finance' => 'yellow',
+            'paid' => 'green',
+            default => 'gray',
+        };
     }
 
     public function getStatusBadgeColor(): string

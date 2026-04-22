@@ -3,12 +3,14 @@
 namespace App\Models\Holdings\Resto\Master;
 
 use App\Models\Holdings\Resto\Resep\Rst_Recipe;
+use App\Traits\BelongsToBranch;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Rst_MasterItem extends Model
 {
+    use BelongsToBranch;
     use SoftDeletes;
 
     protected $connection = 'sccr_resto';

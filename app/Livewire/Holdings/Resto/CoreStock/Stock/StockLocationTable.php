@@ -67,7 +67,7 @@ class StockLocationTable extends Component
             ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
             ['label' => 'Resto', 'route' => 'dashboard.resto', 'color' => 'text-gray-800'],
             ['label' => 'Core Stock', 'route' => 'dashboard.resto.core-stock', 'color' => 'text-gray-800'],
-            ['label' => 'Stok per Lokasi', 'color' => 'text-gray-900 font-semibold'],
+            ['label' => 'Stock per Location', 'color' => 'text-gray-900 font-semibold'],
         ];
 
         $this->totalAll = Rst_MasterLokasi::count();
@@ -243,7 +243,7 @@ class StockLocationTable extends Component
     public function exportSelected()
     {
         if (empty($this->selectedItems)) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Pilih data terlebih dahulu'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Please select data first'];
 
             return null;
         }
@@ -259,7 +259,7 @@ class StockLocationTable extends Component
         $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet;
         $ws = $spreadsheet->getActiveSheet();
 
-        $ws->fromArray([['Lokasi', 'Qty Available', 'Qty Reserved', 'Qty In Transit', 'Qty Waste', 'Jumlah Item']], null, 'A1');
+        $ws->fromArray([['Location', 'Qty Available', 'Qty Reserved', 'Qty In Transit', 'Qty Waste', 'Item Count']], null, 'A1');
 
         $row = 2;
         foreach ($data as $item) {

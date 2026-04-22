@@ -71,19 +71,19 @@ class ItemTable extends Component
 
     public array $availableColumns = [
         ['key' => 'id', 'label' => 'ID', 'default' => true],
-        ['key' => 'name', 'label' => 'Nama', 'default' => true],
+        ['key' => 'name', 'label' => 'Name', 'default' => true],
         ['key' => 'sku', 'label' => 'SKU', 'default' => true],
-        ['key' => 'category', 'label' => 'Kategori', 'default' => true],
-        ['key' => 'uom', 'label' => 'Satuan', 'default' => true],
-        ['key' => 'min_stock', 'label' => 'Min. Stok', 'default' => true],
-        ['key' => 'is_active', 'label' => 'Aktif', 'default' => true],
-        ['key' => 'is_stockable', 'label' => 'Stokable', 'default' => true],
+        ['key' => 'category', 'label' => 'Category', 'default' => true],
+        ['key' => 'uom', 'label' => 'Unit', 'default' => true],
+        ['key' => 'min_stock', 'label' => 'Min. Stock', 'default' => true],
+        ['key' => 'is_active', 'label' => 'Active', 'default' => true],
+        ['key' => 'is_stockable', 'label' => 'Stockable', 'default' => true],
         ['key' => 'status', 'label' => 'Status', 'default' => true],
-        ['key' => 'type', 'label' => 'Tipe', 'default' => false],
+        ['key' => 'type', 'label' => 'Type', 'default' => false],
         ['key' => 'has_batch', 'label' => 'Batch', 'default' => false],
         ['key' => 'has_expiry', 'label' => 'Expiry', 'default' => false],
-        ['key' => 'created_at', 'label' => 'Dibuat', 'default' => false],
-        ['key' => 'updated_at', 'label' => 'Diubah', 'default' => false],
+        ['key' => 'created_at', 'label' => 'Created', 'default' => false],
+        ['key' => 'updated_at', 'label' => 'Updated', 'default' => false],
     ];
 
     protected $queryString = [
@@ -243,7 +243,7 @@ class ItemTable extends Component
 
     public function updated($property): void
     {
-        if (in_array($property, ['search', 'perPage', 'sortField', 'sortDirection'], true)) {
+        if (in_array($property, ['search', 'perPage', 'sortField', 'sortDirection', 'filter1', 'filter2', 'filterStatus'], true)) {
             $this->resetPage();
         }
     }
@@ -277,7 +277,7 @@ class ItemTable extends Component
     public function exportSelected()
     {
         if (empty($this->selectedItems)) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Pilih data terlebih dahulu'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Please select data first'];
 
             return null;
         }
@@ -293,7 +293,7 @@ class ItemTable extends Component
         $spreadsheet = new Spreadsheet;
         $ws = $spreadsheet->getActiveSheet();
 
-        $headers = ['ID', 'Nama', 'SKU', 'Tipe', 'Kategori', 'Satuan', 'Min Stok', 'Aktif', 'Stokable', 'Batch', 'Expiry', 'Status', 'Dibuat'];
+        $headers = ['ID', 'Name', 'SKU', 'Type', 'Category', 'Unit', 'Min Stock', 'Active', 'Stockable', 'Batch', 'Expiry', 'Status', 'Created'];
         $ws->fromArray([$headers], null, 'A1');
 
         $row = 2;
@@ -313,10 +313,10 @@ class ItemTable extends Component
                 $item->category?->name ?? '-',
                 $item->uom?->name ?? '-',
                 $item->is_stockable ? $item->min_stock : '-',
-                $item->is_active ? 'Ya' : 'Tidak',
-                $item->is_stockable ? 'Ya' : '-',
-                $item->is_stockable ? ($item->has_batch ? 'Ya' : 'Tidak') : '-',
-                $item->is_stockable ? ($item->has_expiry ? 'Ya' : 'Tidak') : '-',
+                $item->is_active ? 'Yes' : 'No',
+                $item->is_stockable ? 'Yes' : '-',
+                $item->is_stockable ? ($item->has_batch ? 'Yes' : 'No') : '-',
+                $item->is_stockable ? ($item->has_expiry ? 'Yes' : 'No') : '-',
                 $status,
                 $item->created_at?->format('Y-m-d H:i:s') ?? '',
             ], null, 'A'.$row++);
@@ -337,7 +337,7 @@ class ItemTable extends Component
     public function openCreate(): void
     {
         if (! $this->canCreate) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin create.'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to create.'];
 
             return;
         }
@@ -358,7 +358,7 @@ class ItemTable extends Component
     public function openEdit(string $id): void
     {
         if (! $this->canUpdate) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin update.'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to update.'];
 
             return;
         }
@@ -370,7 +370,7 @@ class ItemTable extends Component
     public function deleteItem(string $id): void
     {
         if (! $this->canDelete) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin delete.'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to delete.'];
 
             return;
         }
@@ -378,20 +378,20 @@ class ItemTable extends Component
         $item = Rst_MasterItem::withTrashed()->find($id);
 
         if (! $item) {
-            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Item tidak ditemukan.'];
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Item not found.'];
 
             return;
         }
 
         $item->delete();
 
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Item berhasil dihapus.'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Item deleted successfully.'];
     }
 
     public function restoreItem(string $id): void
     {
         if (! $this->canDelete) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin restore.'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to restore.'];
 
             return;
         }
@@ -399,14 +399,14 @@ class ItemTable extends Component
         $item = Rst_MasterItem::onlyTrashed()->find($id);
 
         if (! $item) {
-            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Item tidak ditemukan.'];
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Item not found.'];
 
             return;
         }
 
         $item->restore();
 
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Item berhasil di-restore.'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Item restored successfully.'];
     }
 
     public function closeOverlay(): void
@@ -424,14 +424,14 @@ class ItemTable extends Component
     public function handleCreated(?string $id = null): void
     {
         $this->closeOverlay();
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data berhasil ditambahkan.'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data added successfully.'];
     }
 
     #[On('item-updated')]
     public function handleUpdated(?string $id = null): void
     {
         $this->closeOverlay();
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data berhasil diperbarui.'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data updated successfully.'];
     }
 
     #[On('item-open-edit')]

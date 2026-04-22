@@ -6,7 +6,7 @@
             <div>
                 <h1 class="text-3xl font-bold text-white">Stock Movement</h1>
                 <p class="text-blue-100 text-sm">
-                    Transfer barang antar lokasi internal (dengan Reference Number)
+                    Transfer barang antar Location internal (dengan Reference Number)
                 </p>
             </div>
         </div>
@@ -14,7 +14,7 @@
         <div class="mt-4 flex justify-between items-center text-sm">
             <x-ui.sccr-breadcrumb :items="$breadcrumbs" />
             <div class="text-white">
-                Menampilkan <span class="font-bold text-black">{{ $data->total() }}</span> data
+                Showing <span class="font-bold text-black">{{ $data->total() }}</span> data
             </div>
         </div>
     </div>
@@ -28,10 +28,10 @@
                 {{-- SEARCH INPUT --}}
                 <div class="relative top-1">
                     <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">
-                        Cari
+                        Search
                     </span>
                     <x-ui.sccr-input name="search" wire:model="search"
-                        placeholder="Reference Number, Lokasi, Status..." class="w-72" />
+                        placeholder="Reference Number, Location, Status..." class="w-72" />
                 </div>
 
                 {{-- FILTER 1: Status --}}
@@ -66,8 +66,8 @@
                 <div class="flex flex-wrap items-center gap-1">
                     <x-ui.sccr-button type="submit" variant="primary"
                         class="bg-gray-900 text-gray-100 hover:bg-gray-400">
-                        <x-ui.sccr-icon name="cari" :size="20" />
-                        Cari
+                        <x-ui.sccr-icon name="Search" :size="20" />
+                        Search
                     </x-ui.sccr-button>
 
                     <x-ui.sccr-button type="button" wire:click="clearFilters"
@@ -213,14 +213,13 @@
                                 </th>
                             @endif
 
-                            {{-- Actions --}}
                             <th class="px-4 py-3 text-center text-xs font-bold">
                                 <div class="flex items-center justify-center gap-2">
-                                    <span>Aksi</span>
+                                    <span>Actions</span>
 
                                     @if ($canCreate && $canWrite)
                                         <x-ui.sccr-button type="button" variant="icon-circle" wire:click="openCreateOverlay"
-                                            class="w-8 h-8 hover:scale-105" title="Tambah Data">
+                                            class="w-8 h-8 hover:scale-105" title="Add Data">
                                             <x-ui.sccr-icon name="plus" :size="18" />
                                         </x-ui.sccr-button>
                                     @endif
@@ -369,43 +368,43 @@
                                             $approvalLevel = $item['approval_level'] ?? 0;
                                         @endphp
 
-                                        @if ($approvalLevel == 0)
-                                            @if ($canApproveExcChef || $canApprove)
-                                                <div class="flex justify-center gap-2">
-                                                    <x-ui.sccr-button type="button" variant="icon"
-                                                        wire:click="excChefCanApprove('{{ $item['id'] }}')"
-                                                        class="text-green-600 hover:scale-125"
-                                                        title="Approve (Exc Chef)">
-                                                        <x-ui.sccr-icon name="approve" :size="18" />
-                                                    </x-ui.sccr-button>
-                                                </div>
+                                            @if ($approvalLevel == 0)
+                                                @if ($canApproveExcChef || $canApprove)
+                                                    <div class="flex justify-center gap-2 mt-1">
+                                                        <x-ui.sccr-button type="button" variant="icon"
+                                                            wire:click="excChefCanApprove('{{ $item['id'] }}')"
+                                                            class="text-green-600 hover:scale-125"
+                                                            title="Approve (Exc Chef)">
+                                                            <x-ui.sccr-icon name="approve" :size="18" />
+                                                        </x-ui.sccr-button>
+                                                    </div>
+                                                @endif
                                             @endif
-                                        @endif
 
-                                        @if ($approvalLevel == 1)
-                                            @if ($canApproveRM || $canApprove)
-                                                <div class="flex justify-center gap-2">
-                                                    <x-ui.sccr-button type="button" variant="icon"
-                                                        wire:click="rmCanApprove('{{ $item['id'] }}')"
-                                                        class="text-green-600 hover:scale-125" title="Approve (RM)">
-                                                        <x-ui.sccr-icon name="approve" :size="18" />
-                                                    </x-ui.sccr-button>
-                                                </div>
+                                            @if ($approvalLevel == 1)
+                                                @if ($canApproveRM || $canApprove)
+                                                    <div class="flex justify-center gap-2 mt-1">
+                                                        <x-ui.sccr-button type="button" variant="icon"
+                                                            wire:click="rmCanApprove('{{ $item['id'] }}')"
+                                                            class="text-green-600 hover:scale-125" title="Approve (RM)">
+                                                            <x-ui.sccr-icon name="approve" :size="18" />
+                                                        </x-ui.sccr-button>
+                                                    </div>
+                                                @endif
                                             @endif
-                                        @endif
 
-                                        @if ($approvalLevel == 2)
-                                            @if ($canApproveSPV || $canApprove)
-                                                <div class="flex justify-center gap-2">
-                                                    <x-ui.sccr-button type="button" variant="icon"
-                                                        wire:click="spvCanApprove('{{ $item['id'] }}')"
-                                                        class="text-green-600 hover:scale-125" title="Approve (SPV)">
-                                                        <x-ui.sccr-icon name="approve" :size="18" />
-                                                    </x-ui.sccr-button>
-                                                </div>
+                                            @if ($approvalLevel == 2)
+                                                @if ($canApproveSPV || $canApprove)
+                                                    <div class="flex justify-center gap-2 mt-1">
+                                                        <x-ui.sccr-button type="button" variant="icon"
+                                                            wire:click="spvCanApprove('{{ $item['id'] }}')"
+                                                            class="text-green-600 hover:scale-125" title="Approve (SPV)">
+                                                            <x-ui.sccr-icon name="approve" :size="18" />
+                                                        </x-ui.sccr-button>
+                                                    </div>
+                                                @endif
                                             @endif
                                         @endif
-                                    @endif
 
                                     @if (! $item->deleted_at && in_array($item['status'], ['requested', 'approved']))
                                         <div class="flex justify-center gap-2">
@@ -456,7 +455,7 @@
             <div
                 class="flex-none px-6 py-3 border-t bg-white flex flex-col md:flex-row justify-between items-center gap-3">
                 <div class="text-sm text-gray-600 flex items-center">
-                    <span class="font-bold text-gray-800 mr-1">{{ count($selectedItems) }}</span> item dipilih
+                    <span class="font-bold text-gray-800 mr-1">{{ count($selectedItems) }}</span> items selected
                 </div>
 
                 <div>
@@ -485,7 +484,7 @@
                         <thead class="bg-gray-100">
                             <tr>
                                 <th class="px-3 py-2 text-left text-xs font-bold text-gray-700">Item</th>
-                                <th class="px-3 py-2 text-center text-xs font-bold text-gray-700">Satuan</th>
+                                <th class="px-3 py-2 text-center text-xs font-bold text-gray-700">Unit</th>
                                 <th class="px-3 py-2 text-center text-xs font-bold text-gray-700">Qty Request</th>
                                 <th class="px-3 py-2 text-center text-xs font-bold text-gray-700">Qty Diterima</th>
                             </tr>
@@ -508,16 +507,16 @@
                     </table>
 
                     <div class="mt-4">
-                        <label class="block text-sm font-bold text-gray-700 mb-1">Catatan (Opsional)</label>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Notes (Optional)</label>
                         <textarea wire:model="receiveNotes" rows="2" class="w-full border-gray-300 rounded-md text-sm"
-                            placeholder="Catatan penerimaan..."></textarea>
+                            placeholder="Notes penerimaan..."></textarea>
                     </div>
                 </div>
 
                 <div class="px-6 py-4 border-t bg-gray-50 flex justify-end gap-2">
                     <x-ui.sccr-button type="button" wire:click="closeReceiveOverlay"
                         class="bg-gray-500 text-white hover:bg-gray-600">
-                        Batal
+                        Cancel
                     </x-ui.sccr-button>
                     <x-ui.sccr-button type="button" wire:click="processReceive"
                         class="bg-blue-600 text-white hover:bg-blue-700">
@@ -533,7 +532,7 @@
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" wire:click="closeOverlay">
             <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden" wire:click.stop>
                 <div class="px-6 py-4 border-b bg-green-600 flex justify-between items-center">
-                    <h3 class="text-lg font-bold text-white">Request Movement: Gudang → Dapur</h3>
+                    <h3 class="text-lg font-bold text-white">Create Movement: Lokasi → Lokasi</h3>
                     <button wire:click="closeOverlay" class="text-white hover:text-gray-200 text-2xl">&times;</button>
                 </div>
 
@@ -541,9 +540,26 @@
                     <form wire:submit.prevent="processCreate" class="space-y-4">
                         <div class="grid grid-cols-3 gap-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Dari Gudang <span class="text-red-500">*</span></label>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Request No</label>
+                                <input type="text" wire:model="createRequestNumber" readonly class="w-full border-gray-300 rounded-md shadow-sm bg-gray-50 text-sm">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Request</label>
+                                <input type="date" wire:model="createRequestDate" class="w-full border-gray-300 rounded-md shadow-sm text-sm">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Nama PIC</label>
+                                <input type="text" wire:model="createPicName" class="w-full border-gray-300 rounded-md shadow-sm" placeholder="Nama Penanggung Jawab">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Dari Lokasi <span class="text-red-500">*</span></label>
                                 <select wire:model="createFromLocationId" wire:change="onCreateFromLocationChanged" class="w-full border-gray-300 rounded-md shadow-sm">
-                                    <option value="0">-- Pilih Gudang --</option>
+                                    <option value="0">-- Select Lokasi Asal --</option>
                                     @foreach($this->getCreateFromLocations() as $loc)
                                         <option value="{{ $loc['id'] }}">{{ $loc['name'] }}</option>
                                     @endforeach
@@ -551,18 +567,13 @@
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Ke Dapur <span class="text-red-500">*</span></label>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Ke Lokasi <span class="text-red-500">*</span></label>
                                 <select wire:model="createToLocationId" class="w-full border-gray-300 rounded-md shadow-sm">
-                                    <option value="0">-- Pilih Dapur --</option>
+                                    <option value="0">-- Select Lokasi Tujuan --</option>
                                     @foreach($this->getCreateToLocations() as $loc)
                                         <option value="{{ $loc['id'] }}">{{ $loc['name'] }}</option>
                                     @endforeach
                                 </select>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Nama PIC</label>
-                                <input type="text" wire:model="createPicName" class="w-full border-gray-300 rounded-md shadow-sm" placeholder="Nama Penanggung Jawab">
                             </div>
                         </div>
 
@@ -579,34 +590,40 @@
                                     <thead class="bg-gray-50">
                                         <tr>
                                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Item</th>
+                                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase w-28">Stok</th>
                                             <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase w-28">Qty</th>
-                                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Catatan</th>
-                                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase w-12">Aksi</th>
+                                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Notes</th>
+                                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase w-12">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-gray-200 bg-white">
-                                        @php($this->initCreateItems())
                                         @foreach($createItems as $index => $item)
                                             <tr>
                                                 <td class="px-3 py-2">
                                                     <select wire:model="createItems.{{ $index }}.item_id" class="w-full border-gray-300 rounded-md text-sm">
-                                                        <option value="0">-- Pilih Item --</option>
+                                                        <option value="0">-- Select Item --</option>
                                                         @foreach($this->getCreateAvailableItems() as $availItem)
                                                             <option value="{{ $availItem['id'] }}">
-                                                                {{ $availItem['name'] }} ({{ $availItem['sku'] }}) - Tersedia: {{ number_format($availItem['available_qty'], 2) }}
+                                                                {{ $availItem['name'] }} ({{ $availItem['sku'] }})
                                                             </option>
                                                         @endforeach
                                                     </select>
+                                                </td>
+                                                <td class="px-3 py-2 text-center text-sm font-mono text-gray-500">
+                                                    @php
+                                                        $selectedAvail = collect($this->getCreateAvailableItems())->firstWhere('id', $item['item_id']);
+                                                    @endphp
+                                                    {{ $selectedAvail ? number_format($selectedAvail['available_qty'], 2) : '-' }}
                                                 </td>
                                                 <td class="px-3 py-2">
                                                     <input type="number" step="0.01" min="0.01" wire:model="createItems.{{ $index }}.qty" class="w-full border-gray-300 rounded-md text-sm text-right" placeholder="0">
                                                 </td>
                                                 <td class="px-3 py-2">
-                                                    <input type="text" wire:model="createItems.{{ $index }}.remark" class="w-full border-gray-300 rounded-md text-sm" placeholder="Catatan">
+                                                    <input type="text" wire:model="createItems.{{ $index }}.remark" class="w-full border-gray-300 rounded-md text-sm" placeholder="Notes">
                                                 </td>
                                                 <td class="px-3 py-2 text-center">
                                                     @if(count($createItems) > 1)
-                                                        <button type="button" wire:click="removeCreateItemRow({{ $index }})" class="text-red-600 hover:text-red-800 text-sm" title="Hapus">✕</button>
+                                                        <button type="button" wire:click="removeCreateItemRow({{ $index }})" class="text-red-600 hover:text-red-800 text-sm" title="Delete">✕</button>
                                                     @endif
                                                 </td>
                                             </tr>
@@ -617,19 +634,310 @@
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Catatan</label>
-                            <textarea wire:model="createRemark" rows="2" class="w-full border-gray-300 rounded-md shadow-sm" placeholder="Catatan opsional..."></textarea>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                            <textarea wire:model="createRemark" rows="2" class="w-full border-gray-300 rounded-md shadow-sm" placeholder="Notes Optional..."></textarea>
                         </div>
 
                         <div class="flex gap-3 pt-4">
                             <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                                Simpan Request
+                                Submit
                             </button>
                             <button type="button" wire:click="closeOverlay" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">
-                                Batal
+                                Cancel
                             </button>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- ================= EDIT MODAL ================= --}}
+    @if ($overlayMode === 'edit')
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" wire:click="closeOverlay">
+            <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden" wire:click.stop>
+                <div class="px-6 py-4 border-b bg-yellow-600 flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-white">Edit Movement: Lokasi → Lokasi</h3>
+                    <button wire:click="closeOverlay" class="text-white hover:text-gray-200 text-2xl">&times;</button>
+                </div>
+
+                <div class="p-6 overflow-y-auto max-h-[70vh]">
+                    <form wire:submit.prevent="processEdit" class="space-y-4">
+                        <div class="grid grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Request No</label>
+                                <input type="text" wire:model="editRequestNumber" class="w-full border-gray-300 rounded-md shadow-sm text-sm">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Request</label>
+                                <input type="date" wire:model="editRequestDate" class="w-full border-gray-300 rounded-md shadow-sm text-sm">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Nama PIC</label>
+                                <input type="text" wire:model="editPicName" class="w-full border-gray-300 rounded-md shadow-sm" placeholder="Nama Penanggung Jawab">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Dari Lokasi <span class="text-red-500">*</span></label>
+                                <select wire:model="editFromLocationId" class="w-full border-gray-300 rounded-md shadow-sm">
+                                    <option value="0">-- Select Lokasi Asal --</option>
+                                    @foreach($this->getCreateFromLocations() as $loc)
+                                        <option value="{{ $loc['id'] }}">{{ $loc['name'] }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Ke Lokasi <span class="text-red-500">*</span></label>
+                                <select wire:model="editToLocationId" class="w-full border-gray-300 rounded-md shadow-sm">
+                                    <option value="0">-- Select Lokasi Tujuan --</option>
+                                    @foreach($this->getCreateToLocations() as $loc)
+                                        <option value="{{ $loc['id'] }}">{{ $loc['name'] }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <label class="block text-sm font-medium text-gray-700">Daftar Item</label>
+                                <button type="button" wire:click="addEditItemRow" class="text-sm text-blue-600 hover:text-blue-800 font-medium">
+                                    + Tambah Item
+                                </button>
+                            </div>
+
+                            <div class="border rounded-lg overflow-hidden">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Item</th>
+                                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase w-28">Stok</th>
+                                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase w-28">Qty</th>
+                                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Notes</th>
+                                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase w-12">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-200 bg-white">
+                                        @foreach($editItems as $index => $item)
+                                            <tr>
+                                                <td class="px-3 py-2">
+                                                    <select wire:model="editItems.{{ $index }}.item_id" class="w-full border-gray-300 rounded-md text-sm">
+                                                        <option value="0">-- Select Item --</option>
+                                                        @foreach($this->getEditAvailableItems() as $availItem)
+                                                            <option value="{{ $availItem['id'] }}">
+                                                                {{ $availItem['name'] }} ({{ $availItem['sku'] }})
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                </td>
+                                                <td class="px-3 py-2 text-center text-sm font-mono text-gray-500">
+                                                    @php
+                                                        $selectedAvail = collect($this->getEditAvailableItems())->firstWhere('id', $item['item_id']);
+                                                    @endphp
+                                                    {{ $selectedAvail ? number_format($selectedAvail['available_qty'], 2) : '-' }}
+                                                </td>
+                                                <td class="px-3 py-2">
+                                                    <input type="number" step="0.01" min="0.01" wire:model="editItems.{{ $index }}.qty" class="w-full border-gray-300 rounded-md text-sm text-right" placeholder="0">
+                                                </td>
+                                                <td class="px-3 py-2">
+                                                    <input type="text" wire:model="editItems.{{ $index }}.remark" class="w-full border-gray-300 rounded-md text-sm" placeholder="Notes">
+                                                </td>
+                                                <td class="px-3 py-2 text-center">
+                                                    @if(count($editItems) > 1)
+                                                        <button type="button" wire:click="removeEditItemRow({{ $index }})" class="text-red-600 hover:text-red-800 text-sm" title="Delete">✕</button>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                            <textarea wire:model="editRemark" rows="2" class="w-full border-gray-300 rounded-md shadow-sm" placeholder="Notes Optional..."></textarea>
+                        </div>
+
+                        <div class="flex gap-3 pt-4">
+                            <button type="submit" class="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700">
+                                Update
+                            </button>
+                            <button type="button" wire:click="closeOverlay" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- ================= REJECT MODAL ================= --}}
+    @if ($rejectOverlayMode === 'reject')
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" wire:click="closeRejectOverlay">
+            <div class="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-hidden" wire:click.stop>
+                <div class="px-6 py-4 border-b bg-red-600 flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-white">Reject Movement</h3>
+                    <button wire:click="closeRejectOverlay"
+                        class="text-white hover:text-gray-200 text-2xl">&times;</button>
+                </div>
+
+                <div class="p-6">
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Reason</label>
+                    <textarea wire:model="rejectNotes" rows="4" class="w-full border-gray-300 rounded-md text-sm"
+                        placeholder="Reason for rejection..."></textarea>
+                </div>
+
+                <div class="px-6 py-4 border-t bg-gray-50 flex justify-end gap-2">
+                    <x-ui.sccr-button type="button" wire:click="closeRejectOverlay"
+                        class="bg-gray-500 text-white hover:bg-gray-600">
+                        Cancel
+                    </x-ui.sccr-button>
+                    <x-ui.sccr-button type="button" wire:click="excChefCanReject('{{ $rejectOverlayId }}')"
+                        class="bg-red-600 text-white hover:bg-red-700">
+                        Reject
+                    </x-ui.sccr-button>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- ================= DETAIL MODAL ================= --}}
+    @if ($overlayMode === 'show' && $overlayId && $this->getDetailData())
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" wire:click="closeOverlay">
+            <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden" wire:click.stop>
+                <div class="px-6 py-4 border-b bg-blue-600 flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-white">Detail Movement</h3>
+                    <button wire:click="closeOverlay" class="text-white hover:text-gray-200 text-2xl">&times;</button>
+                </div>
+
+                <div class="p-6 overflow-y-auto max-h-[70vh]">
+                    @php
+                        $detail = $this->getDetailData();
+                    @endphp
+
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div>
+                            <label class="text-xs text-gray-500 uppercase">Reference Number</label>
+                            <p class="font-mono font-semibold">{{ $detail->reference_number }}</p>
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 uppercase">Request Number</label>
+                            <p class="font-mono">{{ $detail->request_number ?? '-' }}</p>
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 uppercase">Request Date</label>
+                            <p>{{ $detail->request_date ? $detail->request_date->format('Y-m-d') : '-' }}</p>
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 uppercase">Status</label>
+                            <p class="font-semibold">{{ ucfirst(str_replace('_', ' ', $detail->status)) }}</p>
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 uppercase">From</label>
+                            <p>{{ $detail->fromLocation?->name ?? '-' }}</p>
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 uppercase">To</label>
+                            <p>{{ $detail->toLocation?->name ?? '-' }}</p>
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 uppercase">PIC</label>
+                            <p>{{ $detail->pic_name ?? '-' }}</p>
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 uppercase">Approval Level</label>
+                            <p>{{ $detail->approval_level ?? 0 }}</p>
+                        </div>
+                    </div>
+
+                    <h4 class="font-semibold text-gray-800 mb-2">Items</h4>
+                    <table class="min-w-full divide-y divide-gray-200 mb-4">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Item</th>
+                                <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase">Unit</th>
+                                <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase">Qty</th>
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            @foreach($detail->items as $item)
+                                <tr>
+                                    <td class="px-3 py-2 text-sm">{{ $item->item?->name ?? '-' }}</td>
+                                    <td class="px-3 py-2 text-center text-sm">{{ $item->uom?->name ?? '-' }}</td>
+                                    <td class="px-3 py-2 text-center text-sm font-mono">{{ number_format($item->qty, 2) }}</td>
+                                    <td class="px-3 py-2 text-sm">{{ $item->remark ?? '-' }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+
+                    @if($this->getStockMutations()->count() > 0)
+                        <h4 class="font-semibold text-gray-800 mb-2">Stock Mutations</h4>
+                        <div class="max-h-40 overflow-auto border rounded-lg mb-4">
+                            <table class="min-w-full text-sm">
+                                <thead class="bg-gray-100 sticky top-0">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left text-xs">Date</th>
+                                        <th class="px-3 py-2 text-left text-xs">Type</th>
+                                        <th class="px-3 py-2 text-right text-xs">Qty</th>
+                                        <th class="px-3 py-2 text-right text-xs">Before</th>
+                                        <th class="px-3 py-2 text-right text-xs">After</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y">
+                                    @foreach($this->getStockMutations() as $mutation)
+                                        <tr>
+                                            <td class="px-3 py-2 text-xs">{{ $mutation->created_at?->format('Y-m-d H:i') ?? '-' }}</td>
+                                            <td class="px-3 py-2 text-xs font-medium">{{ $mutation->type }}</td>
+                                            <td class="px-3 py-2 text-right text-xs font-mono">{{ number_format($mutation->qty, 2) }}</td>
+                                            <td class="px-3 py-2 text-right text-xs font-mono">{{ number_format($mutation->qty_before, 2) }}</td>
+                                            <td class="px-3 py-2 text-right text-xs font-mono">{{ number_format($mutation->qty_after, 2) }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @endif
+
+                    @if($this->getRequestActivities()->count() > 0)
+                        <h4 class="font-semibold text-gray-800 mb-2">Activity Log</h4>
+                        <div class="max-h-40 overflow-auto border rounded-lg">
+                            <table class="min-w-full text-sm">
+                                <thead class="bg-gray-100 sticky top-0">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left text-xs">Date</th>
+                                        <th class="px-3 py-2 text-left text-xs">Action</th>
+                                        <th class="px-3 py-2 text-left text-xs">PIC</th>
+                                        <th class="px-3 py-2 text-left text-xs">Comment</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y">
+                                    @foreach($this->getRequestActivities() as $activity)
+                                        <tr>
+                                            <td class="px-3 py-2 text-xs">{{ $activity->created_at?->format('Y-m-d H:i') ?? '-' }}</td>
+                                            <td class="px-3 py-2 text-xs font-medium">{{ $activity->action }}</td>
+                                            <td class="px-3 py-2 text-xs">{{ $activity->pic }}</td>
+                                            <td class="px-3 py-2 text-xs">{{ $activity->comment ?? '-' }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @endif
+                </div>
+
+                <div class="px-6 py-4 border-t bg-gray-50 flex justify-end gap-2">
+                    <x-ui.sccr-button type="button" wire:click="closeOverlay"
+                        class="bg-gray-500 text-white hover:bg-gray-600">
+                        Close
+                    </x-ui.sccr-button>
                 </div>
             </div>
         </div>

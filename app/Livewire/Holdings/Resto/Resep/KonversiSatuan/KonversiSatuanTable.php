@@ -82,8 +82,8 @@ class KonversiSatuanTable extends Component
         $this->breadcrumbs = [
             ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
             ['label' => 'Resto', 'route' => 'dashboard.resto', 'color' => 'text-gray-800'],
-            ['label' => 'Konversi Satuan', 'route' => 'dashboard.resto.resep', 'color' => 'text-gray-900 font-semibold'],
-            ['label' => 'Konversi Satuan', 'color' => 'text-gray-900 font-semibold'],
+            ['label' => 'Unit Conversion', 'route' => 'dashboard.resto.resep', 'color' => 'text-gray-900 font-semibold'],
+            ['label' => 'Unit Conversion', 'color' => 'text-gray-900 font-semibold'],
         ];
 
         $this->syncCaps();
@@ -224,7 +224,7 @@ class KonversiSatuanTable extends Component
     public function exportSelected()
     {
         if (empty($this->selectedItems)) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Pilih data terlebih dahulu'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Please select data first'];
 
             return null;
         }
@@ -243,7 +243,7 @@ class KonversiSatuanTable extends Component
         $spreadsheet = new Spreadsheet;
         $ws = $spreadsheet->getActiveSheet();
 
-        $headers = ['ID', 'Item', 'Dari Satuan', 'Ke Satuan', 'Nilai Konversi', 'Status', 'Dibuat'];
+        $headers = ['ID', 'Item', 'From Unit', 'To Unit', 'Conversion Value', 'Status', 'Created'];
         $ws->fromArray([$headers], null, 'A1');
 
         $row = 2;
@@ -265,9 +265,9 @@ class KonversiSatuanTable extends Component
             $ws->getColumnDimension($col)->setAutoSize(true);
         }
 
-        $filename = "KonversiSatuan_{$type}_".now()->format('Ymd_His').'.xlsx';
+        $filename = "UnitConversion_{$type}_".now()->format('Ymd_His').'.xlsx';
 
-        $tmp = tempnam(sys_get_temp_dir(), 'konversi_satuan_');
+        $tmp = tempnam(sys_get_temp_dir(), 'unit_conversion_');
         (new Xlsx($spreadsheet))->save($tmp);
 
         return response()->download($tmp, $filename)->deleteFileAfterSend(true);
@@ -276,7 +276,7 @@ class KonversiSatuanTable extends Component
     public function openCreate(): void
     {
         if (! $this->canCreate) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin create.'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to create.'];
 
             return;
         }
@@ -297,7 +297,7 @@ class KonversiSatuanTable extends Component
     public function openEdit(string $id): void
     {
         if (! $this->canUpdate) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin update.'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to update.'];
 
             return;
         }
@@ -309,7 +309,7 @@ class KonversiSatuanTable extends Component
     public function deleteItem(string $id): void
     {
         if (! $this->canDelete) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin delete.'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to delete.'];
 
             return;
         }
@@ -317,20 +317,20 @@ class KonversiSatuanTable extends Component
         $item = Rst_KonversiSatuan::withTrashed()->find($id);
 
         if (! $item) {
-            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data tidak ditemukan.'];
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data not found.'];
 
             return;
         }
 
         $item->delete();
 
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data berhasil dihapus.'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data deleted successfully.'];
     }
 
     public function restoreItem(string $id): void
     {
         if (! $this->canDelete) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin restore.'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to restore.'];
 
             return;
         }
@@ -338,14 +338,14 @@ class KonversiSatuanTable extends Component
         $item = Rst_KonversiSatuan::onlyTrashed()->find($id);
 
         if (! $item) {
-            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data tidak ditemukan.'];
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data not found.'];
 
             return;
         }
 
         $item->restore();
 
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data berhasil di-restore.'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data restored successfully.'];
     }
 
     public function closeOverlay(): void
@@ -357,14 +357,14 @@ class KonversiSatuanTable extends Component
     public function handleCreated(?string $id = null): void
     {
         $this->closeOverlay();
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Konversi Satuan berhasil ditambahkan.'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Unit conversion added successfully.'];
     }
 
     #[On('konversi-satuan-updated')]
     public function handleUpdated(?string $id = null): void
     {
         $this->closeOverlay();
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Konversi Satuan berhasil diperbarui.'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Unit conversion updated successfully.'];
     }
 
     #[On('konversi-satuan-open-edit')]
@@ -382,7 +382,7 @@ class KonversiSatuanTable extends Component
     protected function filter1Options(): array
     {
         return [
-            '' => '-- Semua Tipe --',
+            '' => '-- All Types --',
             'weight' => 'Weight',
             'volume' => 'Volume',
             'unit' => 'Unit',

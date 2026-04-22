@@ -1,22 +1,22 @@
-<div class="p-6">
-    <h2 class="text-xl font-bold mb-4">Tambah Kategori</h2>
+﻿<div class="p-6">
+    <h2 class="text-xl font-bold mb-4">Add Category</h2>
 
     <form wire:submit.prevent="store" class="space-y-4">
         <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Nama Kategori <span class="text-red-500">*</span></label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Category Name <span class="text-red-500">*</span></label>
             <input type="text" wire:model.defer="name"
                 class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                placeholder="Contoh: Bahan Baku Utama">
+                placeholder="e.g. Main Raw Material">
             @error('name')
                 <span class="text-red-600 text-sm">{{ $message }}</span>
             @enderror
         </div>
 
         <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
             <textarea wire:model.defer="description"
                 class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                placeholder="Contoh: Kategori untuk bahan baku utama produksi" rows="3"></textarea>
+                placeholder="e.g. Category untuk Main Raw Material produksi" rows="3"></textarea>
             @error('description')
                 <span class="text-red-600 text-sm">{{ $message }}</span>
             @enderror
@@ -25,13 +25,13 @@
         <div class="flex items-center gap-2">
             <input type="checkbox" wire:model.defer="is_active" id="is_active"
                 class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-            <label for="is_active" class="text-sm text-gray-700">Aktif</label>
+            <label for="is_active" class="text-sm text-gray-700">Active</label>
         </div>
 
         <div class="flex gap-3 pt-4">
             <button type="submit"
                 class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                Simpan
+                Save
             </button>
             <button type="button" wire:click="saveDraft"
                 class="px-4 py-2 bg-amber-500 text-white rounded-md hover:bg-amber-600">
@@ -39,7 +39,7 @@
             </button>
             <button type="button" wire:click="cancel"
                 class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">
-                Batal
+                Cancel
             </button>
         </div>
     </form>

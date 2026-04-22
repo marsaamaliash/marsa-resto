@@ -39,6 +39,8 @@ class PurchaseOrderCreate extends Component
 
     public array $itemPrices = [];
 
+    public array $removedItems = [];
+
     public function mount(): void
     {
         $this->breadcrumbs = [
@@ -49,7 +51,9 @@ class PurchaseOrderCreate extends Component
             ['label' => 'Create', 'color' => 'text-gray-900 font-semibold'],
         ];
 
-        $locs = Rst_MasterLokasi::where('is_active', true)->get();
+        $locs = Rst_MasterLokasi::where('is_active', true)
+            ->where('type', 'warehouse')
+            ->get();
         $this->locations = $locs->map(fn ($loc) => ['id' => $loc->id, 'name' => $loc->name])->toArray();
 
         if (! empty($this->locations)) {
@@ -64,6 +68,9 @@ class PurchaseOrderCreate extends Component
     {
         $this->loadApprovedPRs();
         $this->selectedPRId = 0;
+        $this->selectedPRItems = [];
+        $this->itemPrices = [];
+        $this->removedItems = [];
     }
 
     public function loadApprovedPRs(): void
@@ -77,13 +84,24 @@ class PurchaseOrderCreate extends Component
     {
         if ($this->selectedPRId > 0) {
             $pr = collect($this->approvedPRs)->firstWhere('id', $this->selectedPRId);
-            if ($pr) {
-                $this->selectedPRItems = $pr['items'] ?? [];
+            if ($pr && ! empty($pr['items'])) {
+                $this->selectedPRItems = [];
                 $this->itemPrices = [];
-                foreach ($this->selectedPRItems as $index => $item) {
-                    $this->itemPrices[$index] = $item['unit_cost'] ?? 0;
+                $this->removedItems = [];
+                foreach ($pr['items'] as $item) {
+                    $this->selectedPRItems[$item['id']] = $item;
+                    $this->itemPrices[$item['id']] = $item['unit_cost'] ?? 0;
                 }
+            } else {
+                $this->selectedPRItems = [];
+                $this->itemPrices = [];
+                $this->removedItems = [];
+                $this->toast = ['show' => true, 'type' => 'error', 'message' => 'All items from this PR have already been ordered'];
             }
+        } else {
+            $this->selectedPRItems = [];
+            $this->itemPrices = [];
+            $this->removedItems = [];
         }
     }
 
@@ -92,7 +110,68 @@ class PurchaseOrderCreate extends Component
         $this->vendors = PurchaseOrderService::getActiveVendors();
     }
 
-    public function updatedItemPrices(): void {}
+    public function removeItem(int $prItemId): void
+    {
+        $item = $this->selectedPRItems[$prItemId] ?? null;
+        if ($item) {
+            $this->removedItems[$prItemId] = [
+                'id' => $item['id'],
+                'item' => $item,
+                'price' => $this->itemPrices[$prItemId] ?? 0,
+            ];
+            unset($this->selectedPRItems[$prItemId]);
+            unset($this->itemPrices[$prItemId]);
+        }
+    }
+
+    public function restoreItem(int $prItemId): void
+    {
+        $removed = $this->removedItems[$prItemId] ?? null;
+        if ($removed) {
+            $this->selectedPRItems[$prItemId] = $removed['item'];
+            $this->itemPrices[$prItemId] = $removed['price'];
+            unset($this->removedItems[$prItemId]);
+        }
+    }
+
+    public function saveDraft(): void
+    {
+        $this->validate([
+            'selectedPRId' => 'required|integer|min:1',
+            'paymentBy' => 'required|in:holding,resto',
+            'itemPrices' => 'required|array',
+            'itemPrices.*' => 'required|numeric|min:0',
+        ]);
+
+        try {
+            $quotationPath = null;
+            if ($this->quotationFile) {
+                $quotationPath = $this->quotationFile->store('po/quotations', 'public');
+            }
+
+            $vendor = collect($this->vendors)->firstWhere('id', $this->selectedVendorId);
+            $vendorName = $vendor['name'] ?? null;
+
+            $selectedItemIds = array_keys($this->selectedPRItems);
+
+            $po = PurchaseOrderService::createFromPurchaseRequest(
+                $this->selectedPRId,
+                $vendorName,
+                $this->selectedVendorId ?: null,
+                $this->paymentBy,
+                $quotationPath,
+                $this->poNotes ?: null,
+                $this->itemPrices,
+                $selectedItemIds
+            );
+
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Draft PO saved successfully'];
+
+            redirect()->route('dashboard.resto.purchase-order');
+        } catch (\Exception $e) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Error: '.$e->getMessage()];
+        }
+    }
 
     public function submitPO(): void
     {
@@ -107,7 +186,7 @@ class PurchaseOrderCreate extends Component
 
         foreach ($this->itemPrices as $price) {
             if ($price <= 0) {
-                $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Semua harga item harus diisi'];
+                $this->toast = ['show' => true, 'type' => 'error', 'message' => 'All item prices must be filled'];
 
                 return;
             }
@@ -119,6 +198,8 @@ class PurchaseOrderCreate extends Component
             $vendor = collect($this->vendors)->firstWhere('id', $this->selectedVendorId);
             $vendorName = $vendor['name'] ?? '';
 
+            $selectedItemIds = array_keys($this->selectedPRItems);
+
             $po = PurchaseOrderService::createFromPurchaseRequest(
                 $this->selectedPRId,
                 $vendorName,
@@ -126,12 +207,15 @@ class PurchaseOrderCreate extends Component
                 $this->paymentBy,
                 $quotationPath,
                 $this->poNotes ?: null,
-                $this->itemPrices
+                $this->itemPrices,
+                $selectedItemIds
             );
 
-            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'PO berhasil dibuat'];
+            PurchaseOrderService::submitForApproval($po->id);
 
-            redirect()->route('dashboard.resto.purchase-order.detail', ['id' => $po->id]);
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'PO successfully submitted to RM for approval'];
+
+            redirect()->route('dashboard.resto.purchase-order');
         } catch (\Exception $e) {
             $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Error: '.$e->getMessage()];
         }

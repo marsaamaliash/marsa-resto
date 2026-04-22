@@ -4,7 +4,7 @@
     <div class="relative px-8 py-6 bg-gradient-to-r from-blue-600 to-blue-700 rounded-b-3xl shadow-lg">
         <div class="flex justify-between items-start">
             <div>
-                <h1 class="text-3xl font-bold text-white">{{ $pr?->pr_number ?? 'PR Details' }}</h1>
+                <h1 class="text-3xl font-bold text-white">{{ $pr?->pr_number ?? 'Draft PR' }}</h1>
                 <p class="text-blue-100 text-sm mt-1">
                     Status: <span class="font-bold">{{ ucfirst(str_replace('_', ' ', $pr?->status ?? 'Unknown')) }}</span>
                 </p>
@@ -37,7 +37,7 @@
                         <dl class="space-y-3 text-sm">
                             <div class="flex justify-between">
                                 <dt class="font-semibold text-gray-700">PR Number:</dt>
-                                <dd class="text-gray-600">{{ $pr?->pr_number }}</dd>
+                                <dd class="text-gray-600">{{ $pr?->pr_number ?? '-' }}</dd>
                             </div>
                             <div class="flex justify-between">
                                 <dt class="font-semibold text-gray-700">Lokasi:</dt>
@@ -47,19 +47,28 @@
                                 <dt class="font-semibold text-gray-700">Requester:</dt>
                                 <dd class="text-gray-600">{{ $pr?->requested_by ?? '-' }}</dd>
                             </div>
-                            <div class="flex justify-between">
-                                <dt class="font-semibold text-gray-700">Tanggal Request:</dt>
-                                <dd class="text-gray-600">{{ $pr?->requested_at?->format('d/m/Y H:i') ?? '-' }}</dd>
-                            </div>
-                            <div class="flex justify-between">
-                                <dt class="font-semibold text-gray-700">Tanggal Dibutuhkan:</dt>
-                                <dd class="text-gray-600">{{ $pr?->required_date?->format('d/m/Y') ?? '-' }}</dd>
-                            </div>
                         </dl>
+                        @if ($pr?->canBeEdited() && $isCreator)
+                            <div class="mt-4 pt-4 border-t">
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Catatan PR</label>
+                                <textarea wire:model.live="notes" rows="2"
+                                    placeholder="Catatan untuk PR ini..."
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"></textarea>
+                                <button type="button" wire:click="updateNotes"
+                                    class="mt-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-semibold">
+                                    Simpan Catatan
+                                </button>
+                            </div>
+                        @elseif ($pr?->notes)
+                            <div class="mt-4 pt-4 border-t">
+                                <p class="text-sm font-semibold text-gray-700 mb-1">Catatan:</p>
+                                <p class="text-sm text-gray-600 italic">{{ $pr?->notes }}</p>
+                            </div>
+                        @endif
                     </div>
 
                     <div class="bg-white rounded-xl shadow border p-6">
-                        <h3 class="text-base font-bold text-gray-800 mb-4">Status & Total</h3>
+                        <h3 class="text-base font-bold text-gray-800 mb-4">Status</h3>
                         <dl class="space-y-3 text-sm">
                             <div class="flex justify-between">
                                 <dt class="font-semibold text-gray-700">Status:</dt>
@@ -86,14 +95,6 @@
                         </dl>
                     </div>
                 </div>
-
-                {{-- NOTES --}}
-                @if ($pr?->notes)
-                    <div class="bg-blue-50 rounded-xl shadow border border-blue-200 p-6">
-                        <h3 class="text-base font-bold text-blue-800 mb-2">Catatan PR</h3>
-                        <p class="text-sm text-gray-800">{{ $pr?->notes }}</p>
-                    </div>
-                @endif
 
                 {{-- PR ITEMS TABLE --}}
                 <div class="bg-white rounded-xl shadow border p-6">
@@ -136,17 +137,38 @@
                                             </div>
                                         </td>
                                         <td class="px-3 py-3 text-center">
-                                            <span class="text-sm font-mono font-medium">{{ number_format($item->requested_qty, 2) }}</span>
-                                            <div class="text-xs text-gray-500">{{ $item->uom?->name ?? 'Pcs' }}</div>
+                                            @if ($pr?->canBeEdited() && $isCreator)
+                                                <input type="number" wire:model.live="itemQty.{{ $item->id }}" step="0.01" min="0.01"
+                                                    class="w-24 px-2 py-1 border border-gray-300 rounded text-sm text-right">
+                                                <div class="text-xs text-gray-500 mt-1">{{ $item->uom?->name ?? 'Pcs' }}</div>
+                                            @else
+                                                <span class="text-sm font-mono font-medium">{{ number_format($item->requested_qty, 2) }}</span>
+                                                <div class="text-xs text-gray-500">{{ $item->uom?->name ?? 'Pcs' }}</div>
+                                            @endif
                                         </td>
-                                        <td class="px-3 py-3 text-sm text-gray-600">
-                                            {{ $item->notes ?? '-' }}
+                                        <td class="px-3 py-3">
+                                            @if ($pr?->canBeEdited() && $isCreator)
+                                                <input type="text" wire:model.live="itemNotes.{{ $item->id }}"
+                                                    placeholder="Catatan item..."
+                                                    class="w-full px-2 py-1 border border-gray-300 rounded text-sm">
+                                            @else
+                                                <span class="text-sm text-gray-600">{{ $item->notes ?? '-' }}</span>
+                                            @endif
                                         </td>
                                     </tr>
                                 @endforeach
                             </tbody>
                         </table>
                     </div>
+
+                    @if ($pr?->canBeEdited() && $isCreator)
+                        <div class="mt-4 flex justify-end">
+                            <button type="button" wire:click="updateItems"
+                                class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-semibold">
+                                Simpan
+                            </button>
+                        </div>
+                    @endif
                 </div>
 
                 {{-- APPROVAL FLOW --}}
@@ -165,7 +187,7 @@
                                     <div class="w-1 h-12 bg-gray-300 mt-1"></div>
                                 @endif
                             </div>
-                            <div>
+                            <div class="flex-1">
                                 <h4 class="font-semibold text-gray-800">Draft - Preparation</h4>
                                 <p class="text-xs text-gray-600">PR dibuat dan disiapkan untuk submission</p>
                                 @if ($pr?->status === 'revised')
@@ -265,11 +287,11 @@
                             Kembali
                         </a>
                         <div class="flex gap-2">
-                            @if ($canEdit)
-                                <a href="{{ route('dashboard.resto.purchase-request.detail', $pr->id) }}?mode=edit"
+                            @if ($pr?->canBeEdited() && $isCreator)
+                                <button wire:click="submitForApproval"
                                     class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm font-semibold">
-                                    {{ $pr->isRevised() ? 'Revisi PR' : 'Edit PR' }}
-                                </a>
+                                    Submit PR
+                                </button>
                             @endif
                             @if ($pr->isPendingRM() && $canApproveRM)
                                 <button wire:click="directApproveByRM"

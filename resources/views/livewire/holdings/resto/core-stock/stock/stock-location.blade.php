@@ -4,9 +4,9 @@
     <div class="relative px-8 py-6 bg-blue-600/80 rounded-b-3xl shadow-lg overflow-hidden">
         <div class="flex justify-between items-start">
             <div>
-                <h1 class="text-3xl font-bold text-white">Stok per Lokasi</h1>
+                <h1 class="text-3xl font-bold text-white">Stok per Location</h1>
                 <p class="text-blue-100 text-sm">
-                    Informasi stok berdasarkan lokasi
+                    Informasi stok berdasarkan Location
                 </p>
             </div>
         </div>
@@ -14,7 +14,7 @@
         <div class="mt-4 flex justify-between items-center text-sm">
             <x-ui.sccr-breadcrumb :items="$breadcrumbs" />
             <div class="text-white">
-                Menampilkan <span class="font-bold text-black">{{ $data->total() }}</span> dari <span class="font-bold text-black">{{ $totalAll }}</span> data
+                Showing <span class="font-bold text-black">{{ $data->total() }}</span> of <span class="font-bold text-black">{{ $totalAll }}</span> data
             </div>
         </div>
     </div>
@@ -28,22 +28,22 @@
                 {{-- SEARCH INPUT --}}
                 <div class="relative top-1">
                     <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">
-                        Lokasi
+                        Location
                     </span>
-                    <x-ui.sccr-input name="search" wire:model="search" placeholder="Ketik lalu enter..."
+                    <x-ui.sccr-input name="search" wire:model="search" placeholder="Type and press enter..."
                         class="w-64" />
                 </div>
 
-                {{-- FILTER 1: Lokasi --}}
+                {{-- FILTER 1: Location --}}
                 <div class="relative top-1">
-                    <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">Lokasi</span>
+                    <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">Location</span>
                     <x-ui.sccr-select name="filter1" wire:model.live="filter1" :options="$filter1Options"
                         class="w-40" />
                 </div>
 
-                {{-- FILTER 2: Kategori --}}
+                {{-- FILTER 2: Category --}}
                 <div class="relative top-1">
-                    <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">Kategori</span>
+                    <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">Category</span>
                     <x-ui.sccr-select name="filter2" wire:model.live="filter2" :options="$filter2Options"
                         class="w-40" />
                 </div>
@@ -52,8 +52,8 @@
                 <div class="flex flex-wrap items-center gap-1">
                     <x-ui.sccr-button type="submit" variant="primary"
                         class="bg-gray-900 text-gray-100 hover:bg-gray-400">
-                        <x-ui.sccr-icon name="cari" :size="20" />
-                        Cari
+                        <x-ui.sccr-icon name="Search" :size="20" />
+                        Search
                     </x-ui.sccr-button>
 
                     <x-ui.sccr-button type="button" wire:click="clearFilters"
@@ -109,7 +109,7 @@
 
                             <th wire:click="sortBy('location_name')"
                                 class="px-3 py-3 text-left text-xs font-bold cursor-pointer">
-                                Lokasi {!! $sortField === 'location_name' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                                Location {!! $sortField === 'location_name' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                             </th>
 
                             <th wire:click="sortBy('total_items')"
@@ -127,7 +127,7 @@
                             </th>
 
                             <th class="px-3 py-3 text-center text-xs font-bold">
-                                Aksi
+                                Actions
                             </th>
                         </tr>
                     </thead>
@@ -173,7 +173,7 @@
                         @empty
                             <tr>
                                 <td colspan="6" class="py-10 text-center text-gray-400 italic">
-                                    Data tidak ditemukan
+                                    No data found
                                 </td>
                             </tr>
                         @endforelse
@@ -185,7 +185,7 @@
             <div
                 class="flex-none px-6 py-3 border-t bg-white flex flex-col md:flex-row justify-between items-center gap-3">
                 <div class="text-sm text-gray-600 flex items-center">
-                    <span class="font-bold text-gray-800 mr-1">{{ count($selectedItems) }}</span> item dipilih
+                    <span class="font-bold text-gray-800 mr-1">{{ count($selectedItems) }}</span> items selected
                 </div>
 
                 <div>
@@ -199,19 +199,19 @@
     {{-- ================= TOAST ================= --}}
     <x-ui.sccr-toast :show="$toast['show']" :type="$toast['type']" :message="$toast['message']" wire:key="toast-{{ microtime() }}" />
 
-    {{-- ================= OVERLAY: DETAIL ================= --}}
-    @if ($overlayMode === 'detail' && $overlayId)
+    {{-- ================= OVERLAY: Detail ================= --}}
+    @if ($overlayMode === 'Detail' && $overlayId)
         <div class="fixed inset-0 bg-black/40 z-40" wire:click="closeOverlay"></div>
 
         <div class="fixed inset-0 z-50 flex items-center justify-center px-6">
             <div class="w-full max-w-7xl bg-white rounded-2xl shadow-2xl relative max-h-[90vh] overflow-hidden flex flex-col">
                 <x-ui.sccr-button type="button" variant="icon" wire:click="closeOverlay"
-                    class="absolute top-4 right-4 text-gray-400 hover:text-red-500" title="Tutup">
+                    class="absolute top-4 right-4 text-gray-400 hover:text-red-500" title="Close">
                     <span class="text-xl leading-none">&#x2715;</span>
                 </x-ui.sccr-button>
 
                 <div class="p-6 border-b bg-gray-50">
-                    <h2 class="text-xl font-bold text-gray-800">Detail Lokasi: {{ $detailData['location']?->name ?? '-' }}</h2>
+                    <h2 class="text-xl font-bold text-gray-800">Location Detail: {{ $detailData['location']?->name ?? '-' }}</h2>
                     <p class="text-sm text-gray-500">Daftar item dan mutation history</p>
                 </div>
 
@@ -259,11 +259,11 @@
                                 <div>
                                     <div class="text-xs text-gray-500 uppercase">Waste</div>
                                     <div class="font-mono font-semibold text-gray-800">
-                                        {{ number_format($balance->qty_waste ?? 0, 2) }}
+                                        {{ number_format($balance->qty_Waste ?? 0, 2) }}
                                     </div>
                                 </div>
                                 <div>
-                                    <div class="text-xs text-gray-500 uppercase">Satuan</div>
+                                    <div class="text-xs text-gray-500 uppercase">Unit</div>
                                     <div class="font-semibold text-gray-800">
                                         {{ $balance->uom?->name ?? '-' }}
                                     </div>
@@ -305,7 +305,7 @@
                                                                     'reserve' => 'text-yellow-600',
                                                                     'unreserve' => 'text-gray-600',
                                                                     'consume' => 'text-pink-600',
-                                                                    'waste' => 'text-red-800'
+                                                                    'Waste' => 'text-red-800'
                                                                 ];
                                                             @endphp
                                                             <span class="{{ $typeColors[$mutation->type] ?? 'text-gray-800' }} font-medium">
@@ -332,13 +332,13 @@
                                 </div>
                             @else
                                 <div class="px-4 py-3 text-sm text-gray-400 italic border-t">
-                                    Tidak ada mutation history
+                                    No mutation history
                                 </div>
                             @endif
                         </div>
                     @empty
                         <div class="text-center py-10 text-gray-400 italic">
-                            Tidak ada item di lokasi ini
+                            No items at this location
                         </div>
                     @endforelse
                 </div>

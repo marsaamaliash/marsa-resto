@@ -2,6 +2,7 @@
 
 namespace App\Models\Holdings\Resto\Movement;
 
+use App\Traits\BelongsToBranch;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,6 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Rst_Movement extends Model
 {
+    use BelongsToBranch;
     use SoftDeletes;
 
     protected $connection = 'sccr_resto';
@@ -20,7 +22,10 @@ class Rst_Movement extends Model
     protected $guarded = [];
 
     protected $fillable = [
+        'branch_id',
         'reference_number',
+        'request_number',
+        'request_date',
         'from_location_id',
         'to_location_id',
         'pic_name',
@@ -35,6 +40,10 @@ class Rst_Movement extends Model
         'rm_approved_at',
         'spv_approved_by',
         'spv_approved_at',
+    ];
+
+    protected $casts = [
+        'request_date' => 'date',
     ];
 
     public function items(): HasMany

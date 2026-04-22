@@ -50,7 +50,7 @@ class SatuanEdit extends Component
             'is_active' => $this->is_active,
         ]);
 
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Satuan berhasil diperbarui'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Unit updated successfully'];
 
         $this->dispatch('satuan-updated');
         $this->dispatch('satuan-overlay-close');
@@ -71,7 +71,7 @@ class SatuanEdit extends Component
             'is_active' => false,
         ]);
 
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Draft satuan berhasil disimpan'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Unit draft saved successfully'];
 
         $this->dispatch('satuan-updated');
         $this->dispatch('satuan-overlay-close');
@@ -79,7 +79,7 @@ class SatuanEdit extends Component
 
     public function cancel(): void
     {
-        $this->dispatch('close-overlay');
+        $this->dispatch('satuan-overlay-close');
     }
 
     public function render()

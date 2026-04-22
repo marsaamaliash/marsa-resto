@@ -10,10 +10,12 @@ class StockInitialSeeder extends Seeder
 {
     public function run(): void
     {
+        $branchId = BranchSeeder::getFirstBranchId();
+
         $conn = DB::connection('sccr_resto');
 
-        $locations = $conn->table('locations')->pluck('id');
-        $items = $conn->table('items')->get();
+        $locations = $conn->table('locations')->where('branch_id', $branchId)->pluck('id');
+        $items = $conn->table('items')->where('branch_id', $branchId)->get();
 
         if ($items->isEmpty() || $locations->isEmpty()) {
             $this->command->error('Items atau Locations kosong! Jalankan seeder master dulu.');
@@ -51,6 +53,6 @@ class StockInitialSeeder extends Seeder
             $this->command->info("Location {$locationId} seeded.");
         }
 
-        $this->command->info('Stock initial seeding completed.');
+        $this->command->info('Stock initial seeding completed with branch_id.');
     }
 }

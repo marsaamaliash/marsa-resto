@@ -2,11 +2,14 @@
 
 namespace App\Models\Holdings\Resto\Procurement;
 
+use App\Traits\BelongsToBranch;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Rst_PurchaseOrderItem extends Model
 {
+    use BelongsToBranch;
+
     protected $connection = 'sccr_resto';
 
     protected $table = 'purchase_order_items';
@@ -19,6 +22,7 @@ class Rst_PurchaseOrderItem extends Model
         'purchase_order_id',
         'item_id',
         'uom_id',
+        'vendor_id',
         'ordered_qty',
         'unit_price',
         'total_price',
@@ -44,6 +48,11 @@ class Rst_PurchaseOrderItem extends Model
     public function uom(): BelongsTo
     {
         return $this->belongsTo(\App\Models\Holdings\Resto\Master\Rst_MasterSatuan::class, 'uom_id');
+    }
+
+    public function vendor(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Holdings\Resto\Master\Rst_MasterVendor::class, 'vendor_id');
     }
 
     public function calculateTotalPrice(): void

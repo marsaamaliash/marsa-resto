@@ -115,7 +115,7 @@ class PurchaseOrderTable extends Component
 
     protected function dataQuery(): Collection
     {
-        $query = Rst_PurchaseOrder::with(['items.item', 'items.uom', 'purchaseRequest', 'vendor', 'location']);
+        $query = Rst_PurchaseOrder::with(['items.item', 'items.uom', 'purchaseRequest', 'vendor', 'location', 'goodsReceipts']);
 
         if ($this->search !== '') {
             $search = $this->search;

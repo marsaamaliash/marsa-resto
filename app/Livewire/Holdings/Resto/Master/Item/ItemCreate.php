@@ -88,7 +88,7 @@ class ItemCreate extends Component
             'type' => $this->type,
         ]);
 
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Item berhasil ditambahkan'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Item added successfully'];
 
         $this->dispatch('item-created');
         $this->dispatch('item-overlay-close');
@@ -126,7 +126,7 @@ class ItemCreate extends Component
             'type' => $this->type,
         ]);
 
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Draft item berhasil disimpan'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Item draft saved successfully'];
 
         $this->dispatch('item-created');
         $this->dispatch('item-overlay-close');
@@ -136,7 +136,7 @@ class ItemCreate extends Component
 
     public function cancel(): void
     {
-        $this->dispatch('close-overlay');
+        $this->dispatch('item-overlay-close');
     }
 
     protected function resetForm(): void

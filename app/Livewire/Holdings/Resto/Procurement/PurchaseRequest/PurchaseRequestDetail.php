@@ -30,6 +30,14 @@ class PurchaseRequestDetail extends Component
 
     public string $reviseReason = '';
 
+    public string $notes = '';
+
+    public array $itemQty = [];
+
+    public array $itemNotes = [];
+
+    public bool $isCreator = false;
+
     public function mount(int $id): void
     {
         $this->loadPR($id);
@@ -51,8 +59,17 @@ class PurchaseRequestDetail extends Component
             ['label' => 'Resto', 'route' => 'dashboard.resto', 'color' => 'text-gray-800'],
             ['label' => 'Procurement', 'route' => 'dashboard.resto.procurement', 'color' => 'text-gray-800'],
             ['label' => 'Purchase Request', 'route' => 'dashboard.resto.purchase-request', 'color' => 'text-gray-800'],
-            ['label' => $this->pr->pr_number, 'color' => 'text-gray-900 font-semibold'],
+            ['label' => $this->pr->pr_number ?? 'Draft PR', 'color' => 'text-gray-900 font-semibold'],
         ];
+
+        // Initialize editable fields
+        $this->notes = $this->pr->notes ?? '';
+        $this->itemQty = [];
+        $this->itemNotes = [];
+        foreach ($this->pr->items as $item) {
+            $this->itemQty[$item->id] = $item->requested_qty;
+            $this->itemNotes[$item->id] = $item->notes ?? '';
+        }
     }
 
     private function syncCaps(): void
@@ -62,7 +79,8 @@ class PurchaseRequestDetail extends Component
         $this->canApproveRM = (bool) ($u?->hasPermission('PURCHASE_REQUEST_APPROVE_RM') ?? false);
         $this->canApproveSPV = (bool) ($u?->hasPermission('PURCHASE_REQUEST_APPROVE_SPV') ?? false);
         $this->canRevise = (bool) ($u?->hasPermission('PURCHASE_REQUEST_CREATE') ?? false);
-        $this->canEdit = $this->pr?->canBeEdited() && $this->canRevise;
+        $this->isCreator = $this->pr?->created_by === $u?->username;
+        $this->canEdit = $this->pr?->canBeEdited() && ($this->canRevise || $this->isCreator);
     }
 
     public function hydrate(): void
@@ -188,12 +206,66 @@ class PurchaseRequestDetail extends Component
         $this->redirectRoute('dashboard.resto.purchase-request');
     }
 
-    public function edit(): void
+    public function updateNotes(): void
     {
-        if ($this->pr->isRevised()) {
-            $this->redirectRoute('dashboard.resto.purchase-request.revise', ['id' => $this->pr->id]);
-        } else {
-            $this->redirectRoute('dashboard.resto.purchase-request.edit', ['id' => $this->pr->id]);
+        if (! $this->pr->canBeEdited()) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'PR tidak dapat diedit pada status ini.'];
+
+            return;
+        }
+
+        try {
+            $this->pr->notes = $this->notes;
+            $this->pr->updated_by = auth()->user()?->username;
+            $this->pr->save();
+
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Catatan PR berhasil diupdate.'];
+        } catch (\Exception $e) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
+        }
+    }
+
+    public function updateItems(): void
+    {
+        if (! $this->pr->canBeEdited()) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'PR tidak dapat diedit pada status ini.'];
+
+            return;
+        }
+
+        try {
+            foreach ($this->pr->items as $item) {
+                if (isset($this->itemQty[$item->id])) {
+                    $qty = (float) $this->itemQty[$item->id];
+                    if ($qty > 0) {
+                        $item->requested_qty = $qty;
+                    }
+                }
+                if (array_key_exists($item->id, $this->itemNotes)) {
+                    $item->notes = $this->itemNotes[$item->id] ?: null;
+                }
+                $item->save();
+            }
+
+            PurchaseRequestService::recalculateTotalCost($this->pr);
+            $this->loadPR($this->pr->id);
+
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Item berhasil diupdate.'];
+        } catch (\Exception $e) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
+        }
+    }
+
+    public function submitForApproval(): void
+    {
+        try {
+            $user = auth()->user()?->username ?? 'SYSTEM';
+            PurchaseRequestService::submitToRM($this->pr->id, $this->notes, $user);
+
+            $this->loadPR($this->pr->id);
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'PR berhasil disubmit ke RM untuk approval.'];
+        } catch (\Exception $e) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
         }
     }
 

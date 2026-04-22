@@ -14,7 +14,7 @@
         <div class="mt-4 flex justify-between items-center text-sm">
             <x-ui.sccr-breadcrumb :items="$breadcrumbs" />
             <div class="text-white">
-                Menampilkan <span class="font-bold text-black">{{ $data->total() }}</span> dari <span class="font-bold text-black">{{ $totalAll }}</span> data
+                Showing <span class="font-bold text-black">{{ $data->total() }}</span> of <span class="font-bold text-black">{{ $totalAll }}</span> data
             </div>
         </div>
     </div>
@@ -30,23 +30,35 @@
                     <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">
                         Nama / SKU
                     </span>
-                    <x-ui.sccr-input name="search" wire:model="search" placeholder="Ketik lalu enter..."
+                    <x-ui.sccr-input name="search" wire:model="search" placeholder="Type and press enter..."
                         class="w-64" />
                 </div>
 
-                {{-- FILTER 1: Kategori --}}
+                {{-- FILTER 1: Category --}}
                 <div class="relative top-1">
-                    <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">Kategori</span>
+                    <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">Category</span>
                     <x-ui.sccr-select name="filter1" wire:model.live="filter1" :options="$filter1Options"
                         class="w-40" />
                 </div>
 
                 {{-- ACTION BUTTONS --}}
                 <div class="flex flex-wrap items-center gap-1">
+                    <a href="{{ route('dashboard.resto.purchase-request.create') }}"
+                        class="inline-flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition">
+                        <x-ui.sccr-icon name="plus" :size="16" />
+                        Create PR (Gudang)
+                    </a>
+
+                    <a href="{{ route('dashboard.resto.movement-internal') }}"
+                        class="inline-flex items-center gap-2 px-3 py-2 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700 transition">
+                        <x-ui.sccr-icon name="arrow-right" :size="16" />
+                        Stock Movement (Kitchen)
+                    </a>
+
                     <x-ui.sccr-button type="submit" variant="primary"
                         class="bg-gray-900 text-gray-100 hover:bg-gray-400">
-                        <x-ui.sccr-icon name="cari" :size="20" />
-                        Cari
+                        <x-ui.sccr-icon name="Search" :size="20" />
+                        Search
                     </x-ui.sccr-button>
 
                     <x-ui.sccr-button type="button" wire:click="clearFilters"
@@ -110,7 +122,7 @@
                             </th>
 
                             <th class="px-4 py-3 text-left text-xs font-bold">
-                                Kategori
+                                Category
                             </th>
 
                             <th wire:click="sortBy('qty_available')"
@@ -133,7 +145,7 @@
                             </th>
 
                             <th class="px-4 py-3 text-left text-xs font-bold">
-                                Satuan
+                                Unit
                             </th>
                         </tr>
                     </thead>
@@ -172,7 +184,7 @@
                                     {{ number_format($item->min_stock, 2) }}
                                 </td>
 
-                                <td class="px-4 py-2 text-right text-sm font-mono @if($item->selisih > 0) text-red-600 font-semibold @else text-gray-500 @endif">
+                                <td class="px-4 py-2 text-right text-sm font-mono @if($isCritical) text-red-600 font-semibold @elseif($isWarning) text-yellow-600 font-semibold @else text-gray-500 @endif">
                                     {{ number_format($item->selisih, 2) }}
                                 </td>
 
@@ -195,7 +207,7 @@
                         @empty
                             <tr>
                                 <td colspan="9" class="py-10 text-center text-gray-400 italic">
-                                    Tidak ada item dengan stok kritis
+                                    No items with critical stock
                                 </td>
                             </tr>
                         @endforelse
@@ -207,7 +219,7 @@
             <div
                 class="flex-none px-6 py-3 border-t bg-white flex flex-col md:flex-row justify-between items-center gap-3">
                 <div class="text-sm text-gray-600 flex items-center">
-                    <span class="font-bold text-gray-800 mr-1">{{ count($selectedItems) }}</span> item dipilih
+                    <span class="font-bold text-gray-800 mr-1">{{ count($selectedItems) }}</span> items selected
                 </div>
 
                 <div>

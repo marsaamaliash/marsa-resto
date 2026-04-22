@@ -13,6 +13,8 @@ class AuthUser extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
+    protected $connection = 'mysql';
+
     protected $table = 'auth_users';
 
     protected $fillable = [

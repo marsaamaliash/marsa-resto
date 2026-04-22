@@ -9,8 +9,12 @@ class MasterDataSeeder extends Seeder
 {
     public function run(): void
     {
-        // Gunakan Database Transaction agar data masuk semua atau tidak sama sekali
-        DB::connection('sccr_resto')->transaction(function () {
+        // Get first branch id
+        $branchId = BranchSeeder::getFirstBranchId();
+
+        $this->command->info("Using branch_id: {$branchId}");
+
+        DB::connection('sccr_resto')->transaction(function () use ($branchId) {
 
             // 1. SEED CATEGORIES
             $categories = [
@@ -20,7 +24,9 @@ class MasterDataSeeder extends Seeder
             ];
             foreach ($categories as $cat) {
                 DB::connection('sccr_resto')->table('categories')->insert(array_merge($cat, [
-                    'created_at' => now(), 'updated_at' => now(),
+                    'branch_id' => $branchId,
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ]));
             }
 
@@ -33,7 +39,9 @@ class MasterDataSeeder extends Seeder
             ];
             foreach ($uoms as $uom) {
                 DB::connection('sccr_resto')->table('uoms')->insert(array_merge($uom, [
-                    'created_at' => now(), 'updated_at' => now(),
+                    'branch_id' => $branchId,
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ]));
             }
 
@@ -54,12 +62,13 @@ class MasterDataSeeder extends Seeder
             ];
             foreach ($vendors as $vendor) {
                 DB::connection('sccr_resto')->table('vendors')->insert(array_merge($vendor, [
-                    'created_at' => now(), 'updated_at' => now(),
+                    'branch_id' => $branchId,
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ]));
             }
 
             // 4. SEED ITEMS
-            // Ambil ID pertama untuk relasi agar aman
             $catId = DB::connection('sccr_resto')->table('categories')->first()->id;
             $uomKg = DB::connection('sccr_resto')->table('uoms')->where('symbols', 'Kg')->first()->id;
             $uomPcs = DB::connection('sccr_resto')->table('uoms')->where('symbols', 'Pcs')->first()->id;
@@ -96,9 +105,13 @@ class MasterDataSeeder extends Seeder
 
             foreach ($items as $item) {
                 DB::connection('sccr_resto')->table('items')->insert(array_merge($item, [
-                    'created_at' => now(), 'updated_at' => now(),
+                    'branch_id' => $branchId,
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ]));
             }
         });
+
+        $this->command->info('MasterDataSeeder completed with branch_id.');
     }
 }

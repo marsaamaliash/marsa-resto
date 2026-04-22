@@ -5,19 +5,20 @@ namespace App\Models\Holdings\Resto\CoreStock;
 use App\Models\Holdings\Resto\Master\Rst_MasterItem;
 use App\Models\Holdings\Resto\Master\Rst_MasterLokasi;
 use App\Models\Holdings\Resto\Master\Rst_MasterSatuan;
+use App\Traits\BelongsToBranch;
 use Illuminate\Database\Eloquent\Model;
 
 class Rst_StockBalance extends Model
 {
+    use BelongsToBranch;
+
     protected $connection = 'sccr_resto';
 
     protected $table = 'stock_balances';
 
     protected $primaryKey = 'id';
 
-    protected $guarded = [
-
-    ];
+    protected $guarded = [];
 
     public function item()
     {

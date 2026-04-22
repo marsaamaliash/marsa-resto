@@ -13,7 +13,7 @@ class ReferenceNumberService
         $today = now()->format('dmY');
         $prefix = "SM-{$today}-";
 
-        $lastMovement = Rst_Movement::where('reference_number', 'like', "{$prefix}%")
+        $lastMovement = Rst_Movement::withTrashed()->where('reference_number', 'like', "{$prefix}%")
             ->orderBy('reference_number', 'desc')
             ->first();
 

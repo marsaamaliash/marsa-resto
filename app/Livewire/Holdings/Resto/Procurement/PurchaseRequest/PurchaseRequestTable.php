@@ -48,8 +48,6 @@ class PurchaseRequestTable extends Component
 
     public string $sortDirection = 'desc';
 
-    public int $totalAll = 0;
-
     protected array $allowedSortFields = [
         'id',
         'pr_number',
@@ -113,8 +111,6 @@ class PurchaseRequestTable extends Component
         ];
 
         $this->syncCaps();
-
-        $this->totalAll = Rst_PurchaseRequest::count();
     }
 
     public function hydrate(): void
@@ -369,7 +365,6 @@ class PurchaseRequestTable extends Component
                 'Level',
                 'Total Items',
                 'Total Cost',
-                'Required Date',
                 'Notes',
             ]);
 
@@ -383,7 +378,6 @@ class PurchaseRequestTable extends Component
                     $pr->approval_level,
                     $pr->items->count(),
                     number_format($pr->total_estimated_cost, 2),
-                    $pr->required_date?->format('Y-m-d') ?? '-',
                     $pr->notes ?? '-',
                 ]);
             }

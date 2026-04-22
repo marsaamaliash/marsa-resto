@@ -82,19 +82,16 @@ class PurchaseRequestService
         int $locationId,
         array $items,
         ?string $notes = null,
-        ?string $requesterName = null,
-        ?string $requiredDate = null
+        ?string $requesterName = null
     ): Rst_PurchaseRequest {
-        return DB::transaction(function () use ($locationId, $items, $notes, $requesterName, $requiredDate) {
+        return DB::transaction(function () use ($locationId, $items, $notes, $requesterName) {
             $pr = Rst_PurchaseRequest::create([
-                'pr_number' => ReferenceNumberService::generatePurchaseRequestNumber(),
                 'requester_location_id' => $locationId,
                 'status' => 'draft',
                 'approval_level' => 0,
                 'notes' => $notes,
                 'requested_by' => $requesterName,
                 'requested_at' => now(),
-                'required_date' => $requiredDate,
                 'created_by' => auth()->user()?->username,
             ]);
 
@@ -237,10 +234,9 @@ class PurchaseRequestService
     public static function submitToRM(
         int $prId,
         ?string $notes = null,
-        ?string $requesterName = null,
-        ?string $requiredDate = null // 1. Tambahkan parameter ini
+        ?string $requesterName = null
     ): Rst_PurchaseRequest {
-        return DB::transaction(function () use ($prId, $notes, $requesterName, $requiredDate) { // 2. Jangan lupa di-use
+        return DB::transaction(function () use ($prId, $notes, $requesterName) {
             $pr = Rst_PurchaseRequest::findOrFail($prId);
 
             if (! $pr->isDraft() && ! $pr->isRevised()) {
@@ -252,14 +248,17 @@ class PurchaseRequestService
                 throw new \Exception('PR harus memiliki minimal 1 item.');
             }
 
+            // Generate PR number if not set yet (first time submit from draft)
+            if (empty($pr->pr_number)) {
+                $pr->pr_number = ReferenceNumberService::generatePurchaseRequestNumber();
+            }
+
             $pr->fill([
                 'status' => 'pending_rm',
                 'approval_level' => 1,
                 'notes' => $notes ?? $pr->notes,
                 'requested_by' => $requesterName ?? $pr->requested_by,
                 'requested_at' => now(),
-                // 3. Gunakan $requiredDate dari inputan, kalau kosong baru pakai dari database/default
-                'required_date' => $requiredDate ?? $pr->required_date ?? now()->addDays(7),
             ]);
             $pr->save();
 
@@ -404,10 +403,9 @@ class PurchaseRequestService
     public static function revisePR(
         int $prId,
         array $items,
-        ?string $notes = null,
-        ?string $requiredDate = null
+        ?string $notes = null
     ): Rst_PurchaseRequest {
-        return DB::transaction(function () use ($prId, $items, $notes, $requiredDate) {
+        return DB::transaction(function () use ($prId, $items, $notes) {
             $pr = Rst_PurchaseRequest::findOrFail($prId);
 
             if (! $pr->isRevised()) {
@@ -450,7 +448,6 @@ class PurchaseRequestService
                 'status' => 'pending_rm',
                 'approval_level' => 1,
                 'notes' => $notes ?? $pr->notes,
-                'required_date' => $requiredDate ?? $pr->required_date,
                 'total_estimated_cost' => $totalCost > 0 ? $totalCost : 0,
             ]);
             $pr->save();
@@ -467,10 +464,9 @@ class PurchaseRequestService
     public static function updatePRItems(
         int $prId,
         array $items,
-        ?string $notes = null,
-        ?string $requiredDate = null
+        ?string $notes = null
     ): Rst_PurchaseRequest {
-        return DB::transaction(function () use ($prId, $items, $notes, $requiredDate) {
+        return DB::transaction(function () use ($prId, $items, $notes) {
             $pr = Rst_PurchaseRequest::findOrFail($prId);
 
             if (! $pr->canBeEdited()) {
@@ -511,7 +507,6 @@ class PurchaseRequestService
 
             $pr->fill([
                 'notes' => $notes ?? $pr->notes,
-                'required_date' => $requiredDate ?? $pr->required_date,
                 'total_estimated_cost' => $totalCost > 0 ? $totalCost : 0,
             ]);
             $pr->save();
@@ -523,7 +518,7 @@ class PurchaseRequestService
     /**
      * Recalculate total cost after item changes
      */
-    private static function recalculateTotalCost(Rst_PurchaseRequest $pr): void
+    public static function recalculateTotalCost(Rst_PurchaseRequest $pr): void
     {
         $total = $pr->items()->sum('total_cost');
         $pr->total_estimated_cost = $total ?? 0;

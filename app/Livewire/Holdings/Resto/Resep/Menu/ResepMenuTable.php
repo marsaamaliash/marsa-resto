@@ -112,8 +112,8 @@ class ResepMenuTable extends Component
         $this->breadcrumbs = [
             ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
             ['label' => 'Resto', 'route' => 'dashboard.resto', 'color' => 'text-gray-800'],
-            ['label' => 'Repack Stok', 'route' => 'dashboard.resto.resep', 'color' => 'text-gray-900 font-semibold'],
-            ['label' => 'Repack Stok', 'color' => 'text-gray-900 font-semibold'],
+            ['label' => 'Stock Repack', 'route' => 'dashboard.resto.resep', 'color' => 'text-gray-900 font-semibold'],
+            ['label' => 'Stock Repack', 'color' => 'text-gray-900 font-semibold'],
         ];
 
         $this->syncCaps();
@@ -220,7 +220,7 @@ class ResepMenuTable extends Component
     public function exportSelected()
     {
         if (empty($this->selectedItems)) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Pilih data terlebih dahulu'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Please select data first'];
 
             return null;
         }
@@ -236,7 +236,7 @@ class ResepMenuTable extends Component
         $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet;
         $ws = $spreadsheet->getActiveSheet();
 
-        $ws->fromArray([['No. Repack', 'Item Sumber', 'Item Target', 'Qty Sumber', 'Multiplier', 'Qty Hasil', 'Tanggal']], null, 'A1');
+        $ws->fromArray([['Repack No.', 'Source Item', 'Target Item', 'Source Qty', 'Multiplier', 'Result Qty', 'Date']], null, 'A1');
 
         $row = 2;
         foreach ($data as $item) {
@@ -263,7 +263,7 @@ class ResepMenuTable extends Component
     public function openCreate(): void
     {
         if (! $this->canCreate) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin create.'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to create.'];
 
             return;
         }
@@ -284,7 +284,7 @@ class ResepMenuTable extends Component
     public function openEdit(string $id): void
     {
         if (! $this->canUpdate) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin update.'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to update.'];
 
             return;
         }
@@ -302,14 +302,14 @@ class ResepMenuTable extends Component
     public function handleCreated(?string $id = null): void
     {
         $this->closeOverlay();
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Repack berhasil ditambahkan.'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Repack added successfully.'];
     }
 
     #[On('repack-updated')]
     public function handleUpdated(?string $id = null): void
     {
         $this->closeOverlay();
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Repack berhasil diperbarui.'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Repack updated successfully.'];
     }
 
     #[On('repack-open-edit')]
@@ -327,9 +327,9 @@ class ResepMenuTable extends Component
     protected function filter1Options(): array
     {
         return [
-            '' => '-- Semua Status --',
-            '1' => 'Aktif',
-            '0' => 'Nonaktif',
+            '' => '-- All Status --',
+            '1' => 'Active',
+            '0' => 'Inactive',
         ];
     }
 

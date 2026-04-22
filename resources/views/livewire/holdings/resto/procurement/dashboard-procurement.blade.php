@@ -39,6 +39,20 @@
                     Direct Order
                 </span>
             </a>
+
+            <a href="{{ route('dashboard.resto.goods-receipt') }}"
+                class="flex items-center justify-center rounded-2xl shadow-lg h-40 bg-emerald-500 hover:bg-emerald-600 transform hover:scale-105 transition duration-300">
+                <span class="text-white text-lg font-semibold">
+                    Goods Receipt
+                </span>
+            </a>
+
+            <a href="{{ route('dashboard.resto.invoice') }}"
+                class="flex items-center justify-center rounded-2xl shadow-lg h-40 bg-indigo-500 hover:bg-indigo-600 transform hover:scale-105 transition duration-300">
+                <span class="text-white text-lg font-semibold">
+                    Invoice
+                </span>
+            </a>
         </div>
     </div>
 </div>

@@ -9,8 +9,11 @@ class RestoEmployeeSeeder extends Seeder
 {
     public function run(): void
     {
+        $branchId = BranchSeeder::getFirstBranchId();
+
         $employees = [
             [
+                'branch_id' => $branchId,
                 'employee_number' => 'EMP001',
                 'name' => 'Ahmad Fauzi',
                 'department' => 'IT',
@@ -21,6 +24,7 @@ class RestoEmployeeSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
+                'branch_id' => $branchId,
                 'employee_number' => 'EMP002',
                 'name' => 'Siti Nurhaliza',
                 'department' => 'HR',
@@ -31,6 +35,7 @@ class RestoEmployeeSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
+                'branch_id' => $branchId,
                 'employee_number' => 'EMP003',
                 'name' => 'Budi Santoso',
                 'department' => 'Finance',
@@ -41,6 +46,7 @@ class RestoEmployeeSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
+                'branch_id' => $branchId,
                 'employee_number' => 'EMP004',
                 'name' => 'Dewi Lestari',
                 'department' => 'Marketing',
@@ -51,6 +57,7 @@ class RestoEmployeeSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
+                'branch_id' => $branchId,
                 'employee_number' => 'EMP005',
                 'name' => 'Rizky Pratama',
                 'department' => 'Operations',
@@ -63,5 +70,7 @@ class RestoEmployeeSeeder extends Seeder
         ];
 
         DB::connection('sccr_resto')->table('employees')->insert($employees);
+
+        $this->command->info('RestoEmployeeSeeder completed with branch_id.');
     }
 }

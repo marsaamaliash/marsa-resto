@@ -1,9 +1,9 @@
-<div>
+﻿<div>
     <div class="relative px-8 py-6 bg-yellow-500/60 rounded-b-3xl shadow-lg overflow-hidden">
         <div class="flex justify-between items-start">
             <div>
                 <h1 class="text-3xl md:text-4xl font-bold mb-2">Master Resto</h1>
-                <p class="text-lg text-gray-800">Silakan pilih modul Resto yang ingin diakses</p>
+                <p class="text-lg text-gray-800">Silakan Select modul Resto yang ingin diakses</p>
             </div>
         </div>
 

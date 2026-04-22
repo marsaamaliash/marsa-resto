@@ -127,12 +127,12 @@ class MovementInternalCreate extends Component
             'from_location_id' => ['required', 'integer', 'min:1'],
             'to_location_id' => ['required', 'integer', 'min:1'],
         ], [
-            'from_location_id.required' => 'Lokasi Asal wajib dipilih.',
-            'to_location_id.required' => 'Lokasi Tujuan wajib dipilih.',
+            'from_location_id.required' => 'Source location is required.',
+            'to_location_id.required' => 'Destination location is required.',
         ]);
 
         if ($this->from_location_id === $this->to_location_id) {
-            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Lokasi Asal dan Tujuan tidak boleh sama.'];
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Source and destination locations cannot be the same.'];
 
             return;
         }
@@ -140,7 +140,7 @@ class MovementInternalCreate extends Component
         $validItems = array_filter($this->items, fn ($item) => $item['item_id'] > 0 && $item['qty'] > 0);
 
         if (empty($validItems)) {
-            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Minimal pilih 1 item dengan qty > 0.'];
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Select at least 1 item with qty > 0.'];
 
             return;
         }
@@ -155,7 +155,7 @@ class MovementInternalCreate extends Component
             if ($item['qty'] > $available) {
                 $foundItem = collect($this->availableItems)->firstWhere('id', $item['item_id']);
                 $itemName = $foundItem['name'] ?? 'Item';
-                $errors[] = "Qty {$itemName} melebihi stok tersedia ({$available}).";
+                $errors[] = "Qty {$itemName} exceeds available stock ({$available}).";
             }
         }
 
@@ -179,7 +179,7 @@ class MovementInternalCreate extends Component
                 notes: $this->remark
             );
 
-            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Request Movement berhasil dibuat.'];
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Movement request created successfully.'];
             $this->dispatch('movement-internal-created');
             $this->dispatch('movement-internal-overlay-close');
 

@@ -67,14 +67,14 @@ class MejaTable extends Component
 
     public array $availableColumns = [
         ['key' => 'id', 'label' => 'ID', 'default' => true],
-        ['key' => 'table_number', 'label' => 'No. Meja', 'default' => true],
-        ['key' => 'capacity', 'label' => 'Kapasitas', 'default' => true],
+        ['key' => 'table_number', 'label' => 'Table No.', 'default' => true],
+        ['key' => 'capacity', 'label' => 'Capacity', 'default' => true],
         ['key' => 'area', 'label' => 'Area', 'default' => true],
         ['key' => 'status', 'label' => 'Status', 'default' => true],
-        ['key' => 'notes', 'label' => 'Catatan', 'default' => false],
-        ['key' => 'is_active', 'label' => 'Aktif', 'default' => true],
-        ['key' => 'created_at', 'label' => 'Dibuat', 'default' => false],
-        ['key' => 'updated_at', 'label' => 'Diubah', 'default' => false],
+        ['key' => 'notes', 'label' => 'Notes', 'default' => false],
+        ['key' => 'is_active', 'label' => 'Active', 'default' => true],
+        ['key' => 'created_at', 'label' => 'Created', 'default' => false],
+        ['key' => 'updated_at', 'label' => 'Updated', 'default' => false],
     ];
 
     protected $queryString = [
@@ -104,7 +104,7 @@ class MejaTable extends Component
             ['label' => 'Main Dashboard', 'route' => 'dashboard', 'color' => 'text-gray-800'],
             ['label' => 'Resto', 'route' => 'dashboard.resto', 'color' => 'text-gray-800'],
             ['label' => 'Master Data', 'route' => 'dashboard.resto.master', 'color' => 'text-gray-900 font-semibold'],
-            ['label' => 'Manajemen Meja', 'color' => 'text-gray-900 font-semibold'],
+            ['label' => 'Table Management', 'color' => 'text-gray-900 font-semibold'],
         ];
 
         $this->syncCaps();
@@ -253,7 +253,7 @@ class MejaTable extends Component
     public function exportSelected()
     {
         if (empty($this->selectedItems)) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Pilih data terlebih dahulu'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Please select data first'];
 
             return null;
         }
@@ -269,7 +269,7 @@ class MejaTable extends Component
         $spreadsheet = new Spreadsheet;
         $ws = $spreadsheet->getActiveSheet();
 
-        $headers = ['ID', 'No. Meja', 'Kapasitas', 'Area', 'Status', 'Catatan', 'Aktif', 'Dibuat'];
+        $headers = ['ID', 'Table No.', 'Capacity', 'Area', 'Status', 'Notes', 'Active', 'Created'];
         $ws->fromArray([$headers], null, 'A1');
 
         $areaLabels = [
@@ -281,9 +281,9 @@ class MejaTable extends Component
         ];
 
         $statusLabels = [
-            'available' => 'Tersedia',
-            'occupied' => 'Terisi',
-            'reserved' => 'Direservasi',
+            'available' => 'Available',
+            'occupied' => 'Occupied',
+            'reserved' => 'Reserved',
             'maintenance' => 'Maintenance',
         ];
 
@@ -296,7 +296,7 @@ class MejaTable extends Component
                 $areaLabels[$item->area] ?? $item->area,
                 $item->deleted_at ? 'Deleted' : ($statusLabels[$item->status] ?? $item->status),
                 $item->notes ?? '-',
-                $item->is_active ? 'Ya' : 'Tidak',
+                $item->is_active ? 'Yes' : 'No',
                 $item->created_at?->format('Y-m-d H:i:s') ?? '',
             ], null, 'A'.$row++);
         }
@@ -316,7 +316,7 @@ class MejaTable extends Component
     public function openCreate(): void
     {
         if (! $this->canCreate) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin create.'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to create.'];
 
             return;
         }
@@ -337,7 +337,7 @@ class MejaTable extends Component
     public function openEdit(string $id): void
     {
         if (! $this->canUpdate) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin update.'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to update.'];
 
             return;
         }
@@ -349,7 +349,7 @@ class MejaTable extends Component
     public function deleteItem(string $id): void
     {
         if (! $this->canDelete) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin delete.'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to delete.'];
 
             return;
         }
@@ -357,7 +357,7 @@ class MejaTable extends Component
         $item = Rst_Meja::withTrashed()->find($id);
 
         if (! $item) {
-            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data tidak ditemukan.'];
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data not found.'];
 
             return;
         }
@@ -368,7 +368,7 @@ class MejaTable extends Component
     public function restoreItem(string $id): void
     {
         if (! $this->canDelete) {
-            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'Tidak punya izin restore.'];
+            $this->toast = ['show' => true, 'type' => 'warning', 'message' => 'No permission to restore.'];
 
             return;
         }
@@ -376,7 +376,7 @@ class MejaTable extends Component
         $item = Rst_Meja::onlyTrashed()->find($id);
 
         if (! $item) {
-            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data tidak ditemukan.'];
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Data not found.'];
 
             return;
         }
@@ -399,14 +399,14 @@ class MejaTable extends Component
     public function handleCreated(?string $id = null): void
     {
         $this->closeOverlay();
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data berhasil ditambahkan.'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data added successfully.'];
     }
 
     #[On('meja-updated')]
     public function handleUpdated(?string $id = null): void
     {
         $this->closeOverlay();
-        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data berhasil diperbarui.'];
+        $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Data updated successfully.'];
     }
 
     #[On('meja-open-edit')]
@@ -418,7 +418,7 @@ class MejaTable extends Component
     protected function filter1Options(): array
     {
         return [
-            '' => '-- Semua Area --',
+            '' => '-- All Areas --',
             'indoor' => 'Indoor',
             'outdoor' => 'Outdoor',
             'vip' => 'VIP',
@@ -430,9 +430,9 @@ class MejaTable extends Component
     protected function filter2Options(): array
     {
         return [
-            '' => '-- Semua Status --',
-            '1' => 'Aktif',
-            '0' => 'Nonaktif',
+            '' => '-- All Status --',
+            '1' => 'Active',
+            '0' => 'Inactive',
         ];
     }
 

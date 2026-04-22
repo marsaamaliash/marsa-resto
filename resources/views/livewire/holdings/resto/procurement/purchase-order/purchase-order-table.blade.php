@@ -147,7 +147,15 @@
                                 Payment {!! $sortField === 'payment_by' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                             </th>
 
-                            
+                            {{-- Received Status --}}
+                            <th class="px-3 py-3 text-center text-xs font-bold">
+                                Received
+                            </th>
+
+                            {{-- Payment Status --}}
+                            <th class="px-3 py-3 text-center text-xs font-bold">
+                                Payment
+                            </th>
 
                             {{-- Created At --}}
                             <th wire:click="sortBy('created_at')"
@@ -256,7 +264,47 @@
                                     </span>
                                 </td>
 
-                                
+                                {{-- Received Status --}}
+                                <td class="px-3 py-2 text-center">
+                                    @php
+                                        $receivedStatusColor = match($item['received_status'] ?? 'not_received') {
+                                            'not_received' => 'bg-gray-100 text-gray-800',
+                                            'partial' => 'bg-yellow-100 text-yellow-800',
+                                            'fully_received' => 'bg-green-100 text-green-800',
+                                            default => 'bg-gray-100 text-gray-800',
+                                        };
+                                        $receivedStatusLabel = match($item['received_status'] ?? 'not_received') {
+                                            'not_received' => 'Not Received',
+                                            'partial' => 'Partial',
+                                            'fully_received' => 'Fully Received',
+                                            default => ucfirst($item['received_status']),
+                                        };
+                                    @endphp
+                                    <span class="px-2 py-0.5 rounded text-xs {{ $receivedStatusColor }}">
+                                        {{ $receivedStatusLabel }}
+                                    </span>
+                                </td>
+
+                                {{-- Payment Status --}}
+                                <td class="px-3 py-2 text-center">
+                                    @php
+                                        $paymentStatusColor = match($item['payment_status'] ?? 'unpaid') {
+                                            'unpaid' => 'bg-red-100 text-red-800',
+                                            'pending_finance' => 'bg-yellow-100 text-yellow-800',
+                                            'paid' => 'bg-green-100 text-green-800',
+                                            default => 'bg-gray-100 text-gray-800',
+                                        };
+                                        $paymentStatusLabel = match($item['payment_status'] ?? 'unpaid') {
+                                            'unpaid' => 'Unpaid',
+                                            'pending_finance' => 'Pending',
+                                            'paid' => 'Paid',
+                                            default => ucfirst($item['payment_status']),
+                                        };
+                                    @endphp
+                                    <span class="px-2 py-0.5 rounded text-xs {{ $paymentStatusColor }}">
+                                        {{ $paymentStatusLabel }}
+                                    </span>
+                                </td>
 
                         {{-- Created At --}}
                         <td class="px-3 py-2 text-sm text-gray-600">
@@ -286,6 +334,22 @@
                                             class="text-gray-700 hover:scale-125" title="Detail">
                                             <x-ui.sccr-icon name="eye" :size="18" />
                                         </a>
+
+                                        {{-- Create Goods Receipt --}}
+                                        @if ($item->isApproved() && ! $item->is_closed)
+                                            <a href="{{ route('dashboard.resto.goods-receipt.create-from-po', $item['id']) }}"
+                                                class="text-green-600 hover:scale-125" title="Create Goods Receipt">
+                                                <x-ui.sccr-icon name="package" :size="18" />
+                                            </a>
+                                        @endif
+
+                                        {{-- View Invoice --}}
+                                        @if ($item->isFullyReceived())
+                                            <a href="{{ route('dashboard.resto.invoice.detail', $item['id']) }}"
+                                                class="text-indigo-600 hover:scale-125" title="View Invoice">
+                                                <x-ui.sccr-icon name="file" :size="18" />
+                                            </a>
+                                        @endif
 
                                         {{-- Edit --}}
                                         @if ($item->canBeEdited() && ($canCreate || $canUpdate))
@@ -361,7 +425,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="13" class="py-10 text-center text-gray-400 italic">
+                                <td colspan="15" class="py-10 text-center text-gray-400 italic">
                                     Data tidak ditemukan
                                 </td>
                             </tr>

@@ -1,12 +1,12 @@
-<x-ui.sccr-card transparent wire:key="konversi-satuan" class="h-full min-h-0 flex flex-col">
+<x-ui.sccr-card transparent wire:key="unit-conversion" class="h-full min-h-0 flex flex-col">
 
     {{-- ================= HEADER ================= --}}
     <div class="relative px-8 py-6 bg-blue-600/80 rounded-b-3xl shadow-lg overflow-hidden">
         <div class="flex justify-between items-start">
             <div>
-                <h1 class="text-3xl font-bold text-white">Konversi Satuan</h1>
+                <h1 class="text-3xl font-bold text-white">Unit Conversion</h1>
                 <p class="text-blue-100 text-sm">
-                    Konversi Satuan
+                    Unit Conversion Management
                 </p>
             </div>
         </div>
@@ -14,7 +14,7 @@
         <div class="mt-4 flex justify-between items-center text-sm">
             <x-ui.sccr-breadcrumb :items="$breadcrumbs" />
             <div class="text-white">
-                Menampilkan <span class="font-bold text-black">{{ $data->total() }}</span> dari <span class="font-bold text-black">{{ $totalAll }}</span> data
+                Showing <span class="font-bold text-black">{{ $data->total() }}</span> of <span class="font-bold text-black">{{ $totalAll }}</span> records
             </div>
         </div>
     </div>
@@ -28,9 +28,9 @@
                 {{-- SEARCH INPUT --}}
                 <div class="relative top-1">
                     <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">
-                        Cari
+                        Search
                     </span>
-                    <x-ui.sccr-input name="search" wire:model="search" placeholder="Item / Satuan..."
+                    <x-ui.sccr-input name="search" wire:model="search" placeholder="Item / Unit..."
                         class="w-64" />
                 </div>
 
@@ -38,7 +38,7 @@
                 <div class="relative top-1">
                     <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">Status</span>
                     <select wire:model.live="filterStatus" class="border-gray-300 rounded-md text-sm w-32">
-                        <option value="">Semua</option>
+                        <option value="">All</option>
                         <option value="active">Active</option>
                         <option value="deleted">Deleted</option>
                     </select>
@@ -49,8 +49,9 @@
                     <x-ui.sccr-button type="submit" variant="primary"
                         class="bg-gray-900 text-gray-100 hover:bg-gray-400">
                         <x-ui.sccr-icon name="cari" :size="20" />
-                        Cari
+                        Search
                     </x-ui.sccr-button>
+                    
 
                     <x-ui.sccr-button type="button" wire:click="clearFilters"
                         class="bg-gray-800 text-gray-100 hover:bg-gray-400">
@@ -113,15 +114,15 @@
                             </th>
 
                             <th class="px-4 py-3 text-left text-xs font-bold">
-                                Dari Satuan
+                                From Unit
                             </th>
 
                             <th class="px-4 py-3 text-left text-xs font-bold">
-                                Ke Satuan
+                                To Unit
                             </th>
 
                             <th class="px-4 py-3 text-left text-xs font-bold">
-                                Nilai Konversi
+                                Conversion Value
                             </th>
 
                             <th class="px-4 py-3 text-center text-xs font-bold">
@@ -131,12 +132,12 @@
                             {{-- ACTIONS HEADER --}}
                             <th class="px-4 py-3 text-center text-xs font-bold">
                                 <div class="flex items-center justify-center gap-2">
-                                    <span>Aksi</span>
+                                    <span>Actions</span>
 
                                     @if ($canCreate && $canWrite)
                                         <x-ui.sccr-button type="button" variant="icon-circle"
                                             wire:click="openCreate" class="w-8 h-8 hover:scale-105"
-                                            title="Tambah Data">
+                                            title="Add Data">
                                             <x-ui.sccr-icon name="plus" :size="18" />
                                         </x-ui.sccr-button>
                                     @endif
@@ -202,8 +203,8 @@
                                         @if ($canDelete && ! $item->deleted_at)
                                             <x-ui.sccr-button type="button" variant="icon"
                                                 wire:click="deleteItem('{{ $item['id'] }}')"
-                                                class="text-red-600 hover:scale-125" title="Hapus"
-                                                wire:confirm="Yakin ingin menghapus data ini?">
+                                                class="text-red-600 hover:scale-125" title="Delete"
+                                                wire:confirm="Are you sure you want to delete this data?">
                                                 <x-ui.sccr-icon name="trash" :size="20" />
                                             </x-ui.sccr-button>
                                         @endif
@@ -212,7 +213,7 @@
                                             <x-ui.sccr-button type="button" variant="icon"
                                                 wire:click="restoreItem('{{ $item['id'] }}')"
                                                 class="text-green-600 hover:scale-125" title="Restore"
-                                                wire:confirm="Yakin ingin me-restore data ini?">
+                                                wire:confirm="Are you sure you want to restore this data?">
                                                 <x-ui.sccr-icon name="refresh" :size="20" />
                                             </x-ui.sccr-button>
                                         @endif
@@ -222,7 +223,7 @@
                         @empty
                             <tr>
                                 <td colspan="8" class="py-10 text-center text-gray-400 italic">
-                                    Data tidak ditemukan
+                                    No data found
                                 </td>
                             </tr>
                         @endforelse
@@ -234,7 +235,7 @@
             <div
                 class="flex-none px-6 py-3 border-t bg-white flex flex-col md:flex-row justify-between items-center gap-3">
                 <div class="text-sm text-gray-600 flex items-center">
-                    <span class="font-bold text-gray-800 mr-1">{{ count($selectedItems) }}</span> item dipilih
+                    <span class="font-bold text-gray-800 mr-1">{{ count($selectedItems) }}</span> items selected
                 </div>
 
                 <div>
@@ -255,7 +256,7 @@
         <div class="fixed inset-0 z-50 flex items-center justify-center px-6">
             <div class="w-full max-w-xl bg-white rounded-2xl shadow-2xl relative">
                 <x-ui.sccr-button type="button" variant="icon" wire:click="closeOverlay"
-                    class="absolute top-4 right-4 text-gray-400 hover:text-red-500" title="Tutup">
+                    class="absolute top-4 right-4 text-gray-400 hover:text-red-500" title="Close">
                     <span class="text-xl leading-none">&#x2715;</span>
                 </x-ui.sccr-button>
 
@@ -271,7 +272,7 @@
         <div class="fixed inset-0 z-50 flex items-center justify-center px-6">
             <div class="w-full max-w-3xl bg-white rounded-2xl shadow-2xl relative max-h-[90vh] overflow-y-auto">
                 <x-ui.sccr-button type="button" variant="icon" wire:click="closeOverlay"
-                    class="absolute top-4 right-4 text-gray-400 hover:text-red-500 z-10" title="Tutup">
+                    class="absolute top-4 right-4 text-gray-400 hover:text-red-500 z-10" title="Close">
                     <span class="text-xl leading-none">&#x2715;</span>
                 </x-ui.sccr-button>
 
@@ -287,7 +288,7 @@
         <div class="fixed inset-0 z-50 flex items-center justify-center px-6">
             <div class="w-full max-w-xl bg-white rounded-2xl shadow-2xl relative max-h-[90vh] overflow-y-auto">
                 <x-ui.sccr-button type="button" variant="icon" wire:click="closeOverlay"
-                    class="absolute top-4 right-4 text-gray-400 hover:text-red-500 z-10" title="Tutup">
+                    class="absolute top-4 right-4 text-gray-400 hover:text-red-500 z-10" title="Close">
                     <span class="text-xl leading-none">&#x2715;</span>
                 </x-ui.sccr-button>
 

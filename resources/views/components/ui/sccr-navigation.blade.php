@@ -87,7 +87,6 @@
                         <strong>{{ $displayName }}</strong>
                     </span>
 
-
                     {{-- Dropdown --}}
                     <x-ui.sccr-dropdown align="right" width="48">
                         <x-slot name="trigger">
