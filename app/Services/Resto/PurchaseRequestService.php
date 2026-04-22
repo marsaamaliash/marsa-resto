@@ -86,7 +86,6 @@ class PurchaseRequestService
     ): Rst_PurchaseRequest {
         return DB::transaction(function () use ($locationId, $items, $notes, $requesterName) {
             $pr = Rst_PurchaseRequest::create([
-                'pr_number' => ReferenceNumberService::generatePurchaseRequestNumber(),
                 'requester_location_id' => $locationId,
                 'status' => 'draft',
                 'approval_level' => 0,
@@ -247,6 +246,11 @@ class PurchaseRequestService
             $itemCount = $pr->items()->count();
             if ($itemCount === 0) {
                 throw new \Exception('PR harus memiliki minimal 1 item.');
+            }
+
+            // Generate PR number if not set yet (first time submit from draft)
+            if (empty($pr->pr_number)) {
+                $pr->pr_number = ReferenceNumberService::generatePurchaseRequestNumber();
             }
 
             $pr->fill([
@@ -514,7 +518,7 @@ class PurchaseRequestService
     /**
      * Recalculate total cost after item changes
      */
-    private static function recalculateTotalCost(Rst_PurchaseRequest $pr): void
+    public static function recalculateTotalCost(Rst_PurchaseRequest $pr): void
     {
         $total = $pr->items()->sum('total_cost');
         $pr->total_estimated_cost = $total ?? 0;

@@ -83,6 +83,39 @@ class DirectOrderCreate extends Component
 
     public function updatedRows(): void {}
 
+    public function saveDraft(): void
+    {
+        $this->validate([
+            'selectedLocationId' => 'required|integer|min:1',
+            'purchaseDate' => 'required|date',
+            'paymentBy' => 'required|string',
+            'proofFile' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'doNotes' => 'nullable|string',
+            'rows' => 'required|array|min:1',
+            'rows.*.item_id' => 'required|integer|min:1',
+            'rows.*.quantity' => 'required|numeric|min:0.01',
+            'rows.*.unit_price' => 'nullable|numeric|min:0',
+        ]);
+
+        try {
+            $do = DirectOrderService::createFromInput(
+                $this->selectedLocationId,
+                auth()->user()?->username ?? 'SYSTEM',
+                $this->purchaseDate,
+                $this->paymentBy,
+                $this->proofFile, // Pass the file object or null, service will handle it
+                $this->rows,
+                $this->doNotes ?: null
+            );
+
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Draft Direct Order berhasil disimpan'];
+
+            redirect()->route('dashboard.resto.direct-order');
+        } catch (\Exception $e) {
+            $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Error: '.$e->getMessage()];
+        }
+    }
+
     public function submitDO(): void
     {
         $this->validate([
@@ -116,9 +149,12 @@ class DirectOrderCreate extends Component
                 $this->doNotes ?: null
             );
 
-            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Direct Order berhasil dibuat'];
+            // Submit to RM for approval
+            DirectOrderService::submitForApproval($do->id);
 
-            redirect()->route('dashboard.resto.direct-order.detail', ['id' => $do->id]);
+            $this->toast = ['show' => true, 'type' => 'success', 'message' => 'Direct Order berhasil disubmit ke RM untuk approval'];
+
+            redirect()->route('dashboard.resto.direct-order');
         } catch (\Exception $e) {
             $this->toast = ['show' => true, 'type' => 'error', 'message' => 'Error: '.$e->getMessage()];
         }

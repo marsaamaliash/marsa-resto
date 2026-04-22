@@ -107,6 +107,12 @@
                                 <dt class="font-semibold text-gray-700">Payment By:</dt>
                                 <dd class="text-gray-600">{{ ucfirst($do?->payment_by) }}</dd>
                             </div>
+                            @if ($do?->notes)
+                                <div class="mt-2 pt-2 border-t border-gray-200">
+                                    <dt class="font-semibold text-gray-700">Catatan:</dt>
+                                    <dd class="text-gray-600 italic">{{ $do?->notes }}</dd>
+                                </div>
+                            @endif
                         </dl>
                     @endif
                 </div>
@@ -295,19 +301,6 @@
                                     @endif
                                 </div>
                             @endif
-                            @if ($do?->canBeEdited() && $isCreator)
-                                <div class="mt-2">
-                                    <label class="block text-xs font-semibold text-gray-700 mb-1">Catatan</label>
-                                    <textarea wire:model.live="doNotes" rows="2"
-                                        placeholder="Catatan..."
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs"></textarea>
-                                </div>
-                            @elseif ($do?->notes)
-                                <div class="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                                    <p class="text-xs font-semibold text-blue-800">Catatan:</p>
-                                    <p class="text-xs text-gray-700 mt-1 italic">{{ $do?->notes }}</p>
-                                </div>
-                            @endif
                         </div>
                     </div>
 
@@ -339,12 +332,6 @@
                                     <p class="text-xs font-semibold text-yellow-800">Menunggu approval RM</p>
                                 </div>
                             @endif
-                            @if ($do?->notes && $do?->approval_level >= 1)
-                                <div class="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                                    <p class="text-xs font-semibold text-blue-800">Catatan:</p>
-                                    <p class="text-xs text-gray-700 mt-1 italic">{{ $do?->notes }}</p>
-                                </div>
-                            @endif
                         </div>
                     </div>
 
@@ -371,12 +358,6 @@
                             @elseif ($do?->isPendingSPV())
                                 <div class="mt-2 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
                                     <p class="text-xs font-semibold text-yellow-800">Menunggu approval SPV</p>
-                                </div>
-                            @endif
-                            @if ($do?->notes && $do?->approval_level >= 2)
-                                <div class="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                                    <p class="text-xs font-semibold text-blue-800">Catatan:</p>
-                                    <p class="text-xs text-gray-700 mt-1 italic">{{ $do?->notes }}</p>
                                 </div>
                             @endif
                         </div>

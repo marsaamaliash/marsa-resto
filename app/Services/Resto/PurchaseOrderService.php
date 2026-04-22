@@ -18,35 +18,55 @@ class PurchaseOrderService
     {
         return Rst_PurchaseRequest::where('requester_location_id', $locationId)
             ->where('status', 'approved')
-            ->whereDoesntHave('purchaseOrders', function ($query) {
-                $query->whereNotIn('status', ['rejected']);
-            })
-            ->with('items.item', 'items.uom')
+            ->with(['items.item', 'items.uom', 'purchaseOrders.items'])
             ->get()
+            ->map(function ($pr) {
+                $orderedItemIds = [];
+                foreach ($pr->purchaseOrders as $po) {
+                    if (! in_array($po->status, ['rejected'])) {
+                        foreach ($po->items as $poItem) {
+                            $orderedItemIds[] = $poItem->item_id;
+                        }
+                    }
+                }
+
+                $availableItems = [];
+                foreach ($pr->items as $prItem) {
+                    if (! in_array($prItem->item_id, $orderedItemIds)) {
+                        $availableItems[] = $prItem;
+                    }
+                }
+
+                $prArray = $pr->toArray();
+                $prArray['items'] = $availableItems;
+                $prArray['has_available_items'] = ! empty($availableItems);
+
+                return $prArray;
+            })
             ->toArray();
     }
 
     /**
-     * Create a new Purchase Order from Purchase Request
+     * Create a new Purchase Order from Purchase Request (Draft)
      */
     public static function createFromPurchaseRequest(
         int $prId,
-        string $vendorName,
+        ?string $vendorName = null,
         ?int $vendorId = null,
         string $paymentBy = 'holding',
         ?string $quotationPath = null,
         ?string $vendorNotes = null,
-        array $itemPrices = []
+        array $itemPrices = [],
+        array $selectedItemIds = []
     ): Rst_PurchaseOrder {
-        return DB::transaction(function () use ($prId, $vendorName, $vendorId, $paymentBy, $quotationPath, $vendorNotes, $itemPrices) {
-            $pr = Rst_PurchaseRequest::findOrFail($prId);
+        return DB::transaction(function () use ($prId, $vendorName, $vendorId, $paymentBy, $quotationPath, $vendorNotes, $itemPrices, $selectedItemIds) {
+            $pr = Rst_PurchaseRequest::with('items')->findOrFail($prId);
 
             if ($pr->status !== 'approved') {
-                throw new \Exception('Purchase Request harus dalam status approved.');
+                throw new \Exception('Purchase Request must be in approved status.');
             }
 
             $po = Rst_PurchaseOrder::create([
-                'po_number' => self::generatePurchaseOrderNumber(),
                 'purchase_request_id' => $prId,
                 'vendor_id' => $vendorId,
                 'vendor_name' => $vendorName,
@@ -59,10 +79,13 @@ class PurchaseOrderService
                 'created_by' => auth()->user()?->username,
             ]);
 
-            // Copy items from PR to PO with user-input prices
             $totalAmount = 0;
-            foreach ($pr->items as $index => $prItem) {
-                $unitPrice = $itemPrices[$index] ?? ($prItem->unit_cost ?? 0);
+            foreach ($pr->items as $prItem) {
+                if (! empty($selectedItemIds) && ! in_array($prItem->id, $selectedItemIds)) {
+                    continue;
+                }
+
+                $unitPrice = $itemPrices[$prItem->id] ?? ($prItem->unit_cost ?? 0);
                 $itemTotal = $unitPrice * $prItem->requested_qty;
                 $totalAmount += $itemTotal;
 
@@ -70,6 +93,7 @@ class PurchaseOrderService
                     'purchase_order_id' => $po->id,
                     'item_id' => $prItem->item_id,
                     'uom_id' => $prItem->uom_id,
+                    'vendor_id' => $vendorId,
                     'ordered_qty' => $prItem->requested_qty,
                     'unit_price' => $unitPrice,
                     'total_price' => $itemTotal,
@@ -206,6 +230,56 @@ class PurchaseOrderService
     }
 
     /**
+     * Update PO items (for editing draft)
+     *
+     * @param  array<int, array{unit_price: float}>  $itemPrices
+     */
+    public static function updatePOItems(
+        int $poId,
+        ?string $vendorName = null,
+        ?int $vendorId = null,
+        string $paymentBy = 'holding',
+        ?string $vendorNotes = null,
+        array $itemPrices = []
+    ): Rst_PurchaseOrder {
+        return DB::transaction(function () use ($poId, $vendorName, $vendorId, $paymentBy, $vendorNotes, $itemPrices) {
+            $po = Rst_PurchaseOrder::findOrFail($poId);
+
+            if (! $po->canBeEdited()) {
+                throw new \Exception('Purchase Order tidak dapat diedit pada status ini.');
+            }
+
+            // Update PO details
+            if ($vendorId !== null) {
+                $po->vendor_id = $vendorId;
+            }
+            if ($vendorName !== null) {
+                $po->vendor_name = $vendorName;
+            }
+            $po->payment_by = $paymentBy;
+            $po->notes = $vendorNotes;
+            $po->updated_by = auth()->user()?->username;
+
+            // Update items pricing
+            $totalAmount = 0;
+            foreach ($po->items as $index => $poItem) {
+                $unitPrice = $itemPrices[$index] ?? $poItem->unit_price ?? 0;
+                $itemTotal = $unitPrice * $poItem->ordered_qty;
+                $totalAmount += $itemTotal;
+
+                $poItem->unit_price = $unitPrice;
+                $poItem->total_price = $itemTotal;
+                $poItem->save();
+            }
+
+            $po->total_amount = $totalAmount > 0 ? $totalAmount : null;
+            $po->save();
+
+            return $po;
+        });
+    }
+
+    /**
      * Submit PO for RM approval
      */
     public static function submitForApproval(int $poId): Rst_PurchaseOrder
@@ -219,6 +293,11 @@ class PurchaseOrderService
 
             if (! $po->quotation_path) {
                 throw new \Exception('Quotation file harus diupload terlebih dahulu.');
+            }
+
+            // Generate PO number if not set yet (first time submit from draft)
+            if (empty($po->po_number)) {
+                $po->po_number = self::generatePurchaseOrderNumber();
             }
 
             $po->status = 'pending_rm';

@@ -4,8 +4,8 @@
     <div class="relative px-8 py-6 bg-gradient-to-r from-blue-600 to-blue-700 rounded-b-3xl shadow-lg">
         <div class="flex justify-between items-start">
             <div>
-                <h1 class="text-3xl font-bold text-white">Buat Purchase Order</h1>
-                <p class="text-blue-100 text-sm mt-1">Membuat PO dari Purchase Request yang telah diapprove</p>
+                <h1 class="text-3xl font-bold text-white">Create Purchase Order</h1>
+                <p class="text-blue-100 text-sm mt-1">Create PO from approved Purchase Requests</p>
             </div>
         </div>
 
@@ -29,15 +29,15 @@
 
             {{-- STEP 1: SELECT LOCATION & APPROVED PR --}}
             <div class="bg-white rounded-xl shadow border p-6">
-                <h2 class="text-lg font-bold text-gray-800 mb-4">Langkah 1: Pilih Lokasi dan PR yang Diapprove</h2>
+                <h2 class="text-lg font-bold text-gray-800 mb-4">Step 1: Select Location and Approved PR</h2>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {{-- LOCATION --}}
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">Lokasi <span class="text-red-500">*</span></label>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Location <span class="text-red-500">*</span></label>
                         <select wire:model.live="selectedLocationId"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                            <option value="0">-- Pilih Lokasi --</option>
+                            <option value="0">-- Select Location --</option>
                             @foreach ($locations as $loc)
                                 <option value="{{ $loc['id'] }}">{{ $loc['name'] }}</option>
                             @endforeach
@@ -50,11 +50,13 @@
                         <select wire:model.live="selectedPRId"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             {{ $selectedLocationId == 0 ? 'disabled' : '' }}>
-                            <option value="0">-- Pilih PR yang Diapprove --</option>
+                            <option value="0">-- Select Approved PR --</option>
                             @foreach ($approvedPRs as $pr)
-                                <option value="{{ $pr['id'] }}">
-                                    {{ $pr['pr_number'] }} - {{ $pr['notes'] ?? 'Tanpa catatan' }}
-                                </option>
+                                @if ($pr['has_available_items'] ?? false)
+                                    <option value="{{ $pr['id'] }}">
+                                        {{ $pr['pr_number'] }} - {{ $pr['notes'] ?? 'No notes' }}
+                                    </option>
+                                @endif
                             @endforeach
                         </select>
                     </div>
@@ -63,7 +65,10 @@
                 {{-- SELECTED PR ITEMS --}}
                 @if (!empty($selectedPRItems))
                     <div class="mt-6">
-                        <h3 class="text-base font-bold text-gray-800 mb-3">Items dari PR yang Dipilih:</h3>
+                        <h3 class="text-base font-bold text-gray-800 mb-3">Items from Selected PR:</h3>
+
+                        
+
                         <div class="overflow-x-auto">
                             <table class="min-w-full text-sm">
                                 <thead class="bg-gray-50 border-b">
@@ -71,26 +76,33 @@
                                         <th class="px-3 py-2 text-left font-bold text-gray-700">Item</th>
                                         <th class="px-3 py-2 text-center font-bold text-gray-700">Qty</th>
                                         <th class="px-3 py-2 text-center font-bold text-gray-700">UoM</th>
-                                        <th class="px-3 py-2 text-right font-bold text-gray-700">Harga Satuan <span class="text-red-500">*</span></th>
+                                        <th class="px-3 py-2 text-right font-bold text-gray-700">Unit Price <span class="text-red-500">*</span></th>
                                         <th class="px-3 py-2 text-right font-bold text-gray-700">Total</th>
+                                        <th class="px-3 py-2 text-center font-bold text-gray-700">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($selectedPRItems as $index => $item)
-                                        <tr class="border-b hover:bg-gray-50">
+                                    @foreach ($selectedPRItems as $item)
+                                        <tr class="border-b hover:bg-gray-50" wire:key="item-{{ $item['id'] }}">
                                             <td class="px-3 py-2">{{ $item['item']['name'] ?? 'Unknown' }}</td>
                                             <td class="px-3 py-2 text-center">{{ $item['requested_qty'] }}</td>
                                             <td class="px-3 py-2 text-center">{{ $item['uom']['name'] ?? $item['uom_id'] ?? '-' }}</td>
                                             <td class="px-3 py-2 text-right">
-                                                <input type="number" wire:model.live="itemPrices.{{ $index }}" step="0.01" min="0"
+                                                <input type="number" wire:model.live="itemPrices.{{ $item['id'] }}" step="0.01" min="0"
                                                     class="w-32 px-2 py-1 border border-gray-300 rounded text-right text-sm">
                                             </td>
                                             <td class="px-3 py-2 text-right font-semibold">
                                                 @php
-                                                    $price = (float) ($itemPrices[$index] ?? 0);
+                                                    $price = (float) ($itemPrices[$item['id']] ?? 0);
                                                     $qty = (float) ($item['requested_qty'] ?? 0);
                                                 @endphp
                                                 Rp {{ number_format($price * $qty, 2, ',', '.') }}
+                                            </td>
+                                            <td class="px-3 py-2 text-center">
+                                                <button type="button" wire:click="removeItem({{ $item['id'] }})"
+                                                    class="text-red-600 hover:text-red-800 text-sm font-medium">
+                                                    Remove
+                                                </button>
                                             </td>
                                         </tr>
                                     @endforeach
@@ -101,51 +113,86 @@
                                         <td class="px-3 py-2 text-right font-bold text-blue-600">
                                             @php
                                                 $grandTotal = 0;
-                                                foreach ($selectedPRItems as $i => $it) {
-                                                    $grandTotal += floatval($itemPrices[$i] ?? 0) * floatval($it['requested_qty'] ?? 0);
+                                                foreach ($selectedPRItems as $it) {
+                                                    $grandTotal += floatval($itemPrices[$it['id']] ?? 0) * floatval($it['requested_qty'] ?? 0);
                                                 }
                                             @endphp
                                             Rp {{ number_format($grandTotal, 2, ',', '.') }}
                                         </td>
+                                        <td></td>
                                     </tr>
                                 </tfoot>
+                            </table>
+                        </div>
+
+                        {{-- VENDOR SELECTION --}}
+                        <div class="mt-4">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Vendor <span class="text-red-500">*</span></label>
+                            <select wire:model.live="selectedVendorId"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="0">-- Select Vendor --</option>
+                                @foreach ($vendors as $vendor)
+                                    <option value="{{ $vendor['id'] }}">{{ $vendor['name'] }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                @endif
+
+                {{-- REMOVED ITEMS --}}
+                @if (!empty($removedItems))
+                    <div class="mt-6">
+                        <h3 class="text-base font-bold text-gray-800 mb-3">Removed Items (can be re-added):</h3>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-sm">
+                                <thead class="bg-gray-50 border-b">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left font-bold text-gray-700">Item</th>
+                                        <th class="px-3 py-2 text-center font-bold text-gray-700">Qty</th>
+                                        <th class="px-3 py-2 text-center font-bold text-gray-700">UoM</th>
+                                        <th class="px-3 py-2 text-right font-bold text-gray-700">Unit Price</th>
+                                        <th class="px-3 py-2 text-center font-bold text-gray-700">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($removedItems as $prItemId => $removed)
+                                        <tr class="border-b bg-gray-50 opacity-75" wire:key="removed-{{ $removed['id'] }}">
+                                            <td class="px-3 py-2">{{ $removed['item']['item']['name'] ?? 'Unknown' }}</td>
+                                            <td class="px-3 py-2 text-center">{{ $removed['item']['requested_qty'] }}</td>
+                                            <td class="px-3 py-2 text-center">{{ $removed['item']['uom']['name'] ?? $removed['item']['uom_id'] ?? '-' }}</td>
+                                            <td class="px-3 py-2 text-right">
+                                                Rp {{ number_format($removed['price'], 2, ',', '.') }}
+                                            </td>
+                                            <td class="px-3 py-2 text-center">
+                                                <button type="button" wire:click="restoreItem({{ $prItemId }})"
+                                                    class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                                    Restore
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
                             </table>
                         </div>
                     </div>
                 @endif
             </div>
 
-            {{-- STEP 2: SELECT VENDOR --}}
+            {{-- STEP 2: UPLOAD QUOTATION & PAYMENT --}}
             <div class="bg-white rounded-xl shadow border p-6">
-                <h2 class="text-lg font-bold text-gray-800 mb-4">Langkah 2: Pilih Vendor</h2>
-
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Pilih Vendor dari Database <span class="text-red-500">*</span></label>
-                    <select wire:model.live="selectedVendorId"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        <option value="0">-- Pilih Vendor --</option>
-                        @foreach ($vendors as $vendor)
-                            <option value="{{ $vendor['id'] }}">{{ $vendor['name'] }}</option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
-
-            {{-- STEP 3: UPLOAD QUOTATION & PAYMENT --}}
-            <div class="bg-white rounded-xl shadow border p-6">
-                <h2 class="text-lg font-bold text-gray-800 mb-4">Langkah 3: Upload Quotation, Pembayaran & Catatan</h2>
+                <h2 class="text-lg font-bold text-gray-800 mb-4">Step 2: Upload Quotation, Payment & Notes</h2>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {{-- QUOTATION FILE --}}
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">Upload Quotation/Bukti Pembelian <span class="text-red-500">*</span></label>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Upload Quotation/Purchase Proof <span class="text-red-500">*</span></label>
                         <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-blue-500"
                             onclick="document.getElementById('quotation-file-input').click()">
                             <input type="file" wire:model.live="quotationFile"
                                 accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                                 class="hidden" id="quotation-file-input">
                             @if ($quotationFile)
-                                <div class="text-green-600 font-semibold mb-3">✓ {{ $quotationFile->getClientOriginalName() }}</div>
+                                <div class="text-green-600 font-semibold mb-3">&#10003; {{ $quotationFile->getClientOriginalName() }}</div>
                                 @if (in_array($quotationFile->extension(), ['jpg', 'jpeg', 'png']))
                                     <img src="{{ $quotationFile->temporaryUrl() }}" class="max-w-full max-h-64 mx-auto rounded-lg shadow">
                                 @elseif ($quotationFile->extension() === 'pdf')
@@ -157,7 +204,7 @@
                                 <svg class="w-8 h-8 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                                 </svg>
-                                <p class="text-sm text-gray-600">Click atau drag quotation file (PDF, JPG, PNG, DOC)</p>
+                                <p class="text-sm text-gray-600">Click or drag quotation file (PDF, JPG, PNG, DOC)</p>
                                 <p class="text-xs text-gray-500 mt-1">Max 5MB</p>
                             @endif
                         </div>
@@ -166,17 +213,17 @@
 
                     {{-- PAYMENT BY --}}
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">Pembayaran Dilakukan Oleh <span class="text-red-500">*</span></label>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Payment Made By <span class="text-red-500">*</span></label>
                         <div class="space-y-2">
                             <label class="flex items-center">
                                 <input type="radio" wire:model="paymentBy" value="holding"
                                     class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                <span class="ml-2 text-gray-700">Holding (Pusat)</span>
+                                <span class="ml-2 text-gray-700">Holding (Central)</span>
                             </label>
                             <label class="flex items-center">
                                 <input type="radio" wire:model="paymentBy" value="resto"
                                     class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                <span class="ml-2 text-gray-700">Resto (Cabang)</span>
+                                <span class="ml-2 text-gray-700">Resto (Branch)</span>
                             </label>
                         </div>
                     </div>
@@ -184,9 +231,9 @@
 
                 {{-- VENDOR NOTES --}}
                 <div class="mt-4">
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Catatan</label>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Notes</label>
                     <textarea wire:model="poNotes" rows="3"
-                        placeholder="Catatan PO (opsional)..."
+                        placeholder="PO notes (optional)..."
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
                 </div>
             </div>
@@ -195,11 +242,15 @@
             <div class="flex justify-end gap-4 pb-4">
                 <a href="{{ route('dashboard.resto.purchase-order') }}"
                     class="px-6 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500">
-                    Batal
+                    Cancel
                 </a>
+                <button type="button" wire:click="saveDraft"
+                    class="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-semibold">
+                    Save Draft
+                </button>
                 <button type="button" wire:click="submitPO"
                     class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold">
-                    Buat PO
+                    Submit
                 </button>
             </div>
 

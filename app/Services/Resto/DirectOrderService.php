@@ -43,10 +43,17 @@ class DirectOrderService
         ?string $notes = null
     ): Rst_DirectOrder {
         return DB::transaction(function () use ($locationId, $purchaserName, $purchaseDate, $paymentBy, $proofFile, $items, $notes) {
-            $proofPath = $proofFile->store('do/proof', 'public');
+            // Handle proof file - can be a file object or a string path
+            $proofPath = null;
+            if ($proofFile !== null) {
+                if (is_string($proofFile)) {
+                    $proofPath = $proofFile;
+                } else {
+                    $proofPath = $proofFile->store('do/proof', 'public');
+                }
+            }
 
             $do = Rst_DirectOrder::create([
-                'do_number' => self::generateDirectOrderNumber(),
                 'location_id' => $locationId,
                 'purchaser_name' => $purchaserName,
                 'purchase_date' => $purchaseDate,
@@ -96,6 +103,11 @@ class DirectOrderService
 
             if (! $do->proof_path) {
                 throw new \Exception('Bukti pembelian harus diupload terlebih dahulu.');
+            }
+
+            // Generate DO number if not set yet (first time submit from draft)
+            if (empty($do->do_number)) {
+                $do->do_number = self::generateDirectOrderNumber();
             }
 
             $do->status = 'pending_rm';
@@ -237,7 +249,6 @@ class DirectOrderService
 
     public static function updateDODetails(
         int $doId,
-        int $vendorId,
         string $paymentBy,
         ?string $notes = null
     ): Rst_DirectOrder {
@@ -251,6 +262,59 @@ class DirectOrderService
             $do->payment_by = $paymentBy;
             $do->notes = $notes;
             $do->updated_by = auth()->user()?->username;
+            $do->save();
+
+            return $do;
+        });
+    }
+
+    /**
+     * Update DO items (for editing draft)
+     *
+     * @param  array<int, array{item_id: int, uom_id: ?int, quantity: float, unit_price: float, notes: ?string}>  $items
+     */
+    public static function updateDOItems(
+        int $doId,
+        string $purchaseDate,
+        string $paymentBy,
+        ?string $notes = null,
+        array $items = []
+    ): Rst_DirectOrder {
+        return DB::transaction(function () use ($doId, $purchaseDate, $paymentBy, $notes, $items) {
+            $do = Rst_DirectOrder::findOrFail($doId);
+
+            if (! $do->canBeEdited()) {
+                throw new \Exception('Direct Order tidak dapat diedit pada status ini.');
+            }
+
+            // Update DO details
+            $do->purchase_date = $purchaseDate;
+            $do->payment_by = $paymentBy;
+            $do->notes = $notes;
+            $do->updated_by = auth()->user()?->username;
+
+            // Delete existing items and recreate
+            $do->items()->delete();
+
+            $totalAmount = 0;
+            foreach ($items as $itemData) {
+                $unitPrice = (float) ($itemData['unit_price'] ?? 0);
+                $quantity = (float) ($itemData['quantity'] ?? 0);
+                $itemTotal = $unitPrice * $quantity;
+                $totalAmount += $itemTotal;
+
+                Rst_DirectOrderItem::create([
+                    'direct_order_id' => $do->id,
+                    'item_id' => $itemData['item_id'],
+                    'uom_id' => $itemData['uom_id'] ?? null,
+                    'quantity' => $quantity,
+                    'unit_price' => $unitPrice,
+                    'total_price' => $itemTotal,
+                    'notes' => $itemData['notes'] ?? null,
+                ]);
+            }
+
+            $do->total_amount = $totalAmount > 0 ? $totalAmount : null;
             $do->save();
 
             return $do;

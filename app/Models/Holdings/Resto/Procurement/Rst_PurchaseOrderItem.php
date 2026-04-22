@@ -19,6 +19,7 @@ class Rst_PurchaseOrderItem extends Model
         'purchase_order_id',
         'item_id',
         'uom_id',
+        'vendor_id',
         'ordered_qty',
         'unit_price',
         'total_price',
@@ -44,6 +45,11 @@ class Rst_PurchaseOrderItem extends Model
     public function uom(): BelongsTo
     {
         return $this->belongsTo(\App\Models\Holdings\Resto\Master\Rst_MasterSatuan::class, 'uom_id');
+    }
+
+    public function vendor(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Holdings\Resto\Master\Rst_MasterVendor::class, 'vendor_id');
     }
 
     public function calculateTotalPrice(): void

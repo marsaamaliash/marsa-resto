@@ -195,9 +195,13 @@
                     class="px-6 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500">
                     Batal
                 </a>
+                <button type="button" wire:click="saveDraft"
+                    class="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-semibold">
+                    Simpan Draft
+                </button>
                 <button type="button" wire:click="submitDO"
                     class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold">
-                    Buat Direct Order
+                    Submit ke RM
                 </button>
             </div>
 
