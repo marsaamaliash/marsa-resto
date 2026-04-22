@@ -1,4 +1,4 @@
-﻿<x-ui.sccr-card transparent wire:key="recipe" class="h-full min-h-0 flex flex-col">
+<x-ui.sccr-card transparent wire:key="recipe" class="h-full min-h-0 flex flex-col">
 
     {{-- ================= HEADER ================= --}}
     <div class="relative px-8 py-6 bg-purple-600/80 rounded-b-3xl shadow-lg overflow-hidden">
@@ -192,10 +192,10 @@
                                 </td>
 
                                 <td class="px-4 py-2 text-sm">
-                                    @if ($item->Menu_id)
-                                        {{ $item->Menu?->name ?? '-' }}
-                                        @if ($item->Menu?->category)
-                                            <span class="text-xs text-gray-400">({{ $item->Menu->category }})</span>
+                                    @if ($item->menu_id)
+                                        {{ $item->menu?->name ?? '-' }}
+                                        @if ($item->menu?->category)
+                                            <span class="text-xs text-gray-400">({{ $item->menu->category }})</span>
                                         @endif
                                     @else
                                         <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800">
@@ -290,7 +290,7 @@
                     <span class="text-xl leading-none">&#x2715;</span>
                 </x-ui.sccr-button>
 
-                @livewire('holdings.resto.Recipe.recipe.recipe-create')
+                @livewire('holdings.resto.resep.recipe.recipe-create')
             </div>
         </div>
     @endif
@@ -306,13 +306,13 @@
                     <span class="text-xl leading-none">&#x2715;</span>
                 </x-ui.sccr-button>
 
-                @livewire('holdings.resto.Recipe.recipe.recipe-create', ['isSemiFinished' => true])
+                @livewire('holdings.resto.resep.recipe.recipe-create', ['isSemiFinished' => true])
             </div>
         </div>
     @endif
 
     {{-- ================= OVERLAY: Edit ================= --}}
-    @if ($overlayMode === 'Edit' && $overlayId)
+    @if ($overlayMode === 'edit' && $overlayId)
         <div class="fixed inset-0 bg-black/40 z-40" wire:click="closeOverlay"></div>
 
         <div class="fixed inset-0 z-50 flex items-center justify-center px-6">
@@ -322,7 +322,7 @@
                     <span class="text-xl leading-none">&#x2715;</span>
                 </x-ui.sccr-button>
 
-                @livewire('holdings.resto.Recipe.recipe.recipe-Edit', ['id' => $overlayId])
+                @livewire('holdings.resto.resep.recipe.recipe-edit', ['id' => $overlayId])
             </div>
         </div>
     @endif

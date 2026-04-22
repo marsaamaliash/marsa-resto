@@ -40,12 +40,12 @@ return new class extends Migration
     public function up(): void
     {
         foreach ($this->tables as $tableName) {
-            if (!Schema::connection('sccr_resto')->hasTable($tableName)) {
+            if (! Schema::connection('sccr_resto')->hasTable($tableName)) {
                 continue;
             }
 
             Schema::connection('sccr_resto')->table($tableName, function (Blueprint $table) use ($tableName) {
-                if (!Schema::connection('sccr_resto')->hasColumn($tableName, 'branch_id')) {
+                if (! Schema::connection('sccr_resto')->hasColumn($tableName, 'branch_id')) {
                     $table->unsignedBigInteger('branch_id')->nullable()->after('id');
                     $table->index('branch_id');
                 }
@@ -59,7 +59,7 @@ return new class extends Migration
     public function down(): void
     {
         foreach ($this->tables as $tableName) {
-            if (!Schema::connection('sccr_resto')->hasTable($tableName)) {
+            if (! Schema::connection('sccr_resto')->hasTable($tableName)) {
                 continue;
             }
 
@@ -77,7 +77,7 @@ return new class extends Migration
         // Cek apakah sudah ada branch (dari seeder)
         $firstBranch = \DB::connection('sccr_resto')->table('branches')->first();
 
-        if (!$firstBranch) {
+        if (! $firstBranch) {
             // Jika belum ada branch, skip update (branch_id akan null)
             // User harus jalankan seeder untuk membuat branch
             return;
@@ -87,7 +87,7 @@ return new class extends Migration
 
         // Update semua tabel dengan branch_id dari branch pertama (dari seeder)
         foreach ($this->tables as $tableName) {
-            if (!Schema::connection('sccr_resto')->hasTable($tableName)) {
+            if (! Schema::connection('sccr_resto')->hasTable($tableName)) {
                 continue;
             }
 

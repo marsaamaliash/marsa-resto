@@ -1,4 +1,4 @@
-﻿<x-ui.sccr-card transparent wire:key="Unit" class="h-full min-h-0 flex flex-col">
+<x-ui.sccr-card transparent wire:key="Unit" class="h-full min-h-0 flex flex-col">
 
     {{-- ================= HEADER ================= --}}
     <div class="relative px-8 py-6 bg-blue-600/80 rounded-b-3xl shadow-lg overflow-hidden">
@@ -172,7 +172,7 @@
                                     <div class="flex items-center justify-center gap-2 text-sm">
                                         <span class="font-mono font-semibold text-gray-700">{{ $item->qty_source_taken }}</span>
                                         <span class="text-xs text-gray-400">{{ $item->sourceItem?->uom?->name ?? 'unit' }}</span>
-                                        <span class="inline-flex items-center justify-center w-6 h-5 rounded text-xs font-bold bg-amber-100 text-amber-700 border border-amber-200">×{{ $item->Multiplier }}</span>
+                                        <span class="inline-flex items-center justify-center w-6 h-5 rounded text-xs font-bold bg-amber-100 text-amber-700 border border-amber-200">×{{ $item->multiplier }}</span>
                                         <span class="text-gray-400">→</span>
                                         <span class="font-mono font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded border border-green-200">{{ $item->qty_target_result }}</span>
                                         <span class="text-xs text-gray-400">{{ $item->targetItem?->uom?->name ?? 'unit' }}</span>
@@ -272,7 +272,7 @@
                     <span class="text-xl leading-none">✕</span>
                 </x-ui.sccr-button>
 
-                @livewire('holdings.resto.Recipe.repack.repack-create')
+                @livewire('holdings.resto.resep.repack.repack-create')
             </div>
         </div>
     @endif
@@ -290,7 +290,7 @@
 
                 {{-- REPACK Detail --}}
                 <div class="p-6 max-h-[90vh] overflow-y-auto">
-                    @if ($Detail)
+                    @if ($detail)
                         <h2 class="text-2xl font-bold text-gray-800 mb-6">Detail Repack Stok</h2>
 
                         {{-- Header Info --}}
@@ -298,19 +298,19 @@
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                                 <div>
                                     <div class="font-semibold text-gray-600 text-xs uppercase">No. Repack</div>
-                                    <div class="font-mono font-bold text-blue-700 text-lg">{{ $Detail['repack_number'] }}</div>
+                                    <div class="font-mono font-bold text-blue-700 text-lg">{{ $detail['repack_number'] }}</div>
                                 </div>
                                 <div>
                                     <div class="font-semibold text-gray-600 text-xs uppercase">Location</div>
-                                    <div class="font-semibold text-gray-800">{{ $Detail->location?->name ?? '-' }}</div>
+                                    <div class="font-semibold text-gray-800">{{ $detail->location?->name ?? '-' }}</div>
                                 </div>
                                 <div>
                                     <div class="font-semibold text-gray-600 text-xs uppercase">Created Oleh</div>
-                                    <div class="text-gray-800">{{ $Detail->creator?->name ?? 'System' }}</div>
+                                    <div class="text-gray-800">{{ $detail->creator?->name ?? 'System' }}</div>
                                 </div>
                                 <div>
                                     <div class="font-semibold text-gray-600 text-xs uppercase">Tanggal</div>
-                                    <div class="text-gray-800">{{ $Detail['created_at']?->format('d/m/Y H:i') }} WITA</div>
+                                    <div class="text-gray-800">{{ $detail['created_at']?->format('d/m/Y H:i') }} WITA</div>
                                 </div>
                             </div>
                         </div>
@@ -324,29 +324,29 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div class="bg-white border border-red-100 rounded-lg p-4">
                                     <div class="text-xs font-semibold text-gray-500 uppercase mb-2">SENot Yet</div>
-                                    <div class="text-xl font-bold text-gray-800">{{ $repackOut?->item?->name ?? $Detail->sourceItem?->name ?? '-' }}</div>
-                                    <div class="text-sm text-gray-600">{{ $repackOut?->uom?->name ?? $Detail->sourceItem?->uom?->name ?? 'unit' }}</div>
+                                    <div class="text-xl font-bold text-gray-800">{{ $repackOut?->item?->name ?? $detail->sourceItem?->name ?? '-' }}</div>
+                                    <div class="text-sm text-gray-600">{{ $repackOut?->uom?->name ?? $detail->sourceItem?->uom?->name ?? 'unit' }}</div>
                                     <div class="mt-2 text-3xl font-mono font-bold text-gray-700">
                                         {{ number_format($repackOut?->qty_before ?? 0, 2) }}
                                     </div>
-                                    <div class="text-xs text-gray-500">di {{ $repackOut?->location?->name ?? $Detail->location?->name ?? '-' }}</div>
+                                    <div class="text-xs text-gray-500">di {{ $repackOut?->location?->name ?? $detail->location?->name ?? '-' }}</div>
                                 </div>
                                 <div class="bg-white border border-red-100 rounded-lg p-4">
                                     <div class="text-xs font-semibold text-gray-500 uppercase mb-2">SESUDAH</div>
-                                    <div class="text-xl font-bold text-gray-800">{{ $repackOut?->item?->name ?? $Detail->sourceItem?->name ?? '-' }}</div>
-                                    <div class="text-sm text-gray-600">{{ $repackOut?->uom?->name ?? $Detail->sourceItem?->uom?->name ?? 'unit' }}</div>
+                                    <div class="text-xl font-bold text-gray-800">{{ $repackOut?->item?->name ?? $detail->sourceItem?->name ?? '-' }}</div>
+                                    <div class="text-sm text-gray-600">{{ $repackOut?->uom?->name ?? $detail->sourceItem?->uom?->name ?? 'unit' }}</div>
                                     <div class="mt-2 text-3xl font-mono font-bold text-red-700">
                                         {{ number_format($repackOut?->qty_after ?? 0, 2) }}
                                         <span class="text-sm font-normal text-gray-500">
                                             ({{ $repackOut?->qty_after < $repackOut?->qty_before ? '-' : '+' }}{{ number_format(($repackOut?->qty_after ?? 0) - ($repackOut?->qty_before ?? 0), 2) }})
                                         </span>
                                     </div>
-                                    <div class="text-xs text-gray-500">di {{ $repackOut?->location?->name ?? $Detail->location?->name ?? '-' }}</div>
+                                    <div class="text-xs text-gray-500">di {{ $repackOut?->location?->name ?? $detail->location?->name ?? '-' }}</div>
                                 </div>
                             </div>
                             <div class="mt-3 text-sm text-gray-600">
                                 <span class="font-semibold">Qty diambil:</span> 
-                                {{ number_format($Detail['qty_source_taken'], 2) }} {{ $Detail->sourceItem?->uom?->name ?? 'unit' }}
+                                {{ number_format($detail['qty_source_taken'], 2) }} {{ $detail->sourceItem?->uom?->name ?? 'unit' }}
                             </div>
                         </div>
 
@@ -359,39 +359,39 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div class="bg-white border border-green-100 rounded-lg p-4">
                                     <div class="text-xs font-semibold text-gray-500 uppercase mb-2">SENot Yet</div>
-                                    <div class="text-xl font-bold text-gray-800">{{ $repackIn?->item?->name ?? $Detail->targetItem?->name ?? '-' }}</div>
-                                    <div class="text-sm text-gray-600">{{ $repackIn?->uom?->name ?? $Detail->targetItem?->uom?->name ?? 'unit' }}</div>
+                                    <div class="text-xl font-bold text-gray-800">{{ $repackIn?->item?->name ?? $detail->targetItem?->name ?? '-' }}</div>
+                                    <div class="text-sm text-gray-600">{{ $repackIn?->uom?->name ?? $detail->targetItem?->uom?->name ?? 'unit' }}</div>
                                     <div class="mt-2 text-3xl font-mono font-bold text-gray-700">
                                         {{ number_format($repackIn?->qty_before ?? 0, 2) }}
                                     </div>
-                                    <div class="text-xs text-gray-500">di {{ $repackIn?->location?->name ?? $Detail->location?->name ?? '-' }}</div>
+                                    <div class="text-xs text-gray-500">di {{ $repackIn?->location?->name ?? $detail->location?->name ?? '-' }}</div>
                                 </div>
                                 <div class="bg-white border border-green-100 rounded-lg p-4">
                                     <div class="text-xs font-semibold text-gray-500 uppercase mb-2">SESUDAH</div>
-                                    <div class="text-xl font-bold text-gray-800">{{ $repackIn?->item?->name ?? $Detail->targetItem?->name ?? '-' }}</div>
-                                    <div class="text-sm text-gray-600">{{ $repackIn?->uom?->name ?? $Detail->targetItem?->uom?->name ?? 'unit' }}</div>
+                                    <div class="text-xl font-bold text-gray-800">{{ $repackIn?->item?->name ?? $detail->targetItem?->name ?? '-' }}</div>
+                                    <div class="text-sm text-gray-600">{{ $repackIn?->uom?->name ?? $detail->targetItem?->uom?->name ?? 'unit' }}</div>
                                     <div class="mt-2 text-3xl font-mono font-bold text-green-700">
                                         {{ number_format($repackIn?->qty_after ?? 0, 2) }}
                                         <span class="text-sm font-normal text-gray-500">
                                             (+{{ number_format(($repackIn?->qty_after ?? 0) - ($repackIn?->qty_before ?? 0), 2) }})
                                         </span>
                                     </div>
-                                    <div class="text-xs text-gray-500">di {{ $repackIn?->location?->name ?? $Detail->location?->name ?? '-' }}</div>
+                                    <div class="text-xs text-gray-500">di {{ $repackIn?->location?->name ?? $detail->location?->name ?? '-' }}</div>
                                 </div>
                             </div>
                             <div class="mt-3 text-sm text-gray-600">
                                 <span class="font-semibold">Qty hasil repack:</span> 
-                                {{ number_format($Detail['qty_source_taken'], 2) }} × {{ $Detail['Multiplier'] }} = 
-                                <span class="font-bold text-green-700">{{ number_format($Detail['qty_target_result'], 2) }}</span>
-                                {{ $Detail->targetItem?->uom?->name ?? 'unit' }}
+                                {{ number_format($detail['qty_source_taken'], 2) }} × {{ $detail['multiplier'] }} = 
+                                <span class="font-bold text-green-700">{{ number_format($detail['qty_target_result'], 2) }}</span>
+                                {{ $detail->targetItem?->uom?->name ?? 'unit' }}
                             </div>
                         </div>
 
                         {{-- Notes --}}
-                        @if ($Detail['notes'])
+                        @if ($detail['notes'])
                             <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
                                 <div class="font-semibold text-gray-600 text-xs uppercase">Notes</div>
-                                <div class="text-sm text-gray-700">{{ $Detail['notes'] }}</div>
+                                <div class="text-sm text-gray-700">{{ $detail['notes'] }}</div>
                             </div>
                         @endif
                     @else
@@ -405,7 +405,7 @@
     @endif
 
     {{-- ================= OVERLAY: Edit ================= --}}
-    @if ($overlayMode === 'Edit' && $overlayId)
+    @if ($overlayMode === 'edit' && $overlayId)
         <div class="fixed inset-0 bg-black/40 z-40" wire:click="closeOverlay"></div>
 
         <div class="fixed inset-0 z-50 flex items-center justify-center px-6">

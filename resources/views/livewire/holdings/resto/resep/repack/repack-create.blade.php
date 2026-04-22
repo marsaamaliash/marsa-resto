@@ -1,4 +1,4 @@
-﻿<div class="p-6">
+<div class="p-6">
     <h2 class="text-xl font-bold mb-4">Add Repack Stok</h2>
 
     @if ($toast['show'])
@@ -72,10 +72,10 @@
 
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Multiplier <span class="text-red-500">*</span></label>
-                <input type="number" step="1" min="1" wire:model.defer="Multiplier"
+                <input type="number" step="1" min="1" wire:model.defer="multiplier"
                     class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                     placeholder="e.g. 24">
-                @error('Multiplier')
+                @error('multiplier')
                     <span class="text-red-600 text-sm">{{ $message }}</span>
                 @enderror
                 <p class="text-xs text-gray-500 mt-1">Fill per unit (bottle/package per carton)</p>
@@ -165,7 +165,7 @@
                                     class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                     <option value="raw">Raw</option>
                                     <option value="prep">Prep</option>
-                                    <option value="Menu">Menu</option>
+                                    <option value="menu">Menu</option>
                                 </select>
                             </div>
                             <div>

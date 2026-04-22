@@ -1,32 +1,32 @@
-﻿<div class="p-6">
-    <h2 class="text-xl font-bold mb-4">{{ $OutputId ? 'Edit Output' : 'Add Output Recipe' }}</h2>
+<div class="p-6">
+    <h2 class="text-xl font-bold mb-4">{{ $outputId ? 'Edit Output' : 'Add Output Recipe' }}</h2>
 
     <form wire:submit.prevent="save" class="space-y-4">
         <div class="grid grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Type Output <span class="text-red-500">*</span></label>
-                <select wire:model.defer="OutputType"
+                <select wire:model.defer="outputType"
                     class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     <option value="main">Main (Utama)</option>
                     <option value="by_product">By-Product</option>
                     <option value="co_product">Co-Product</option>
-                    <option value="Waste">Waste</option>
+                    <option value="waste">Waste</option>
                 </select>
-                @error('OutputType')
+                @error('outputType')
                     <span class="text-red-600 text-sm">{{ $message }}</span>
                 @enderror
             </div>
 
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Output Item <span class="text-red-500">*</span></label>
-                <select wire:model.defer="Output_item_id"
+                <select wire:model.defer="output_item_id"
                     class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     <option value="">-- Select Item --</option>
                     @foreach ($items as $item)
                         <option value="{{ $item['value'] }}">{{ $item['label'] }}</option>
                     @endforeach
                 </select>
-                @error('Output_item_id')
+                @error('output_item_id')
                     <span class="text-red-600 text-sm">{{ $message }}</span>
                 @enderror
             </div>
@@ -91,7 +91,7 @@
         <div class="flex gap-3 pt-4">
             <button type="submit"
                 class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                {{ $OutputId ? 'Perbarui' : 'Save' }}
+                {{ $outputId ? 'Perbarui' : 'Save' }}
             </button>
             <button type="button" wire:click="cancel"
                 class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">

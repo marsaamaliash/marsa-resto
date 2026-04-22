@@ -1,4 +1,4 @@
-﻿<x-ui.sccr-card transparent wire:key="production-order" class="h-full min-h-0 flex flex-col">
+<x-ui.sccr-card transparent wire:key="production-order" class="h-full min-h-0 flex flex-col">
 
     <div class="relative px-8 py-6 bg-emerald-600/80 rounded-b-3xl shadow-lg overflow-hidden">
         <div class="flex justify-between items-start">
@@ -92,8 +92,8 @@
                                 <td class="px-4 py-2 font-mono text-sm font-semibold">{{ $item['id'] }}</td>
                                 <td class="px-4 py-2 font-mono text-sm">{{ $item['prod_no'] }}</td>
                                 <td class="px-4 py-2 text-sm">{{ $item->recipe?->recipe_name ?? '-' }}</td>
-                                <td class="px-4 py-2 text-sm">V{{ $item->recipeversion?->version_no ?? '-' }}</td>
-                                <td class="px-4 py-2 text-sm text-right font-mono">{{ number_format($item['planned_Output_qty'], 2) }}</td>
+                                <td class="px-4 py-2 text-sm">V{{ $item->recipeVersion?->version_no ?? '-' }}</td>
+                                <td class="px-4 py-2 text-sm text-right font-mono">{{ number_format($item['planned_output_qty'], 2) }}</td>
                                 <td class="px-4 py-2 text-center">
                                     @php $s = $item['status'] ?? 'draft'; @endphp
                                     @if ($s === 'draft')
@@ -109,7 +109,7 @@
                                     @endif
                                 </td>
                                 <td class="px-4 py-2 text-center">
-                                    @php $a = $item['Approval_status'] ?? 'draft'; @endphp
+                                    @php $a = $item['approval_status'] ?? 'draft'; @endphp
                                     @if ($a === 'draft')
                                         <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">Draft</span>
                                     @elseif ($a === 'submitted')

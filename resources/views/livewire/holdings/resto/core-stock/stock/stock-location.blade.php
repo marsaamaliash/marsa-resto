@@ -200,7 +200,7 @@
     <x-ui.sccr-toast :show="$toast['show']" :type="$toast['type']" :message="$toast['message']" wire:key="toast-{{ microtime() }}" />
 
     {{-- ================= OVERLAY: Detail ================= --}}
-    @if ($overlayMode === 'Detail' && $overlayId)
+    @if ($overlayMode === 'detail' && $overlayId)
         <div class="fixed inset-0 bg-black/40 z-40" wire:click="closeOverlay"></div>
 
         <div class="fixed inset-0 z-50 flex items-center justify-center px-6">
@@ -259,7 +259,7 @@
                                 <div>
                                     <div class="text-xs text-gray-500 uppercase">Waste</div>
                                     <div class="font-mono font-semibold text-gray-800">
-                                        {{ number_format($balance->qty_Waste ?? 0, 2) }}
+                                        {{ number_format($balance->qty_waste ?? 0, 2) }}
                                     </div>
                                 </div>
                                 <div>
@@ -305,7 +305,7 @@
                                                                     'reserve' => 'text-yellow-600',
                                                                     'unreserve' => 'text-gray-600',
                                                                     'consume' => 'text-pink-600',
-                                                                    'Waste' => 'text-red-800'
+                                                                    'waste' => 'text-red-800'
                                                                 ];
                                                             @endphp
                                                             <span class="{{ $typeColors[$mutation->type] ?? 'text-gray-800' }} font-medium">

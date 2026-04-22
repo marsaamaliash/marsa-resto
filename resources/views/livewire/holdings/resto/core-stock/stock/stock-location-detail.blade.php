@@ -270,7 +270,7 @@
                         <div class="bg-gray-50 p-4 rounded-lg">
                             <div class="text-xs text-gray-500 uppercase mb-1">Waste</div>
                             <div class="font-mono text-2xl font-bold text-gray-800">
-                                {{ number_format($balance->qty_Waste ?? 0, 2) }}
+                                {{ number_format($balance->qty_waste ?? 0, 2) }}
                             </div>
                         </div>
                         <div class="bg-gray-50 p-4 rounded-lg">

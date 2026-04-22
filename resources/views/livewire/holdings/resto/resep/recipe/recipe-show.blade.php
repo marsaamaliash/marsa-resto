@@ -1,4 +1,4 @@
-﻿<div>
+<div>
     @if ($recipe)
         {{-- ================= HEADER ================= --}}
         <div class="relative px-8 py-6 bg-purple-600/80 rounded-b-3xl shadow-lg overflow-hidden">
@@ -17,7 +17,7 @@
                         class="px-3 py-1 rounded-md text-sm font-medium {{ $recipe->is_active ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-green-500 hover:bg-green-600 text-white' }}">
                         {{ $recipe->is_active ? 'Deactivate' : 'Activate' }}
                     </button>
-                    <a href="{{ route('dashboard.resto.recipe.recipe') }}"
+                    <a href="{{ route('dashboard.resto.resep.recipe') }}"
                         class="px-3 py-1 rounded-md text-sm font-medium bg-gray-200 hover:bg-gray-300 text-gray-700">
                         &larr; Back
                     </a>
@@ -64,8 +64,8 @@
                 <div class="flex justify-between items-center">
                     <h3 class="text-sm font-bold text-gray-700 uppercase">Select Recipe version</h3>
                     <div class="flex gap-2 flex-wrap">
-                        @foreach ($Versionons as $v)
-                            <button wire:click="selectversion({{ $v->id }})"
+                        @foreach ($versions as $v)
+                            <button wire:click="selectVersion({{ $v->id }})"
                                 class="px-3 py-1.5 rounded-md text-xs font-medium transition
                                 {{ $selectedVersionId == $v->id ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
                                 V{{ $v->version_no }}
@@ -79,25 +79,25 @@
             </div>
 
             {{-- ================= SELECTED version INFO ================= --}}
-            @if ($selectedversion)
+            @if ($selectedVersion)
                 <div class="bg-purple-50 border border-purple-200 rounded-xl p-4 mb-4">
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                         <div>
                             <div class="text-xs text-purple-600 uppercase font-bold">Version</div>
-                            <div class="text-sm font-semibold">V{{ $selectedversion->version_no }}</div>
+                            <div class="text-sm font-semibold">V{{ $selectedVersion->version_no }}</div>
                         </div>
                         <div>
                             <div class="text-xs text-purple-600 uppercase font-bold">Component</div>
-                            <div class="text-sm font-semibold">{{ $selectedversion->components_count }} item</div>
+                            <div class="text-sm font-semibold">{{ $selectedVersion->components_count }} item</div>
                         </div>
                         <div>
                             <div class="text-xs text-purple-600 uppercase font-bold">Effective From</div>
-                            <div class="text-sm font-semibold">{{ $selectedversion->effective_from ?? '-' }}</div>
+                            <div class="text-sm font-semibold">{{ $selectedVersion->effective_from ?? '-' }}</div>
                         </div>
                         <div>
                             <div class="text-xs text-purple-600 uppercase font-bold">Status</div>
                             <div class="text-sm">
-                                @if ($selectedversion->is_active)
+                                @if ($selectedVersion->is_active)
                                     <span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs font-medium">Active</span>
                                 @else
                                     <span class="bg-gray-100 text-gray-800 px-2 py-0.5 rounded text-xs font-medium">Inactive</span>
@@ -105,8 +105,8 @@
                             </div>
                         </div>
                     </div>
-                    @if ($selectedversion->notes)
-                        <div class="mt-2 text-xs text-gray-600 italic">{{ $selectedversion->notes }}</div>
+                    @if ($selectedVersion->notes)
+                        <div class="mt-2 text-xs text-gray-600 italic">{{ $selectedVersion->notes }}</div>
                     @endif
                 </div>
             @endif
@@ -115,8 +115,8 @@
             <div class="bg-white rounded-xl shadow overflow-hidden">
                 <div class="border-b border-gray-200">
                     <nav class="flex -mb-px">
-                        <button wire:click="setActiveTab('Versionons')"
-                            class="px-6 py-3 text-sm font-medium border-b-2 transition {{ $activeTab === 'Versionons' ? 'border-purple-500 text-purple-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                        <button wire:click="setActiveTab('versions')"
+                            class="px-6 py-3 text-sm font-medium border-b-2 transition {{ $activeTab === 'versions' ? 'border-purple-500 text-purple-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
                             Recipe version
                         </button>
                         @if ($selectedVersionId)
@@ -131,20 +131,20 @@
                     </nav>
                 </div>
 
-                {{-- ================= VersionONS TAB ================= --}}
-                @if ($activeTab === 'Versionons')
+                {{-- ================= versionS TAB ================= --}}
+                @if ($activeTab === 'versions')
                     <div class="p-6">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-lg font-semibold text-gray-800">version List</h3>
                             @if ($canCreate)
-                                <button wire:click="openCreateversion"
+                                <button wire:click="openCreateVersion"
                                     class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 text-sm font-medium">
                                     + Add Version Baru
                                 </button>
                             @endif
                         </div>
 
-                        @if ($Versionons->isEmpty())
+                        @if ($versions->isEmpty())
                             <div class="text-center py-10 text-gray-400 italic">
                                 Not Yet Recipe version. Klik "Add Version" untuk membuat Version pertama.
                             </div>
@@ -161,10 +161,10 @@
                                         </tr>
                                     </thead>
                                     <tbody class="bg-white divide-y divide-gray-200">
-                                        @foreach ($Versionons as $version)
+                                        @foreach ($versions as $version)
                                             <tr class="hover:bg-gray-50 transition {{ $selectedVersionId == $version->id ? 'bg-purple-50' : '' }}">
                                                 <td class="px-4 py-3 text-sm font-medium text-gray-900">
-                                                    <button wire:click="selectversion({{ $version->id }})" class="hover:text-purple-600">
+                                                    <button wire:click="selectVersion({{ $version->id }})" class="hover:text-purple-600">
                                                         V{{ $version->version_no }}
                                                     </button>
                                                 </td>
@@ -180,14 +180,14 @@
                                                 <td class="px-4 py-3 text-center">
                                                     <div class="flex justify-center gap-1">
                                                         @if (! $version->is_active)
-                                                            <button wire:click="activateversion({{ $version->id }})" 
-                                                                class="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600" 
+                                                            <button wire:click="activateVersion({{ $version->id }})"
+                                                                class="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
                                                                 title="Activate">Activate</button>
                                                         @endif
                                                         @if ($canDelete && ! $version->is_active)
-                                                            <button wire:click="deleteversion({{ $version->id }})" 
-                                                                class="px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600" 
-                                                                title="Delete" 
+                                                            <button wire:click="deleteVersion({{ $version->id }})"
+                                                                class="px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600"
+                                                                title="Delete"
                                                                 onclick="return confirm('Delete Version ini?')">Delete</button>
                                                         @endif
                                                     </div>
@@ -206,7 +206,7 @@
                     <div class="p-6">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-lg font-semibold text-gray-800">Ingredients (Bill of Materials)</h3>
-                            <p class="text-sm text-gray-500">Version V{{ $selectedversion?->version_no }}</p>
+                            <p class="text-sm text-gray-500">Version V{{ $selectedVersion?->version_no }}</p>
                         </div>
 
                         @if ($components->isEmpty())
@@ -248,7 +248,7 @@
         <div class="relative px-8 py-6 bg-purple-600/80 rounded-b-3xl shadow-lg overflow-hidden">
             <h1 class="text-3xl font-bold text-white">Recipe No Ditemukan</h1>
             <div class="mt-4">
-                <a href="{{ route('dashboard.resto.recipe.recipe') }}"
+                <a href="{{ route('dashboard.resto.resep.recipe') }}"
                     class="px-4 py-2 bg-white text-purple-600 rounded-md hover:bg-gray-100 text-sm font-medium">
                     &larr; Back to Recipe List
                 </a>
@@ -270,38 +270,38 @@
                 </x-ui.sccr-button>
                 <div class="p-6">
                     <h2 class="text-xl font-bold mb-4">Add Recipe version Baru</h2>
-                    <form wire:submit.prevent="storeversion" class="space-y-6">
-                        
+                    <form wire:submit.prevent="storeVersion" class="space-y-6">
+
                         {{-- version Notes --}}
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">version Notes</label>
-                            <textarea wire:model="newVersiononNotes"
+                            <textarea wire:model="newVersionNotes"
                                 class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                 rows="2" placeholder="Misal: Version promo Ramadan"></textarea>
-                            @error('newVersiononNotes') <span class="text-red-600 text-sm">{{ $message }}</span> @enderror
+                            @error('newVersionNotes') <span class="text-red-600 text-sm">{{ $message }}</span> @enderror
                         </div>
 
                         {{-- Components Section --}}
                         <div class="border-t pt-4">
                             <div class="flex justify-between items-center mb-3">
                                 <h3 class="text-lg font-medium text-gray-800">Recipe Ingredients (BOM) <span class="text-red-500">*</span></h3>
-                                <button type="button" wire:click="addVersiononComponent"
+                                <button type="button" wire:click="addVersionComponent"
                                     class="px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm">
                                     + Add Bahan
                                 </button>
                             </div>
 
-                            @if (empty($newVersiononComponents))
+                            @if (empty($newVersionComponents))
                                 <div class="bg-gray-50 border border-gray-200 rounded-md p-4 text-center text-gray-500">
                                     Not Yet bahan. Klik "Add Bahan" untuk menambahkan item of kitchen.
                                 </div>
                             @else
                                 <div class="space-y-3">
-                                    @foreach ($newVersiononComponents as $index => $component)
+                                    @foreach ($newVersionComponents as $index => $component)
                                         <div class="bg-gray-50 border border-gray-200 rounded-md p-3 flex gap-3 items-start">
                                             <div class="flex-1">
                                                 <label class="block text-xs font-medium text-gray-600 mb-1">Raw Material Item <span class="text-red-500">*</span></label>
-                                                <select wire:model="newVersiononComponents.{{ $index }}.item_id"
+                                                <select wire:model="newVersionComponents.{{ $index }}.item_id"
                                                     class="w-full border-gray-300 rounded-md shadow-sm text-sm focus:border-blue-500 focus:ring-blue-500">
                                                     <option value="">-- Select Item --</option>
                                                     @foreach ($kitchenItems as $item)
@@ -310,33 +310,33 @@
                                                         </option>
                                                     @endforeach
                                                 </select>
-                                                @error("newVersiononComponents.{$index}.item_id")
+                                                @error("newVersionComponents.{$index}.item_id")
                                                     <span class="text-red-600 text-xs">{{ $message }}</span>
                                                 @enderror
                                             </div>
 
                                             <div class="w-32">
                                                 <label class="block text-xs font-medium text-gray-600 mb-1">Qty <span class="text-red-500">*</span></label>
-                                                <input type="number" step="0.01" wire:model="newVersiononComponents.{{ $index }}.qty"
+                                                <input type="number" step="0.01" wire:model="newVersionComponents.{{ $index }}.qty"
                                                     class="w-full border-gray-300 rounded-md shadow-sm text-sm focus:border-blue-500 focus:ring-blue-500"
                                                     placeholder="0.00">
-                                                @error("newVersiononComponents.{$index}.qty")
+                                                @error("newVersionComponents.{$index}.qty")
                                                     <span class="text-red-600 text-xs">{{ $message }}</span>
                                                 @enderror
                                             </div>
 
                                             <div class="w-32">
                                                 <label class="block text-xs font-medium text-gray-600 mb-1">Unit <span class="text-red-500">*</span></label>
-                                                <input type="text" wire:model="newVersiononComponents.{{ $index }}.uom_name" readonly
+                                                <input type="text" wire:model="newVersionComponents.{{ $index }}.uom_name" readonly
                                                     class="w-full border-gray-300 rounded-md shadow-sm text-sm bg-gray-100">
-                                                <input type="hidden" wire:model="newVersiononComponents.{{ $index }}.uom_id">
-                                                @error("newVersiononComponents.{$index}.uom_id")
+                                                <input type="hidden" wire:model="newVersionComponents.{{ $index }}.uom_id">
+                                                @error("newVersionComponents.{$index}.uom_id")
                                                     <span class="text-red-600 text-xs">{{ $message }}</span>
                                                 @enderror
                                             </div>
 
                                             <div class="pt-6">
-                                                <button type="button" wire:click="removeVersiononComponent({{ $index }})"
+                                                <button type="button" wire:click="removeVersionComponent({{ $index }})"
                                                     class="text-red-600 hover:text-red-800 p-1"
                                                     title="Delete bahan">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -349,7 +349,7 @@
                                 </div>
                             @endif
 
-                            @error('newVersiononComponents')
+                            @error('newVersionComponents')
                                 <span class="text-red-600 text-sm">{{ $message }}</span>
                             @enderror
                         </div>

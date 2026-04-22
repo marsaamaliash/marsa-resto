@@ -1,4 +1,4 @@
-﻿<div class="p-6">
+<div class="p-6">
     <h2 class="text-xl font-bold mb-4">
         @if ($isSemiFinished)
             Add Semi-Finished Recipe
@@ -13,14 +13,14 @@
         @if (! $isSemiFinished)
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Menu <span class="text-red-500">*</span></label>
-                <select wire:model="Menu_id"
+                <select wire:model="menu_id"
                     class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     <option value="">-- Select Menu --</option>
                     @foreach ($availableMenus as $Menu)
                         <option value="{{ $Menu['value'] }}">{{ $Menu['label'] }}</option>
                     @endforeach
                 </select>
-                @error('Menu_id')
+                @error('menu_id')
                     <span class="text-red-600 text-sm">{{ $message }}</span>
                 @enderror
                 @if (empty($availableMenus))
