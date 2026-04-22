@@ -2,16 +2,20 @@
 
 namespace App\Models\Holdings\Resto\Pos;
 
+use App\Traits\BelongsToBranch;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Rst_Order extends Model
 {
+    use BelongsToBranch;
+
     protected $connection = 'sccr_resto';
 
     protected $table = 'orders';
 
     protected $fillable = [
+        'branch_id',
         'order_number',
         'customer_name',
         'table_number',

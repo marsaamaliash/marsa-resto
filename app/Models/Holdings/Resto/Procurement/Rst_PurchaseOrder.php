@@ -2,6 +2,7 @@
 
 namespace App\Models\Holdings\Resto\Procurement;
 
+use App\Traits\BelongsToBranch;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,6 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Rst_PurchaseOrder extends Model
 {
+    use BelongsToBranch;
     use SoftDeletes;
 
     protected $connection = 'sccr_resto';
@@ -20,6 +22,7 @@ class Rst_PurchaseOrder extends Model
     protected $guarded = [];
 
     protected $fillable = [
+        'branch_id',
         'po_number',
         'purchase_request_id',
         'vendor_id',

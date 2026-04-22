@@ -8,14 +8,14 @@ use Illuminate\Support\Str;
 
 class MenuSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
+        $branchId = BranchSeeder::getFirstBranchId();
+
         $menus = [
             [
-                'recipe_id' => null, // Dikosongkan dulu karena tabel recipes belum ada
+                'branch_id' => $branchId,
+                'recipe_id' => null,
                 'name' => 'Nasi Goreng Spesial SCCR',
                 'price' => 35000.00,
                 'category' => 'Makanan Utama',
@@ -30,6 +30,7 @@ class MenuSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
+                'branch_id' => $branchId,
                 'recipe_id' => null,
                 'name' => 'Es Kopi Susu Aren',
                 'price' => 18000.00,
@@ -39,12 +40,13 @@ class MenuSeeder extends Seeder
                 'description' => 'Perpaduan espresso kental dengan susu segar dan manisnya gula aren asli.',
                 'image' => 'kopi-susu-aren.jpg',
                 'stock' => 100,
-                'discount' => 2000.00, // Contoh diskon Rp 2.000
+                'discount' => 2000.00,
                 'slug' => Str::slug('Es Kopi Susu Aren'),
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
+                'branch_id' => $branchId,
                 'recipe_id' => null,
                 'name' => 'Kentang Goreng Keju',
                 'price' => 25000.00,
@@ -61,7 +63,8 @@ class MenuSeeder extends Seeder
             ],
         ];
 
-        // Masukkan data ke dalam tabel menggunakan koneksi sccr_resto
         DB::connection('sccr_resto')->table('menus')->insert($menus);
+
+        $this->command->info('MenuSeeder completed with branch_id.');
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models\Holdings\Resto\Procurement;
 
+use App\Traits\BelongsToBranch;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,6 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Rst_GoodsReceipt extends Model
 {
+    use BelongsToBranch;
     use SoftDeletes;
 
     protected $connection = 'sccr_resto';

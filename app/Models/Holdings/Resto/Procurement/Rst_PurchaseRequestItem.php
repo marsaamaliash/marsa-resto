@@ -2,11 +2,14 @@
 
 namespace App\Models\Holdings\Resto\Procurement;
 
+use App\Traits\BelongsToBranch;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Rst_PurchaseRequestItem extends Model
 {
+    use BelongsToBranch;
+
     protected $connection = 'sccr_resto';
 
     protected $table = 'purchase_request_items';

@@ -279,5 +279,15 @@
             </a>
           
         </div>
+
+        {{-- ==================== SWITCH BRANCH ==================== --}}
+        <div class="mt-8">
+            <h2 class="text-xl font-bold text-gray-800 border-b-2 border-indigo-500 pb-2 mb-4">Pengaturan Cabang</h2>
+            <div class="max-w-md">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Cabang Aktif</label>
+                <livewire:holdings.resto.components.branch-switcher />
+                <p class="text-sm text-gray-500 mt-2">Pilih cabang untuk melihat dan mengelola data sesuai lokasi.</p>
+            </div>
+        </div>
     </div>
 </div>
