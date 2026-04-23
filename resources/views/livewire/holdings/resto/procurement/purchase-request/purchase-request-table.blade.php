@@ -6,7 +6,7 @@
             <div>
                 <h1 class="text-3xl font-bold text-white">Purchase Request</h1>
                 <p class="text-blue-100 text-sm">
-                    Pengajuan pembelian barang (PR) dengan multi-level approval
+                    Purchase request (PR) with multi-level approval
                 </p>
             </div>
         </div>
@@ -14,24 +14,24 @@
         <div class="mt-4 flex justify-between items-center text-sm">
             <x-ui.sccr-breadcrumb :items="$breadcrumbs" />
             <div class="text-white">
-                Menampilkan <span class="font-bold text-black">{{ $data->total() }}</span> data
+                Showing <span class="font-bold text-black">{{ $data->total() }}</span> of <span class="font-bold text-black">{{ $data->total() }}</span> data
             </div>
         </div>
     </div>
 
     {{-- ================= FILTERS & ACTIONS ================= --}}
     <div class="px-4 pt-3 pb-1">
-        <div class="flex flex-wrap items-center justify-between gap-1">
+        <div class="flex flex-wrap items-center justify-between gap-2">
 
             <form wire:submit.prevent="applyFilter" class="flex flex-wrap items-center gap-1 flex-grow">
 
                 {{-- SEARCH INPUT --}}
                 <div class="relative top-1">
                     <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">
-                        Cari
+                        Search
                     </span>
                     <x-ui.sccr-input name="search" wire:model="search"
-                        placeholder="PR Number, Lokasi, Item..." class="w-72" />
+                        placeholder="PR Number, Location, Item..." class="w-72" />
                 </div>
 
                 {{-- FILTER 1: Status --}}
@@ -45,17 +45,17 @@
                 {{-- FILTER 2: Location --}}
                 <div class="relative top-1">
                     <span class="absolute -top-3 left-1 text-[10px] font-bold text-black uppercase">
-                        Lokasi
+                        Location
                     </span>
                     <x-ui.sccr-select name="filterLocation" wire:model.live="filterLocation" :options="$this->filterLocationOptions" class="w-48" />
                 </div>
 
                 {{-- ACTION BUTTONS --}}
-                <div class="flex flex-wrap items-center gap-1">
+                <div class="flex flex-wrap items-center gap-1 mb-1">
                     <x-ui.sccr-button type="submit" variant="primary"
                         class="bg-gray-900 text-gray-100 hover:bg-gray-400">
                         <x-ui.sccr-icon name="cari" :size="20" />
-                        Cari
+                        Search
                     </x-ui.sccr-button>
 
                     <x-ui.sccr-button type="button" wire:click="clearFilters"
@@ -67,7 +67,7 @@
             </form>
 
             {{-- Right: perpage & export --}}
-            <div class="flex items-end gap-1 ml-auto">
+            <div class="flex items-end gap-2 ml-auto">
                 @if ($canExport)
                     <x-ui.sccr-button type="button" wire:click="exportExcel"
                         class="bg-green-600 text-white hover:bg-green-700">
@@ -76,10 +76,8 @@
                     </x-ui.sccr-button>
                 @endif
 
-                <div class="relative top-0">
-                    <span class="absolute -top-4 left-1 text-[10px] font-bold text-black uppercase">
-                        Show
-                    </span>
+                <div class="flex flex-col">
+                    <label class="text-[10px] font-bold text-black uppercase mb-1">Show</label>
                     <select wire:model.live="perPage" class="border-gray-300 rounded-md text-sm">
                         <option value="10">10</option>
                         <option value="25">25</option>
@@ -114,7 +112,7 @@
                             {{-- Location --}}
                             <th wire:click="sortBy('requester_location_id')"
                                 class="px-3 py-3 text-left text-xs font-bold cursor-pointer">
-                                Lokasi {!! $sortField === 'requester_location_id' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                                Location {!! $sortField === 'requester_location_id' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                             </th>
 
                             {{-- Requester --}}
@@ -123,51 +121,47 @@
                                 Requester {!! $sortField === 'requested_by' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                             </th>
 
+                            {{-- Total Items --}}
+                            <th class="px-3 py-3 text-center text-xs font-bold">
+                                Items
+                            </th>
+
+                            {{-- Created At --}}
+                            <th wire:click="sortBy('created_at')"
+                                class="px-3 py-3 text-left text-xs font-bold cursor-pointer">
+                                Created At {!! $sortField === 'created_at' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                            </th>
+
+                            {{-- Created By --}}
+                            <th class="px-3 py-3 text-left text-xs font-bold">
+                                Created By
+                            </th>
+
+                            {{-- Updated At --}}
+                            <th wire:click="sortBy('updated_at')"
+                                class="px-3 py-3 text-left text-xs font-bold cursor-pointer">
+                                Updated At {!! $sortField === 'updated_at' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
+                            </th>
+
+                            {{-- Updated By --}}
+                            <th class="px-3 py-3 text-left text-xs font-bold">
+                                Updated By
+                            </th>
+
                             {{-- Status --}}
                             <th wire:click="sortBy('status')"
                                 class="px-3 py-3 text-center text-xs font-bold cursor-pointer">
                                 Status {!! $sortField === 'status' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
                             </th>
 
-                            {{-- Total Items --}}
-                            <th class="px-3 py-3 text-center text-xs font-bold">
-                                Items
-                            </th>
-
-                            
-
-                            {{-- Created At --}}
-                            <th wire:click="sortBy('created_at')"
-                                class="px-3 py-3 text-left text-xs font-bold cursor-pointer">
-                                Dibuat {!! $sortField === 'created_at' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
-                            </th>
-
-                            {{-- Created By --}}
-                            <th class="px-3 py-3 text-left text-xs font-bold">
-                                Oleh
-                            </th>
-
-                            {{-- Updated At --}}
-                            <th wire:click="sortBy('updated_at')"
-                                class="px-3 py-3 text-left text-xs font-bold cursor-pointer">
-                                Diubah {!! $sortField === 'updated_at' ? ($sortDirection === 'asc' ? '▲' : '▼') : '↕' !!}
-                            </th>
-
-                            {{-- Updated By --}}
-                            <th class="px-3 py-3 text-left text-xs font-bold">
-                                Oleh
-                            </th>
-
-                            {{-- Actions --}}
-                            {{-- Actions --}}
                             {{-- Actions --}}
                             <th class="px-4 py-3 text-center text-xs font-bold">
                                 <div class="flex items-center justify-center gap-2">
-                                    <span>Aksi</span>
+                                    <span>Actions</span>
 
                                     @if ($canCreate)
                                         <x-ui.sccr-button type="button" variant="icon-circle" wire:click="openCreateFromCritical"
-                                            class="w-8 h-8 hover:scale-105" title="Buat PR dari Stok Kritis">
+                                            class="w-8 h-8 hover:scale-105" title="Create PR from Critical Stock">
                                             <x-ui.sccr-icon name="plus" :size="18" />
                                         </x-ui.sccr-button>
                                     @endif
@@ -200,6 +194,36 @@
                                     {{ $item['requested_by'] ?? '-' }}
                                 </td>
 
+                                {{-- Total Items --}}
+                                <td class="px-3 py-2 text-center text-sm">
+                                    <span class="font-semibold">{{ $item->items->count() }}</span>
+                                    @if ($item->items->where('is_critical', true)->count() > 0)
+                                        <span class="text-red-600 text-xs" title="Critical Stock">
+                                            ({{ $item->items->where('is_critical', true)->count() }} critical)
+                                        </span>
+                                    @endif
+                                </td>
+
+                                {{-- Created At --}}
+                                <td class="px-3 py-2 text-sm text-gray-600">
+                                    {{ $item->created_at?->format('d/m/Y H:i') ?? '-' }}
+                                </td>
+
+                                {{-- Created By --}}
+                                <td class="px-3 py-2 text-sm text-gray-600">
+                                    {{ $item['created_by'] ?? '-' }}
+                                </td>
+
+                                {{-- Updated At --}}
+                                <td class="px-3 py-2 text-sm text-gray-600">
+                                    {{ $item->updated_at?->format('d/m/Y H:i') ?? '-' }}
+                                </td>
+
+                                {{-- Updated By --}}
+                                <td class="px-3 py-2 text-sm text-gray-600">
+                                    {{ $item['updated_by'] ?? '-' }}
+                                </td>
+
                                 {{-- Status --}}
                                 <td class="px-3 py-2 text-center">
                                     @php
@@ -227,38 +251,6 @@
                                     </span>
                                 </td>
 
-                                {{-- Total Items --}}
-                                <td class="px-3 py-2 text-center text-sm">
-                                    <span class="font-semibold">{{ $item->items->count() }}</span>
-                                    @if ($item->items->where('is_critical', true)->count() > 0)
-                                        <span class="text-red-600 text-xs" title="Stok Kritis">
-                                            ({{ $item->items->where('is_critical', true)->count() }} kritis)
-                                        </span>
-                                    @endif
-                                </td>
-
-                                 
-
-                                {{-- Created At --}}
-                                <td class="px-3 py-2 text-sm text-gray-600">
-                                    {{ $item->created_at?->format('d/m/Y H:i') ?? '-' }}
-                                </td>
-
-                                {{-- Created By --}}
-                                <td class="px-3 py-2 text-sm text-gray-600">
-                                    {{ $item['created_by'] ?? '-' }}
-                                </td>
-
-                                {{-- Updated At --}}
-                                <td class="px-3 py-2 text-sm text-gray-600">
-                                    {{ $item->updated_at?->format('d/m/Y H:i') ?? '-' }}
-                                </td>
-
-                                {{-- Updated By --}}
-                                <td class="px-3 py-2 text-sm text-gray-600">
-                                    {{ $item['updated_by'] ?? '-' }}
-                                </td>
-
                                 {{-- ROW ACTIONS --}}
                                 <td class="px-3 py-2 text-center">
                                     <div class="flex justify-center gap-2">
@@ -268,7 +260,7 @@
                                             <x-ui.sccr-icon name="eye" :size="18" />
                                         </a>
 
-                                        {{-- Edit/Revise --}}
+                                        {{-- Edit --}}
                                         @if ($item->canBeEdited() && ($canCreate || $canUpdate))
                                             <a href="{{ route('dashboard.resto.purchase-request.detail', $item['id']) }}?mode=edit"
                                                 class="text-blue-600 hover:scale-125" title="Edit">
@@ -285,55 +277,13 @@
                                             </x-ui.sccr-button>
                                         @endif
 
-                                        {{-- RM Approve --}}
-                                        @if ($item['status'] === 'pending_rm' && $canApproveRM)
-                                            <x-ui.sccr-button type="button" variant="icon"
-                                                wire:click="directApproveByRM({{ $item['id'] }})"
-                                                class="text-green-600 hover:scale-125" title="Approve (RM)">
-                                                <x-ui.sccr-icon name="approve" :size="18" />
-                                            </x-ui.sccr-button>
-                                        @endif
-
-                                        {{-- SPV Approve --}}
-                                        @if ($item['status'] === 'pending_spv' && $canApproveSPV)
-                                            <x-ui.sccr-button type="button" variant="icon"
-                                                wire:click="directApproveBySPV({{ $item['id'] }})"
-                                                class="text-green-600 hover:scale-125" title="Approve (SPV)">
-                                                <x-ui.sccr-icon name="approve" :size="18" />
-                                            </x-ui.sccr-button>
-                                        @endif
-
-                                        {{-- Reject --}}
-                                        @if (in_array($item['status'], ['pending_rm', 'pending_spv']) && ($canApproveRM || $canApproveSPV))
-                                            @php
-                                                $rejectLevel = $item['status'] === 'pending_rm' ? 1 : 2;
-                                            @endphp
-                                            <x-ui.sccr-button type="button" variant="icon"
-                                                wire:click="openActionOverlay('reject', '{{ $item['id'] }}', {{ $rejectLevel }})"
-                                                class="text-red-600 hover:scale-125" title="Reject">
-                                                <x-ui.sccr-icon name="no" :size="18" />
-                                            </x-ui.sccr-button>
-                                        @endif
-
-                                        {{-- Request Revise --}}
-                                        @if (in_array($item['status'], ['pending_rm', 'pending_spv']) && ($canApproveRM || $canApproveSPV))
-                                            @php
-                                                $reviseLevel = $item['status'] === 'pending_rm' ? 1 : 2;
-                                            @endphp
-                                            <x-ui.sccr-button type="button" variant="icon"
-                                                wire:click="openActionOverlay('revise', '{{ $item['id'] }}', {{ $reviseLevel }})"
-                                                class="text-orange-600 hover:scale-125" title="Request Revise">
-                                                <x-ui.sccr-icon name="refresh" :size="18" />
-                                            </x-ui.sccr-button>
-                                        @endif
-
                                         {{-- Delete --}}
                                         @if ($item->canBeEdited() && $canDelete)
                                             <x-ui.sccr-button type="button" variant="icon"
                                                 wire:click="deletePR('{{ $item['id'] }}')"
                                                 class="text-red-600 hover:scale-125"
-                                                wire:confirm="Yakin ingin menghapus PR {{ $item['pr_number'] }}?"
-                                                title="Hapus">
+                                                wire:confirm="Are you sure you want to delete PR {{ $item['pr_number'] }}?"
+                                                title="Delete">
                                                 <x-ui.sccr-icon name="trash" :size="18" />
                                             </x-ui.sccr-button>
                                         @endif
@@ -342,8 +292,8 @@
                             </tr>
                 @empty
                     <tr>
-                        <td colspan="13" class="py-10 text-center text-gray-400 italic">
-                                    Data tidak ditemukan
+                        <td colspan="11" class="py-10 text-center text-gray-400 italic">
+                                    No data found
                                 </td>
                             </tr>
                         @endforelse
@@ -355,7 +305,7 @@
             <div
                 class="flex-none px-6 py-3 border-t bg-white flex flex-col md:flex-row justify-between items-center gap-3">
                 <div class="text-sm text-gray-600 flex items-center">
-                    <span class="font-bold text-gray-800 mr-1">{{ count($selectedItems) }}</span> item dipilih
+                    <span class="font-bold text-gray-800 mr-1">{{ count($selectedItems) }}</span> item(s) selected
                 </div>
 
                 <div>
@@ -368,79 +318,5 @@
 
     {{-- ================= TOAST ================= --}}
     <x-ui.sccr-toast :show="$toast['show']" :type="$toast['type']" :message="$toast['message']" wire:key="toast-{{ microtime() }}" />
-
-    {{-- ================= ACTION MODALS ================= --}}
-    @if ($actionOverlayMode)
-        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" wire:click="closeActionOverlay">
-            <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden" wire:click.stop>
-                @php
-                    $modalTitle = match($actionOverlayMode) {
-                        'approve_rm' => 'Approve PR (Restaurant Manager)',
-                        'approve_spv' => 'Approve PR (Supervisor)',
-                        'reject' => 'Reject PR',
-                        'revise' => 'Request Revise PR',
-                        default => 'Action',
-                    };
-                    $modalColor = match($actionOverlayMode) {
-                        'approve_rm', 'approve_spv' => 'bg-green-600',
-                        'reject' => 'bg-red-600',
-                        'revise' => 'bg-orange-600',
-                        default => 'bg-gray-600',
-                    };
-                @endphp
-
-                <div class="px-6 py-4 border-b {{ $modalColor }} flex justify-between items-center">
-                    <h3 class="text-lg font-bold text-white">{{ $modalTitle }}</h3>
-                    <button wire:click="closeActionOverlay" class="text-white hover:text-gray-200 text-2xl">&times;</button>
-                </div>
-
-                <div class="p-6">
-                    <div class="mb-4">
-                        <label class="block text-sm font-bold text-gray-700 mb-1">
-                            @if ($actionOverlayMode === 'reject')
-                                Alasan Reject <span class="text-red-500">*</span>
-                            @elseif ($actionOverlayMode === 'revise')
-                                Alasan Revise <span class="text-red-500">*</span>
-                            @else
-                                Catatan (Opsional)
-                            @endif
-                        </label>
-                        <textarea wire:model="actionNotes" rows="3"
-                            class="w-full border-gray-300 rounded-md text-sm"
-                            placeholder="@if ($actionOverlayMode === 'reject') Alasan reject wajib diisi... @elseif ($actionOverlayMode === 'revise') Alasan revise wajib diisi... @else Tambahkan catatan... @endif"></textarea>
-                    </div>
-                </div>
-
-                <div class="px-6 py-4 border-t bg-gray-50 flex justify-end gap-2">
-                    <x-ui.sccr-button type="button" wire:click="closeActionOverlay"
-                        class="bg-gray-500 text-white hover:bg-gray-600">
-                        Batal
-                    </x-ui.sccr-button>
-
-                    @if ($actionOverlayMode === 'approve_rm')
-                        <x-ui.sccr-button type="button" wire:click="approveByRM"
-                            class="bg-green-600 text-white hover:bg-green-700">
-                            Approve
-                        </x-ui.sccr-button>
-                    @elseif ($actionOverlayMode === 'approve_spv')
-                        <x-ui.sccr-button type="button" wire:click="approveBySPV"
-                            class="bg-green-600 text-white hover:bg-green-700">
-                            Approve
-                        </x-ui.sccr-button>
-                    @elseif ($actionOverlayMode === 'reject')
-                        <x-ui.sccr-button type="button" wire:click="rejectPR"
-                            class="bg-red-600 text-white hover:bg-red-700">
-                            Reject
-                        </x-ui.sccr-button>
-                    @elseif ($actionOverlayMode === 'revise')
-                        <x-ui.sccr-button type="button" wire:click="requestRevise"
-                            class="bg-orange-600 text-white hover:bg-orange-700">
-                            Request Revise
-                        </x-ui.sccr-button>
-                    @endif
-                </div>
-            </div>
-        </div>
-    @endif
 
 </x-ui.sccr-card>
