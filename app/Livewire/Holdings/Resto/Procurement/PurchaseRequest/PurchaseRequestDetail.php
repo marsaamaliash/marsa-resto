@@ -38,6 +38,12 @@ class PurchaseRequestDetail extends Component
 
     public bool $isCreator = false;
 
+    public string $searchItem = '';
+
+    public string $sortBy = 'name';
+
+    public string $sortDirection = 'asc';
+
     public function mount(int $id): void
     {
         $this->loadPR($id);
@@ -256,6 +262,16 @@ class PurchaseRequestDetail extends Component
         }
     }
 
+    public function sortItems(string $column): void
+    {
+        if ($this->sortBy === $column) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortBy = $column;
+            $this->sortDirection = 'asc';
+        }
+    }
+
     public function submitForApproval(): void
     {
         try {
@@ -267,6 +283,33 @@ class PurchaseRequestDetail extends Component
         } catch (\Exception $e) {
             $this->toast = ['show' => true, 'type' => 'error', 'message' => $e->getMessage()];
         }
+    }
+
+    public function getFilteredItemsProperty()
+    {
+        $items = $this->pr?->items ?? collect();
+
+        if ($this->searchItem !== '') {
+            $search = strtolower($this->searchItem);
+            $items = $items->filter(function ($item) use ($search) {
+                return str_contains(strtolower($item->item?->name ?? ''), $search)
+                    || str_contains(strtolower($item->item?->sku ?? ''), $search)
+                    || str_contains(strtolower($item->notes ?? ''), $search);
+            });
+        }
+
+        $sortBy = $this->sortBy;
+        $direction = $this->sortDirection;
+
+        return $items->sortBy(function ($item) use ($sortBy) {
+            return match ($sortBy) {
+                'sku' => strtolower($item->item?->sku ?? ''),
+                'qty' => $item->requested_qty,
+                'actual_stock' => $item->actual_stock,
+                'min_stock' => $item->min_stock,
+                default => strtolower($item->item?->name ?? ''),
+            };
+        }, SORT_REGULAR, $direction === 'desc')->values();
     }
 
     public function render()

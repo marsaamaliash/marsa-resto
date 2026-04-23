@@ -98,20 +98,43 @@
 
                 {{-- PR ITEMS TABLE --}}
                 <div class="bg-white rounded-xl shadow border p-6">
-                    <h3 class="text-base font-bold text-gray-800 mb-4">Daftar Item</h3>
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-base font-bold text-gray-800">Daftar Item</h3>
+                        <input type="text" wire:model.live.debounce.300ms="searchItem"
+                            placeholder="Cari item..."
+                            class="px-3 py-2 border border-gray-300 rounded-lg text-sm w-64">
+                    </div>
                     <div class="overflow-x-auto">
                         <table class="min-w-full text-sm">
                             <thead class="bg-gray-50 border-b">
                                 <tr>
                                     <th class="px-3 py-3 text-left font-bold text-gray-700">#</th>
-                                    <th class="px-3 py-3 text-left font-bold text-gray-700">Item</th>
-                                    <th class="px-3 py-3 text-center font-bold text-gray-700">Stok Info</th>
-                                    <th class="px-3 py-3 text-center font-bold text-gray-700">Qty Order</th>
+                                    <th class="px-3 py-3 text-left font-bold text-gray-700 cursor-pointer hover:bg-gray-100 select-none"
+                                        wire:click="sortItems('name')">
+                                        Item
+                                        @if ($sortBy === 'name')
+                                            <span>{{ $sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                                        @endif
+                                    </th>
+                                    <th class="px-3 py-3 text-center font-bold text-gray-700 cursor-pointer hover:bg-gray-100 select-none"
+                                        wire:click="sortItems('actual_stock')">
+                                        Stok Info
+                                        @if ($sortBy === 'actual_stock')
+                                            <span>{{ $sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                                        @endif
+                                    </th>
+                                    <th class="px-3 py-3 text-center font-bold text-gray-700 cursor-pointer hover:bg-gray-100 select-none"
+                                        wire:click="sortItems('qty')">
+                                        Qty Order
+                                        @if ($sortBy === 'qty')
+                                            <span>{{ $sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                                        @endif
+                                    </th>
                                     <th class="px-3 py-3 text-left font-bold text-gray-700">Catatan</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y">
-                                @foreach ($pr->items as $index => $item)
+                                @foreach ($this->filteredItems as $index => $item)
                                     <tr class="hover:bg-gray-50 {{ $item->is_critical ? 'bg-red-50' : '' }}">
                                         <td class="px-3 py-3 text-sm text-gray-900">{{ $index + 1 }}</td>
                                         <td class="px-3 py-3">
@@ -157,6 +180,14 @@
                                         </td>
                                     </tr>
                                 @endforeach
+
+                                @if ($this->filteredItems->isEmpty())
+                                    <tr>
+                                        <td colspan="5" class="px-3 py-6 text-center text-gray-500 text-sm">
+                                            Tidak ada item yang ditemukan.
+                                        </td>
+                                    </tr>
+                                @endif
                             </tbody>
                         </table>
                     </div>
@@ -296,29 +327,29 @@
                             @if ($pr->isPendingRM() && $canApproveRM)
                                 <button wire:click="directApproveByRM"
                                     class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-semibold">
-                                    ✓ Approve RM
+                                    Approve
                                 </button>
                                 <button wire:click="openActionModal('reject')"
                                     class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-semibold">
-                                    ✗ Tolak
+                                    Reject
                                 </button>
                                 <button wire:click="openActionModal('revise')"
                                     class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 text-sm font-semibold">
-                                    ↻ Revisi
+                                    Revise
                                 </button>
                             @endif
                             @if ($pr->isPendingSPV() && $canApproveSPV)
                                 <button wire:click="directApproveBySPV"
                                     class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-semibold">
-                                    ✓ Approve SPV
+                                    Approve
                                 </button>
                                 <button wire:click="openActionModal('reject')"
                                     class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-semibold">
-                                    ✗ Tolak
+                                    Reject
                                 </button>
                                 <button wire:click="openActionModal('revise')"
                                     class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 text-sm font-semibold">
-                                    ↻ Revisi
+                                    Revise
                                 </button>
                             @endif
                         </div>
