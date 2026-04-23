@@ -230,7 +230,7 @@
                     @if ($gr->isDraft())
                         <x-ui.sccr-button type="button" wire:click="submitForApproval"
                             class="bg-orange-600 text-white hover:bg-orange-700">
-                            Submit ke RM
+                            Submit GR
                         </x-ui.sccr-button>
                     @endif
 
